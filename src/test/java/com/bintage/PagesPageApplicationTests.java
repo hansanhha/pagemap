@@ -1,4 +1,4 @@
-package com.x4note.pagespage;
+package com.bintage.pagespage;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

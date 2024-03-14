@@ -1,4 +1,4 @@
-package com.x4note.pagespage;
+package com.bintage.pagespage;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

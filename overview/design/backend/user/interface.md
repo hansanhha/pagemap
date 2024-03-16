@@ -4,7 +4,7 @@
 
 create user
 
-update user(nickname)
+update user(nickname, password)
 
 remove user
 
@@ -26,9 +26,13 @@ request user-info to oauth
 
 issue access token to client
 
-refresh access token
+vlidate access/refresh token
 
-expire access token
+reissue access token
+
+rotation refresh token
+
+expire refresh token
 
 ### Login
 

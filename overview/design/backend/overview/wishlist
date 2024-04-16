@@ -19,6 +19,9 @@ Server
 Testing
 - Unit (By function, purpose, layer)
 - Integration
+- End-to-End 
+- Load, Stress
+- Accessbility
 
 Devops
 - CI, CD

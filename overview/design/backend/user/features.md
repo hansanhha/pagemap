@@ -19,7 +19,9 @@ OAuth2, Token 기반
 
 refresh token 사용
 
-로그인된 디바이스 관리
+로그인 디바이스 관리
+
+로그인 로깅
 
 2FA(MFA) 인증
 

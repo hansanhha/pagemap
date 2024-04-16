@@ -1,0 +1,26 @@
+Beta Version
+
+24 하반기 초
+
+Features 
+* User
+* Page
+    * Linked Page
+    * Import, Export
+    * Backup(Snapshot)
+    * Reset
+
+백엔드 + 배포 : 한달 반~두달 
+프론트 : 보름
+
+4/4 시작
+
+목표 : 두 달
+
+기능 구현 5주
+- User 2주
+- Page 3주
+
+배포 1주
+
+프론트 2주

@@ -1,0 +1,31 @@
+Environment
+- Separated Environment(Develpment, Test, Production)
+- Application Property, Key Secure Management
+
+API Design/Security
+- RESTful API (HATEOAS, Stateless)
+- Idempotency
+- Rate Limiting, API Throttling
+- Security(XSS, CSRF, Injection, Web Reverse Shell)
+- Error Handling
+- Feature toggling
+
+Server
+- Modular Monolithic Architecture
+- HTTPS Server
+- Logging
+- Monitoring, Observing
+
+Testing
+- Unit (By function, purpose, layer)
+- Integration
+- End-to-End 
+- Load, Stress
+- Accessbility
+
+Devops
+- CI, CD
+- Container
+
+Database
+- Database Backup/Recovery

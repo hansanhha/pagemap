@@ -12,7 +12,7 @@ API Design/Security
 
 Server
 - Modular Monolithic Architecture
-- HTTPS Server
+- HTTPS Protocol
 - Logging
 - Monitoring, Observing
 

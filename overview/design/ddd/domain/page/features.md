@@ -1,27 +1,23 @@
 ## CRUD
 
-데이터
-* Directory - 웹 페이지 보관함(폴더)
+데이터 관리
+* Tree - 웹 페이지 보관함(폴더)
     * title
     * category
+    * tag
     * description
-    * parent directory id
-* Linked Page - 웹 페이지 바로가기
+    * parent tree id
+* Shortcut - 웹 페이지 바로가기
     * title
+    * category
+    * tree
     * url
         * scheme
         * host(domain, port)
         * query
     * description
-    * parent directory id
-* Noted Page - 노트용 페이지
-    * title
-    * text
-    * file type
-    * description
-* Quick Page - 홈화면에 노출되는 페이지
-
-Directory 중첩 5회까지 가능
+    * parent tree id
+* Home Shortcut - 사용자 홈 화면에 표시되는 웹 페이지 바로가기
 
 ## Backup(Snapshot)
 

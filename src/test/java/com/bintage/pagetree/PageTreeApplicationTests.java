@@ -1,10 +1,10 @@
-package com.bintage.pagespage;
+package com.bintage.pagetree;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class PagesPageApplicationTests {
+class PageTreeApplicationTests {
 
     @Test
     void contextLoads() {

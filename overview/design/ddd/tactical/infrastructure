@@ -1,0 +1,24 @@
+Server
+- HTTPS
+- Eureka
+
+Computing Resource
+- AWS
+
+Container
+- Docker
+
+Load Balancing
+- AWS ELB
+
+Service Discovery
+- AWS Route 53, Consul, Zookeeper
+
+CI/CD
+- AWS CodePipeline, Jenkins
+
+Monitoring, Logging
+- AWS CloudWatch, Prometheus, Granfana, ELK Stack(Elasticsearch, Logstash, Kibana)
+
+
+

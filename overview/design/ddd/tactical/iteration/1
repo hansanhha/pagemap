@@ -1,0 +1,19 @@
+Authentication/Authorization
+
+API implementing
+- Modular Monolith
+- RESTfulAPI
+- Role based Access Control
+- Centralize Exception Handling
+- Centralize Logging
+
+etc
+- Testing
+- Documenting(RestDocs)
+
+User Story
+- 사용자는 구글, 카카오, 네이버 계정을 통해 계정을 생성할 수 있다
+- 사용자는 계정을 삭제할 수 있다
+- 사용자는 로그인된 장치 목록을 볼 수 있다
+- 사용자는 로그인된 장치를 선택하여 로그아웃할 수 있다
+- 사용자는 닉네임을 변경할 수 있다

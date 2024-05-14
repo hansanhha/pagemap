@@ -1,5 +1,5 @@
 Environment
-- Separated Environment(Develpment, Test, Production)
+- Separated Environment(dev, test, prod)
 - Application Property, Key Secure Management
 
 API Design/Security
@@ -10,11 +10,12 @@ API Design/Security
 - Error Handling
 - Feature toggling
 
-Server
-- Modular Monolithic Architecture
-- HTTPS Server
-- Logging
-- Monitoring, Observing
+Architecture Pattern
+- Modular Monolithic
+
+Logging
+- System
+- Application
 
 Testing
 - Unit (By function, purpose, layer)
@@ -22,10 +23,6 @@ Testing
 - End-to-End 
 - Load, Stress
 - Accessbility
-
-Devops
-- CI, CD
-- Container
 
 Database
 - Database Backup/Recovery

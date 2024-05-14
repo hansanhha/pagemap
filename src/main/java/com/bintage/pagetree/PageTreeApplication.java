@@ -1,13 +1,13 @@
-package com.bintage.pagespage;
+package com.bintage.pagetree;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class PagesPageApplication {
+public class PageTreeApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(PagesPageApplication.class, args);
+        SpringApplication.run(PageTreeApplication.class, args);
     }
 
 }

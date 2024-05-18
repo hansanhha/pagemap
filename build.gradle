@@ -25,9 +25,13 @@ repositories {
 ext {
     set('snippetsDir', file("build/generated-snippets"))
     set('springModulithVersion', "1.1.4")
+    set('jmoleculesVersion', "2023.1.3")
 }
 
 dependencies {
+    implementation 'org.jmolecules:jmolecules-ddd'
+    implementation 'org.jmolecules:jmolecules-events'
+    implementation 'org.jmolecules:jmolecules-hexagonal-architecture'
     implementation 'org.springframework.modulith:spring-modulith-starter-core'
     implementation 'org.springframework.modulith:spring-modulith-api'
     implementation 'org.springframework.modulith:spring-modulith-events-api'
@@ -41,7 +45,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
-    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
@@ -62,6 +65,7 @@ dependencies {
 dependencyManagement {
     imports {
         mavenBom "org.springframework.modulith:spring-modulith-bom:${springModulithVersion}"
+        mavenBom "org.jmolecules:jmolecules-bom:${jmoleculesVersion}"
     }
 }
 

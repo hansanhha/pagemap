@@ -8,7 +8,7 @@ update user(nickname, password)
 
 remove user
 
-get user-info(create date, nickname, login-device..)
+get user-info(create date, nickname, login-signedDevice..)
 
 ### OAuth
 
@@ -16,23 +16,23 @@ distinguish new-user(create user if first)
 
 receive redirect from oauth(authroziation grant)
 
-request access token to oauth
+request access jwt to oauth
 
-request refresh token to oauth
+request refresh jwt to oauth
 
 request user-info to oauth
 
 ### Tokens
 
-issue access token to client
+issue access jwt to client
 
-vlidate access/refresh token
+vlidate access/refresh jwt
 
-reissue access token
+reissue access jwt
 
-rotation refresh token
+rotation refresh jwt
 
-expire refresh token
+expire refresh jwt
 
 ### Login
 
@@ -44,8 +44,8 @@ log login history
 
 restrict login trial count
 
-login device management
-* get device-info
+login signedDevice management
+* get signedDevice-info
 * remote logout
 
 2FA authentication

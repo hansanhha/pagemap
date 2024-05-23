@@ -28,7 +28,7 @@ social member number : 해당 소셜 벤더에서 제공하는 고유한 회원�
 * user id or social email (fk)
 * value
 * request issue date
-* received token date
+* received jwt date
 * expire date
 
 #### OAuth Refresh Token
@@ -36,7 +36,7 @@ social member number : 해당 소셜 벤더에서 제공하는 고유한 회원�
 * user id or social email (fk)
 * value
 * request issue date
-* received token date
+* received jwt date
 * expire date
 
 ### Service Tokens
@@ -52,7 +52,7 @@ social member number : 해당 소셜 벤더에서 제공하는 고유한 회원�
 #### Service Refresh Token
 
 * user id or social email (fk)
-* refresh token id (pk)
+* refresh jwt id (pk)
 * value
 * user region
 * issue date
@@ -60,7 +60,7 @@ social member number : 해당 소셜 벤더에서 제공하는 고유한 회원�
 
 #### Service Reissue Token Log
 
-* refresh token id (fk)
+* refresh jwt id (fk)
 * request date
 * request region
 * reissue date

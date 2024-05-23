@@ -17,7 +17,7 @@ OAuth2 소셜 로그인
 
 OAuth2, Token 기반
 
-refresh token 사용
+refresh jwt 사용
 
 로그인 디바이스 관리
 

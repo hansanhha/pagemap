@@ -1,9 +1,9 @@
 package com.bintage.pagetree.auth.infrastructure.event;
 
-import com.bintage.pagetree.auth.domain.account.Account;
-import com.bintage.pagetree.auth.domain.account.AccountSignedIn;
-import com.bintage.pagetree.auth.domain.account.AccountSignedOut;
-import com.bintage.pagetree.auth.domain.account.SignEventPublisher;
+import com.bintage.pagetree.auth.domain.account.*;
+import com.bintage.pagetree.auth.domain.account.event.AccountDeleted;
+import com.bintage.pagetree.auth.domain.account.event.AccountSignedIn;
+import com.bintage.pagetree.auth.domain.account.event.AccountSignedOut;
 import com.bintage.pagetree.auth.domain.token.Token;
 import com.bintage.pagetree.auth.domain.token.UserAgent;
 import lombok.RequiredArgsConstructor;
@@ -29,5 +29,10 @@ public class SignEventPublisherAdapter implements SignEventPublisher {
     @Override
     public void signedOut(UserAgent.UserAgentId userAgentId, Account.AccountId accountId) {
         springEventPublisher.publishEvent(new AccountSignedOut(userAgentId, accountId));
+    }
+
+    @Override
+    public void deletedAccount(Account.AccountId accountId, Instant deletedAt) {
+        springEventPublisher.publishEvent(new AccountDeleted(accountId, deletedAt));
     }
 }

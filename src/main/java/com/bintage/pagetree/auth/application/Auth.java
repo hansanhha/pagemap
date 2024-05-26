@@ -181,6 +181,8 @@ public class Auth {
         oAuth2Service.unlinkForAccount(account.getId(), account.getOAuth2Provider(), account.getOAuth2MemberIdentifier());
         userAgents.deleteAllByAccountId(accountId);
         accounts.delete(account);
+
+        signEventPublisher.deletedAccount(accountId, Instant.now());
     }
 
     public record RequestUserAgentInfo(String type, String os, String device, String application) {}

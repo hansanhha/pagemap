@@ -29,6 +29,8 @@ ext {
 }
 
 dependencies {
+    implementation 'com.github.ua-parser:uap-java:1.6.1'
+
     implementation 'org.jmolecules:jmolecules-ddd'
     implementation 'org.jmolecules:jmolecules-events'
     implementation 'org.jmolecules:jmolecules-hexagonal-architecture'

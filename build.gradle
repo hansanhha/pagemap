@@ -34,6 +34,7 @@ dependencies {
     implementation 'org.jmolecules:jmolecules-ddd'
     implementation 'org.jmolecules:jmolecules-events'
     implementation 'org.jmolecules:jmolecules-hexagonal-architecture'
+    implementation 'org.jmolecules:jmolecules-onion-architecture'
     implementation 'org.springframework.modulith:spring-modulith-starter-core'
     implementation 'org.springframework.modulith:spring-modulith-api'
     implementation 'org.springframework.modulith:spring-modulith-events-api'

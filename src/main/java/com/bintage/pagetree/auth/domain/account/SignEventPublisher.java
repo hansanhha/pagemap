@@ -17,4 +17,7 @@ public interface SignEventPublisher {
 
     void signedOut(UserAgent.UserAgentId userAgentId,
                    Account.AccountId accountId);
+
+    void deletedAccount(Account.AccountId accountId,
+                        Instant deletedAt);
 }

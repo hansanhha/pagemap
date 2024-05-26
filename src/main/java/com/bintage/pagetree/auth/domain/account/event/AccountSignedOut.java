@@ -1,6 +1,6 @@
-package com.bintage.pagetree.auth.domain.account;
+package com.bintage.pagetree.auth.domain.account.event;
 
-import com.bintage.pagetree.auth.domain.token.Token;
+import com.bintage.pagetree.auth.domain.account.Account;
 import com.bintage.pagetree.auth.domain.token.UserAgent;
 import org.jmolecules.event.annotation.DomainEvent;
 

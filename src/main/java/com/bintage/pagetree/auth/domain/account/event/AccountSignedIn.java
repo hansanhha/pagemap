@@ -15,11 +15,4 @@ public record AccountSignedIn(Account.AccountId accountId,
                               Map<Token.TokenType, Token.TokenId> tokenIdMap,
                               Instant signedInAt) {
 
-        public Optional<Token.TokenId> getAccessTokenId() {
-                return Optional.ofNullable(tokenIdMap.get(Token.TokenType.ACCESS_TOKEN));
-        }
-
-        public Optional<Token.TokenId> getRefreshTokenId() {
-                return Optional.ofNullable(tokenIdMap.get(Token.TokenType.REFRESH_TOKEN));
-        }
 }

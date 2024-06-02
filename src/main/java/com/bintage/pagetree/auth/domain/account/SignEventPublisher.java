@@ -12,7 +12,7 @@ public interface SignEventPublisher {
 
     void signedIn(Account.AccountId accountId,
                   UserAgent.UserAgentId userAgentId,
-                  Map<Token.TokenType, Token.TokenId> tokenIds,
+                  TokenIdMap tokenIdMap,
                   Instant signedAt);
 
     void signedOut(UserAgent.UserAgentId userAgentId,
@@ -20,4 +20,8 @@ public interface SignEventPublisher {
 
     void deletedAccount(Account.AccountId accountId,
                         Instant deletedAt);
+
+    record TokenIdMap(Map<Token.TokenType, Token.TokenId> value) {
+
+    }
 }

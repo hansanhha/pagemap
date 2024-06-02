@@ -4,7 +4,6 @@ import com.bintage.pagetree.auth.domain.account.*;
 import com.bintage.pagetree.auth.domain.account.event.AccountDeleted;
 import com.bintage.pagetree.auth.domain.account.event.AccountSignedIn;
 import com.bintage.pagetree.auth.domain.account.event.AccountSignedOut;
-import com.bintage.pagetree.auth.domain.token.Token;
 import com.bintage.pagetree.auth.domain.token.UserAgent;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
@@ -12,7 +11,6 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.util.Map;
 
 @SecondaryAdapter
 @Component
@@ -22,8 +20,8 @@ public class SignEventPublisherAdapter implements SignEventPublisher {
     private final ApplicationEventPublisher springEventPublisher;
 
     @Override
-    public void signedIn(Account.AccountId accountId, UserAgent.UserAgentId userAgentId, Map<Token.TokenType, Token.TokenId> tokenIdMap, Instant signedAt) {
-        springEventPublisher.publishEvent(new AccountSignedIn(accountId, userAgentId, tokenIdMap, signedAt));
+    public void signedIn(Account.AccountId accountId, UserAgent.UserAgentId userAgentId, TokenIdMap tokenIdMap, Instant signedAt) {
+        springEventPublisher.publishEvent(new AccountSignedIn(accountId, userAgentId, tokenIdMap.value(), signedAt));
     }
 
     @Override

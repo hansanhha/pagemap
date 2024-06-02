@@ -93,6 +93,7 @@ public class UserAgent {
     }
 
     public enum Device {
+        WINDOWS,
         MAC,
         IPHONE,
         IPAD,

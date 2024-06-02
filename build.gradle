@@ -74,6 +74,9 @@ dependencyManagement {
 }
 
 tasks.named('test') {
+    systemProperty 'spring.config.name', 'application'
+    systemProperty 'spring.config.location', 'classpath:/application.yml'
+    environment System.getenv()
     outputs.dir snippetsDir
     useJUnitPlatform()
 }

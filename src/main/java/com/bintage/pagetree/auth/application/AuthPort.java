@@ -70,14 +70,13 @@ public class AuthPort {
 
         if (matchedUserAgent.getId().equals(newUserAgentId)) {
             newUserAgent.setAccountId(accountId);
-            newUserAgent.signIn();
-            userAgents.updateNewUserAgent(newUserAgent);
+            userAgents.registerUserAgent(newUserAgent);
         } else {
             userAgents.delete(newUserAgentId);
         }
 
         matchedUserAgent.signIn();
-        userAgents.updateSignIn(matchedUserAgent);
+        userAgents.markAsSignedIn(matchedUserAgent);
 
         var accessToken = tokenService.generate(matchedUserAgent.getId(), accountId, Token.TokenType.ACCESS_TOKEN);
         var refreshToken = tokenService.generate(matchedUserAgent.getId(), accountId, Token.TokenType.REFRESH_TOKEN);
@@ -101,7 +100,7 @@ public class AuthPort {
                 .orElseThrow(() -> new IllegalArgumentException("signed application not found"));
 
         signedUserAgent.signOut();
-        userAgents.updateSignOut(signedUserAgent);
+        userAgents.markAsSignedOut(signedUserAgent);
 
         var account = accounts.findById(signedUserAgent.getAccountId()).orElseThrow(() -> new IllegalArgumentException("account not found"));
         oAuth2Service.signOut(account.getId(), account.getOAuth2Provider(), account.getOAuth2MemberIdentifier());
@@ -114,7 +113,7 @@ public class AuthPort {
                 .orElseThrow(() -> new IllegalArgumentException("signed application not found"));
 
         otherUserAgent.signOut();
-        userAgents.updateSignOut(otherUserAgent);
+        userAgents.markAsSignedOut(otherUserAgent);
 
         signEventPublisher.signedOut(otherUserAgent.getId(), otherUserAgent.getAccountId());
     }
@@ -161,11 +160,8 @@ public class AuthPort {
                         userAgent.getId().value().equals(savedToken.getUserAgentId().value())
                                 && userAgent.isSame(requestType, requestOS, requestDevice, requestApplication))
                 .findAny()
-                .ifPresentOrElse(userAgent -> {
-                    authenticationResponse.set(AuthenticationResponse.valid(accountId.value(), Set.of(account.getRole().name())));
-                }, () -> {
-                    authenticationResponse.set(AuthenticationResponse.inValid(AuthenticationResponse.Cause.DIFFERENT_USER_AGENT));
-                });
+                .ifPresentOrElse(userAgent -> authenticationResponse.set(AuthenticationResponse.valid(accountId.value(), Set.of(account.getRole().name()))),
+                        () -> authenticationResponse.set(AuthenticationResponse.inValid(AuthenticationResponse.Cause.DIFFERENT_USER_AGENT)));
 
         return authenticationResponse.get();
     }

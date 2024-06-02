@@ -21,11 +21,11 @@ public interface UserAgents {
 
     void delete(UserAgent.UserAgentId id);
 
-    void updateSignIn(UserAgent signedUserAgent);
+    void markAsSignedIn(UserAgent signedUserAgent);
 
-    void updateSignOut(UserAgent signedUserAgent);
+    void markAsSignedOut(UserAgent signedUserAgent);
 
-    void updateNewUserAgent(UserAgent newUserAgent);
+    void registerUserAgent(UserAgent newUserAgent);
 
     void deleteAllByAccountId(Account.AccountId accountId);
 }

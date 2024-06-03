@@ -1,13 +1,13 @@
 ## CRUD
 
 데이터 관리
-* Tree - 웹 페이지 보관함(폴더)
+* map - 웹 페이지 보관함(폴더)
     * title
     * category
     * tag
     * description
     * parent tree id
-* Shortcut - 웹 페이지 바로가기
+* page - 웹 페이지 바로가기
     * title
     * category
     * tree

@@ -22,7 +22,7 @@ public class Map {
     private Set<WebPage.WebPageId> webPageIds;
     private String title;
     private Trash.Delete deleted;
-    private Set<Categories.Category.CategoryId> categoryIds;
+    private Set<Categories.Category> categories;
     private Tags tags;
 
     public record MapId(UUID value) {}
@@ -72,20 +72,20 @@ public class Map {
         webPageIds.remove(webPageId);
     }
 
-    public void addCategory(Categories.Category.CategoryId categoryId) {
-        if (categoryIds.contains(categoryId)) {
-            throw new AlreadyContainItemException(Item.CATEGORY, categoryId.value());
+    public void addCategory(Categories.Category category) {
+        if (categories.contains(category)) {
+            throw new AlreadyContainItemException(Item.CATEGORY, category.name());
         }
 
-        categoryIds.add(categoryId);
+        categories.add(category);
     }
 
-    public void removeCategory(Categories.Category.CategoryId categoryId) {
-        if (!categoryIds.contains(categoryId)) {
-            throw new NotExistContainItemException(Item.CATEGORY, categoryId.value());
+    public void removeCategory(Categories.Category category) {
+        if (!categories.contains(category)) {
+            throw new NotExistContainItemException(Item.CATEGORY, category.name());
         }
 
-        categoryIds.remove(categoryId);
+        categories.remove(category);
     }
 
     public void updateTags(Tags tags) {

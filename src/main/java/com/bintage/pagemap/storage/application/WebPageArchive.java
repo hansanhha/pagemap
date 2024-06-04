@@ -9,7 +9,17 @@ import org.springframework.stereotype.Service;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class WebArchiveProcessor {
+public class WebPageArchiveRegister {
 
+    public void archive() {
 
+    }
+
+    public void restoreFromTrash() {
+
+    }
+
+    public void moveTrash() {
+
+    }
 }

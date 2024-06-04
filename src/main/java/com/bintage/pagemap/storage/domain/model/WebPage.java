@@ -18,7 +18,7 @@ public class WebPage {
     private URL url;
     private String title;
     private String description;
-    private Set<Categories.Category.CategoryId> categoryIds;
+    private Set<Categories.Category> categories;
     private Tags tags;
     private int visitCount;
     private Trash.Delete deleted;
@@ -39,20 +39,20 @@ public class WebPage {
         visitCount++;
     }
 
-    public void addCategory(Categories.Category.CategoryId categoryId) {
-        if (categoryIds.contains(categoryId)) {
-            throw new StorageException.AlreadyContainItemException(StorageException.Item.CATEGORY, categoryId.value());
+    public void addCategory(Categories.Category category) {
+        if (categories.contains(category)) {
+            throw new StorageException.AlreadyContainItemException(StorageException.Item.CATEGORY, category.name());
         }
 
-        categoryIds.add(categoryId);
+        categories.add(category);
     }
 
-    public void removeCategory(Categories.Category.CategoryId categoryId) {
-        if (!categoryIds.contains(categoryId)) {
-            throw new StorageException.NotExistContainItemException(StorageException.Item.CATEGORY, categoryId.value());
+    public void removeCategory(Categories.Category category) {
+        if (!categories.contains(category)) {
+            throw new StorageException.NotExistContainItemException(StorageException.Item.CATEGORY, category.name());
         }
 
-        categoryIds.remove(categoryId);
+        categories.remove(category);
     }
 
     public void updateTags(Tags tags) {

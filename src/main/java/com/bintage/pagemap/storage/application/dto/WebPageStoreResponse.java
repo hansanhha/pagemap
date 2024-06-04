@@ -1,4 +1,4 @@
 package com.bintage.pagemap.storage.application.dto;
 
-public record WebPageStoreResponse(String pageId) {
+public record WebPageStoreResponse(String storedWebPageId) {
 }

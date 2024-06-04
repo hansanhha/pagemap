@@ -19,18 +19,19 @@ public class CategoryService {
 
     private final CategoriesRepository categoriesRepository;
 
-    public void create(String accountId, String name) {
-        create(accountId, name, "red");
-    }
 
     public Map<String, String> getCategories(String accountId) {
-        HashMap<String, String> registeredCategories = new HashMap<>();
+        Map<String, String> registeredCategories = new HashMap<>();
         var categories = categoriesRepository.findByAccountId(new Account.AccountId(accountId))
                 .orElseThrow(() -> new IllegalArgumentException("Not found categories by account id"));
 
         categories.getRegisteredCategories()
                 .forEach(category -> registeredCategories.put(category.name(), category.color()));
         return registeredCategories;
+    }
+
+    public void create(String accountId, String name) {
+        create(accountId, name, "red");
     }
 
     public void create(String accountId, String name, String color) {
@@ -47,7 +48,7 @@ public class CategoryService {
     public void delete(String accountId, String name) {
         categoriesRepository.findByAccountId(new Account.AccountId(accountId))
                 .ifPresentOrElse(categories -> {
-                    categories.removeCategory(new Categories.Category(name, "red"));
+                    categories.removeCategory(new Categories.Category(name));
                     categoriesRepository.deleteCategory(categories);
                 }, () -> {
                     throw new IllegalArgumentException("Not found categories by account id");

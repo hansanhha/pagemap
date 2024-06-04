@@ -9,6 +9,7 @@ import org.jmolecules.ddd.annotation.ValueObject;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 import static com.bintage.pagemap.storage.domain.model.StorageException.*;
 
@@ -24,7 +25,7 @@ public class Categories {
     private final Set<Category> newCategories = new HashSet<>();
     private final Set<Category> removedCategories = new HashSet<>();
 
-    public record CategoriesId(String value) {}
+    public record CategoriesId(UUID value) {}
 
     @ValueObject
     public record Category(String name, String color) {

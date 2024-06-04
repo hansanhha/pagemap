@@ -59,7 +59,7 @@ public class ArchiveStore {
                 .build();
 
         var saved = mapRepository.save(map);
-        return new MapStoreResponse(saved.getId().value().toString());
+        return new MapStoreResponse(map.getId().value().toString());
     }
 
     public WebPageStoreResponse storeWebPage(WebPageStoreRequest webPageStoreRequest) {
@@ -69,7 +69,7 @@ public class ArchiveStore {
         Set<Categories.Category> useCategories = extractCategories(registeredCategories, webPageStoreRequest.categories());
         var tags = Tags.of(webPageStoreRequest.tags());
 
-        var page = WebPage.builder()
+        var webPage = WebPage.builder()
                 .id(new WebPage.WebPageId(UUID.randomUUID()))
                 .accountId(new Account.AccountId(webPageStoreRequest.accountId()))
                 .title(webPageStoreRequest.title())
@@ -82,8 +82,8 @@ public class ArchiveStore {
                 .visitCount(0)
                 .build();
 
-        var saved = webPageRepository.save(page);
-        return new WebPageStoreResponse(saved.getId().value().toString());
+        var saved = webPageRepository.save(webPage);
+        return new WebPageStoreResponse(webPage.getId().value().toString());
     }
     
     private Set<Categories.Category> extractCategories(Categories categories, Set<String> appliedCategories) {

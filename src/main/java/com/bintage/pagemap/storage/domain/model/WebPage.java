@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import org.jmolecules.ddd.annotation.Entity;
 
+import java.net.URI;
 import java.net.URL;
 import java.time.Instant;
 import java.util.Set;
@@ -18,7 +19,7 @@ public class WebPage {
     private final WebPageId id;
     private final Account.AccountId accountId;
     private Map.MapId parentId;
-    private URL url;
+    private URI url;
     private String title;
     private String description;
     private Set<Categories.Category> categories;
@@ -28,7 +29,7 @@ public class WebPage {
 
     public record WebPageId(UUID value) {}
 
-    public void updateMetadata(URL url, String title, String description) {
+    public void updateMetadata(URI url, String title, String description) {
         this.url = url;
         this.title = title;
         this.description = description;

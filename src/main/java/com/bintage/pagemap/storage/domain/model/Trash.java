@@ -23,7 +23,7 @@ public class Trash {
     private final Set<WebPage.WebPageId> deleteScheduledWebPageIds;
     private final Set<Export.ExportId> deleteScheduledExportIds;
 
-    public void addDeleteScheduledMapId(Map.MapId mapId) {
+    public void addMap(Map.MapId mapId) {
         if (deleteScheduledMapIds.contains(mapId)) {
             throw new AlreadyContainItemException(Item.MAP, mapId.value());
         }
@@ -31,7 +31,7 @@ public class Trash {
         deleteScheduledMapIds.add(mapId);
     }
 
-    public void addDeleteScheduledPageId(WebPage.WebPageId webPageId) {
+    public void addWebPage(WebPage.WebPageId webPageId) {
         if (deleteScheduledWebPageIds.contains(webPageId)) {
             throw new AlreadyItemExistException(Item.PAGE, webPageId.value());
         }
@@ -39,7 +39,7 @@ public class Trash {
         deleteScheduledWebPageIds.add(webPageId);
     }
 
-    public void addDeleteScheduledExportId(Export.ExportId exportId) {
+    public void addExport(Export.ExportId exportId) {
         if (deleteScheduledExportIds.contains(exportId)) {
             throw new AlreadyItemExistException(Item.EXPORT, exportId.value());
         }
@@ -47,7 +47,7 @@ public class Trash {
         deleteScheduledExportIds.add(exportId);
     }
 
-    public void removeDeleteScheduledMapId(Map.MapId mapId) {
+    public void removeMap(Map.MapId mapId) {
         if (!deleteScheduledMapIds.contains(mapId)) {
             throw new NotExistContainItemException(Item.MAP, mapId.value());
         }
@@ -55,7 +55,7 @@ public class Trash {
         deleteScheduledMapIds.remove(mapId);
     }
 
-    public void removeDeleteScheduledPageId(WebPage.WebPageId webPageId) {
+    public void removeWebPage(WebPage.WebPageId webPageId) {
         if (!deleteScheduledWebPageIds.contains(webPageId)) {
             throw new NotExistContainItemException(Item.PAGE, webPageId.value());
         }
@@ -63,7 +63,7 @@ public class Trash {
         deleteScheduledWebPageIds.remove(webPageId);
     }
 
-    public void removeDeleteScheduledExportId(Export.ExportId exportId) {
+    public void removeExport(Export.ExportId exportId) {
         if (!deleteScheduledExportIds.contains(exportId)) {
             throw new NotExistContainItemException(Item.EXPORT, exportId.value());
         }
@@ -73,13 +73,17 @@ public class Trash {
 
     public record TrashId(UUID value) {}
 
-    public record Delete(boolean scheduled, Instant requestedAt) implements ValueObject {
+    public record Delete(boolean active, Instant requestedAt) implements ValueObject {
         
-        public static Delete delete() {
-            return new Delete(true, Instant.now());
+        public static Delete scheduled(Instant requestedAt) {
+            return new Delete(true, requestedAt);
         }
         
         public static Delete restore() {
+            return new Delete(false, null);
+        }
+
+        public static Delete notScheduled() {
             return new Delete(false, null);
         }
     }

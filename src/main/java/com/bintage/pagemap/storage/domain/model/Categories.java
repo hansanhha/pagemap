@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.jmolecules.ddd.annotation.AggregateRoot;
 import org.jmolecules.ddd.annotation.ValueObject;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import static com.bintage.pagemap.storage.domain.model.StorageException.*;
@@ -20,11 +21,17 @@ public class Categories {
     private final CategoriesId id;
     private final Account.AccountId accountId;
     private final Set<Category> registeredCategories;
+    private final Set<Category> newCategories = new HashSet<>();
+    private final Set<Category> removedCategories = new HashSet<>();
 
     public record CategoriesId(String value) {}
 
     @ValueObject
     public record Category(String name, String color) {
+
+        public Category(String name) {
+            this(name, "red");
+        }
 
         @Override
         public boolean equals(Object obj) {
@@ -33,18 +40,13 @@ public class Categories {
         }
     }
 
-    public String create(String name, String color) {
-        Category category = new Category(name, color);
-        addCategory(category);
-        return category.name();
-    }
-
     public void addCategory(Category category) {
         if (registeredCategories.contains(category)) {
             throw new AlreadyItemExistException(Item.CATEGORY, category.name);
         }
 
         registeredCategories.add(category);
+        newCategories.add(category);
     }
 
     public void removeCategory(Category category) {
@@ -53,6 +55,7 @@ public class Categories {
         }
 
         registeredCategories.remove(category);
+        removedCategories.add(category);
     }
     
 }

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import org.jmolecules.ddd.annotation.AggregateRoot;
 
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
@@ -17,43 +18,48 @@ public class Map {
 
     private final Account.AccountId accountId;
     private final MapId id;
-    private MapId parentId;
-    private Set<MapId> childrenIds;
+    private Map parent;
+    private Set<Map> children;
     private Set<WebPage.WebPageId> webPageIds;
     private String title;
+    private String description;
     private Trash.Delete deleted;
     private Set<Categories.Category> categories;
     private Tags tags;
 
     public record MapId(UUID value) {}
 
-    public void updateParent(MapId parentId) {
-        childrenIds.remove(parentId);
-        this.parentId = parentId;
+    public void updateParent(Map parent) {
+        children.remove(parent);
+        this.parent = parent;
     }
 
     public void updateTitle(String title) {
         this.title = title;
     }
 
-    public void addChild(MapId childId) {
-        if (childrenIds.contains(childId)) {
-            throw new AlreadyItemExistException(Item.MAP, childId.value());
-        }
-
-        if (childId.equals(parentId)) {
-            parentId = null;
-        }
-
-        childrenIds.add(childId);
+    public void updateDescription(String description) {
+        this.description = description;
     }
 
-    public void removeChild(MapId childId) {
-        if (!childrenIds.contains(childId)) {
-            throw new NotExistContainItemException(Item.MAP, childId.value());
+    public void addChild(Map child) {
+        if (children.contains(child)) {
+            throw new AlreadyItemExistException(Item.MAP, child.getId().value().toString());
         }
 
-        childrenIds.remove(childId);
+        if (child.equals(parent)) {
+            parent = null;
+        }
+
+        children.add(child);
+    }
+
+    public void removeChild(Map child) {
+        if (!children.contains(child)) {
+            throw new NotExistContainItemException(Item.MAP, child.getId().value().toString());
+        }
+
+        children.remove(child);
     }
 
     public void addPage(WebPage.WebPageId webPageId) {
@@ -92,4 +98,12 @@ public class Map {
         this.tags = tags;
     }
 
+    public void delete(Instant requestedAt) {
+        deleted = Trash.Delete.scheduled(requestedAt);
+    }
+
+
+    public void restore() {
+        deleted = Trash.Delete.restore();
+    }
 }

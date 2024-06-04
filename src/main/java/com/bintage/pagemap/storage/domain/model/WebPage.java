@@ -1,10 +1,12 @@
 package com.bintage.pagemap.storage.domain.model;
 
+import com.bintage.pagemap.auth.domain.account.Account;
 import lombok.Builder;
 import lombok.Getter;
 import org.jmolecules.ddd.annotation.Entity;
 
 import java.net.URL;
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
@@ -14,6 +16,7 @@ import java.util.UUID;
 public class WebPage {
 
     private final WebPageId id;
+    private final Account.AccountId accountId;
     private Map.MapId parentId;
     private URL url;
     private String title;
@@ -59,4 +62,11 @@ public class WebPage {
         this.tags = tags;
     }
 
+    public void delete(Instant requestedAt) {
+        deleted = Trash.Delete.scheduled(requestedAt);
+    }
+
+    public void restore() {
+        deleted = Trash.Delete.restore();
+    }
 }

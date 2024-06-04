@@ -11,9 +11,9 @@ import java.util.UUID;
 @Entity
 @Getter
 @Builder
-public class Page {
+public class WebPage {
 
-    private final PageId id;
+    private final WebPageId id;
     private Map.MapId parentId;
     private URL url;
     private String title;
@@ -23,7 +23,7 @@ public class Page {
     private int visitCount;
     private Trash.Delete deleted;
 
-    public record PageId(UUID value) {}
+    public record WebPageId(UUID value) {}
 
     public void updateMetadata(URL url, String title, String description) {
         this.url = url;

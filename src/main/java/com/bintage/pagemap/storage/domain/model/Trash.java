@@ -20,7 +20,7 @@ public class Trash {
     private final TrashId trashId;
     private final Account.AccountId accountId;
     private final Set<Map.MapId> deleteScheduledMapIds;
-    private final Set<Page.PageId> deleteScheduledPageIds;
+    private final Set<WebPage.WebPageId> deleteScheduledWebPageIds;
     private final Set<Export.ExportId> deleteScheduledExportIds;
 
     public void addDeleteScheduledMapId(Map.MapId mapId) {
@@ -31,12 +31,12 @@ public class Trash {
         deleteScheduledMapIds.add(mapId);
     }
 
-    public void addDeleteScheduledPageId(Page.PageId pageId) {
-        if (deleteScheduledPageIds.contains(pageId)) {
-            throw new AlreadyItemExistException(Item.PAGE, pageId.value());
+    public void addDeleteScheduledPageId(WebPage.WebPageId webPageId) {
+        if (deleteScheduledWebPageIds.contains(webPageId)) {
+            throw new AlreadyItemExistException(Item.PAGE, webPageId.value());
         }
 
-        deleteScheduledPageIds.add(pageId);
+        deleteScheduledWebPageIds.add(webPageId);
     }
 
     public void addDeleteScheduledExportId(Export.ExportId exportId) {
@@ -55,12 +55,12 @@ public class Trash {
         deleteScheduledMapIds.remove(mapId);
     }
 
-    public void removeDeleteScheduledPageId(Page.PageId pageId) {
-        if (!deleteScheduledPageIds.contains(pageId)) {
-            throw new NotExistContainItemException(Item.PAGE, pageId.value());
+    public void removeDeleteScheduledPageId(WebPage.WebPageId webPageId) {
+        if (!deleteScheduledWebPageIds.contains(webPageId)) {
+            throw new NotExistContainItemException(Item.PAGE, webPageId.value());
         }
 
-        deleteScheduledPageIds.remove(pageId);
+        deleteScheduledWebPageIds.remove(webPageId);
     }
 
     public void removeDeleteScheduledExportId(Export.ExportId exportId) {

@@ -19,7 +19,7 @@ public class Map {
     private final MapId id;
     private MapId parentId;
     private Set<MapId> childrenIds;
-    private Set<Page.PageId> pageIds;
+    private Set<WebPage.WebPageId> webPageIds;
     private String title;
     private Trash.Delete deleted;
     private Set<Categories.Category.CategoryId> categoryIds;
@@ -56,20 +56,20 @@ public class Map {
         childrenIds.remove(childId);
     }
 
-    public void addPage(Page.PageId pageId) {
-        if (pageIds.contains(pageId)) {
-            throw new AlreadyContainItemException(Item.PAGE, pageId.value());
+    public void addPage(WebPage.WebPageId webPageId) {
+        if (webPageIds.contains(webPageId)) {
+            throw new AlreadyContainItemException(Item.PAGE, webPageId.value());
         }
 
-        pageIds.add(pageId);
+        webPageIds.add(webPageId);
     }
 
-    public void removePage(Page.PageId pageId) {
-        if (!pageIds.contains(pageId)) {
-            throw new NotExistContainItemException(Item.PAGE, pageId.value());
+    public void removePage(WebPage.WebPageId webPageId) {
+        if (!webPageIds.contains(webPageId)) {
+            throw new NotExistContainItemException(Item.PAGE, webPageId.value());
         }
 
-        pageIds.remove(pageId);
+        webPageIds.remove(webPageId);
     }
 
     public void addCategory(Categories.Category.CategoryId categoryId) {

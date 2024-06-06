@@ -5,42 +5,43 @@ import com.bintage.pagemap.storage.domain.model.RootMap;
 import com.bintage.pagemap.storage.domain.model.WebPage;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public record ArchiveResponse(MapDto currentMapDto,
                               boolean IsCurrentRoot,
-                              Set<MapDto> childrenMapDto,
-                              Set<WebPageDto> webPageDtos) {
+                              List<MapDto> childrenMapDto,
+                              List<WebPageDto> webPageDtos) {
 
-    public static ArchiveResponse from(RootMap rootMap, Set<WebPage> webPages) {
+    public static ArchiveResponse from(RootMap rootMap, List<WebPage> webPages) {
         var rootMapDto = MapDto.from(rootMap);
 
         var childrenMapDto = rootMap.getChildren()
                 .stream()
                 .map(MapDto::from)
-                .collect(Collectors.toSet());
+                .toList();
 
         var webPageDtos = webPages
                 .stream()
                 .map(WebPageDto::from)
-                .collect(Collectors.toSet());
+                .toList();
 
         return new ArchiveResponse(rootMapDto, true, childrenMapDto, webPageDtos);
     }
 
-    public static ArchiveResponse from(Map map, Set<WebPage> webPages) {
+    public static ArchiveResponse from(Map map, List<WebPage> webPages) {
         var crruentMapDto = MapDto.from(map);
 
         var childrenMapDto = map.getChildren()
                 .stream()
                 .map(MapDto::from)
-                .collect(Collectors.toSet());
+                .toList();
 
         var webPageDtos = webPages
                 .stream()
                 .map(WebPageDto::from)
-                .collect(Collectors.toSet());
+                .toList();
 
         return new ArchiveResponse(crruentMapDto, false, childrenMapDto, webPageDtos);
     }
@@ -57,7 +58,7 @@ public record ArchiveResponse(MapDto currentMapDto,
             map.getCategories().forEach(category -> categories.put(category.name(), category.color()));
 
             return new MapDto(map.getId().value().toString(),
-                    map.getParentId().getId().value().toString(),
+                    map.getParentId().value().toString(),
                     map.getTitle(),
                     map.getDescription(),
                     categories,

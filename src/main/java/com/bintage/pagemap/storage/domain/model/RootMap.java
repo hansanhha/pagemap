@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import org.jmolecules.ddd.annotation.AggregateRoot;
 
-import java.util.Set;
+import java.util.List;
 
 @AggregateRoot
 @Builder
@@ -14,8 +14,8 @@ public class RootMap {
 
     private final Account.AccountId accountId;
     private final Map.MapId id;
-    private Set<Map> children;
-    private Set<WebPage> webPages;
+    private List<Map> children;
+    private List<WebPage> webPages;
 
     public void addChild(Map child) {
         if (children.contains(child)) {

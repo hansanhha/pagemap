@@ -6,6 +6,7 @@ import lombok.Getter;
 import org.jmolecules.ddd.annotation.AggregateRoot;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -18,9 +19,9 @@ public class Map {
 
     private final Account.AccountId accountId;
     private final MapId id;
-    private Map parent;
-    private Set<Map> children;
-    private Set<WebPage.WebPageId> webPageIds;
+    private MapId parentId;
+    private List<Map> children;
+    private List<WebPage> webPages;
     private String title;
     private String description;
     private Trash.Delete deleted;
@@ -29,9 +30,13 @@ public class Map {
 
     public record MapId(UUID value) {}
 
-    public void updateParent(Map parent) {
-        children.remove(parent);
-        this.parent = parent;
+    public void updateParent(final MapId parentId) {
+        children.forEach(child -> {
+            if (child.getId().equals(parentId)) {
+                children.remove(child);
+            }
+        });
+        this.parentId = parentId;
     }
 
     public void updateTitle(String title) {
@@ -47,8 +52,8 @@ public class Map {
             throw new AlreadyItemExistException(Item.MAP, child.getId().value().toString());
         }
 
-        if (child.equals(parent)) {
-            parent = null;
+        if (child.equals(parentId)) {
+            parentId = null;
         }
 
         children.add(child);
@@ -62,20 +67,20 @@ public class Map {
         children.remove(child);
     }
 
-    public void addPage(WebPage.WebPageId webPageId) {
-        if (webPageIds.contains(webPageId)) {
-            throw new AlreadyContainItemException(Item.PAGE, webPageId.value());
+    public void addPage(WebPage webPage) {
+        if (webPages.contains(webPage)) {
+            throw new AlreadyContainItemException(Item.PAGE, webPage.getId().value());
         }
 
-        webPageIds.add(webPageId);
+        webPages.add(webPage);
     }
 
-    public void removePage(WebPage.WebPageId webPageId) {
-        if (!webPageIds.contains(webPageId)) {
-            throw new NotExistContainItemException(Item.PAGE, webPageId.value());
+    public void removePage(WebPage webPage) {
+        if (!webPages.contains(webPage)) {
+            throw new NotExistContainItemException(Item.PAGE, webPage.getId().value());
         }
 
-        webPageIds.remove(webPageId);
+        webPages.remove(webPage);
     }
 
     public void addCategory(Categories.Category category) {

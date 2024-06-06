@@ -11,4 +11,6 @@ import java.util.Optional;
 public interface TrashRepository {
 
     Optional<Trash> findByAccountId(Account.AccountId accountId);
+
+    void update(Trash trash);
 }

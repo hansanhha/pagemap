@@ -17,7 +17,7 @@ import static com.bintage.pagemap.storage.domain.model.StorageException.*;
 @Getter
 public class Trash {
 
-    private final TrashId trashId;
+    private final TrashId id;
     private final Account.AccountId accountId;
     private final Set<Map.MapId> deleteScheduledMapIds;
     private final Set<WebPage.WebPageId> deleteScheduledWebPageIds;

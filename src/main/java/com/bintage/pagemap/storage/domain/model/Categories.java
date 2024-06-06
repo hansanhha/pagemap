@@ -10,6 +10,7 @@ import org.jmolecules.ddd.annotation.Entity;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static com.bintage.pagemap.storage.domain.model.StorageException.*;
 
@@ -26,6 +27,12 @@ public class Categories {
     private final Set<Category> removedCategories = new HashSet<>();
 
     public record CategoriesId(UUID value) {}
+
+    public Set<Category> getMatchCategories(Set<String> categories) {
+        return registeredCategories.stream()
+                .filter(registerCategory -> categories.contains(registerCategory.name()))
+                .collect(Collectors.toSet());
+    }
 
     @Entity
     public record Category(CategoryId id, String name, String color) {

@@ -1,5 +1,6 @@
 package com.bintage.pagemap.storage.application;
 
+import com.bintage.pagemap.PageTreeApplication;
 import com.bintage.pagemap.auth.domain.account.Account;
 import com.bintage.pagemap.storage.application.dto.MapStoreRequest;
 import com.bintage.pagemap.storage.application.dto.MapStoreResponse;
@@ -30,6 +31,7 @@ public class ArchiveStore {
     private final MapRepository mapRepository;
     private final WebPageRepository webPageRepository;
     private final CategoriesRepository categoriesRepository;
+    private final PageTreeApplication pageTreeApplication;
 
     public MapStoreResponse storeMap(MapStoreRequest mapStoreRequest) {
         var accountId = new Account.AccountId(mapStoreRequest.accountId());
@@ -80,8 +82,45 @@ public class ArchiveStore {
         return new WebPageStoreResponse(webPage.getId().value().toString());
     }
 
-    public void updateLocation() {
+    public void updateWebLocation(String destMapIdStr, String targetMapIdStr) {
+        var destMapId = new Map.MapId(UUID.fromString(destMapIdStr));
 
+        var destMap = mapRepository.findById(destMapId)
+                .orElseThrow(() -> new IllegalArgumentException("not found map by id"));
+
+        var targetMap = mapRepository.findById(new Map.MapId(UUID.fromString(targetMapIdStr)))
+                .orElseThrow(() -> new IllegalArgumentException("not found map by id"));
+
+        var targetMapParentId = targetMap.getParentId();
+        var targetMapParent = mapRepository.findById(targetMapParentId)
+                .orElseThrow(() -> new IllegalArgumentException("not found map by id"));
+
+        targetMapParent.removeChild(targetMap);
+        targetMap.updateParent(destMapId);
+        destMap.addChild(targetMap);
+
+        mapRepository.updateFamily(destMap);
+        mapRepository.updateFamily(targetMap);
+    }
+
+    public void updateWebPageLocation(String destIdStr, String targetWebPageIdStr) {
+        var destId = new Map.MapId(UUID.fromString(destIdStr));
+        var destMap = mapRepository.findById(destId)
+                .orElseThrow(() -> new IllegalArgumentException("not found map by id"));
+
+        var targetWebPage = webPageRepository.findById(new WebPage.WebPageId(UUID.fromString(targetWebPageIdStr)))
+                .orElseThrow(() -> new IllegalArgumentException("not found webpage by id"));
+
+        var targetWebPageParentMap = mapRepository.findById(targetWebPage.getParentId())
+                .orElseThrow(() -> new IllegalArgumentException("not found map by id"));
+
+        targetWebPageParentMap.removePage(targetWebPage);
+        targetWebPage.updateParent(destId);
+        destMap.addPage(targetWebPage);
+
+        mapRepository.updateFamily(targetWebPageParentMap);
+        mapRepository.updateFamily(destMap);
+        webPageRepository.updateParent(targetWebPage);
     }
 
     @Async

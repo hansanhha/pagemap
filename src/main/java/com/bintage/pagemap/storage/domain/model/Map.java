@@ -31,11 +31,6 @@ public class Map {
     public record MapId(UUID value) {}
 
     public void updateParent(final MapId parentId) {
-        children.forEach(child -> {
-            if (child.getId().equals(parentId)) {
-                children.remove(child);
-            }
-        });
         this.parentId = parentId;
     }
 

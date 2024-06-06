@@ -14,4 +14,6 @@ public interface MapRepository {
     Optional<Map> findById(Map.MapId mapId);
 
     void updateDeletedStatus(Map map);
+
+    void updateFamily(Map map);
 }

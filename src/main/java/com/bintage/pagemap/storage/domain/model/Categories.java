@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.jmolecules.ddd.annotation.AggregateRoot;
-import org.jmolecules.ddd.annotation.ValueObject;
+import org.jmolecules.ddd.annotation.Entity;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -27,11 +27,17 @@ public class Categories {
 
     public record CategoriesId(UUID value) {}
 
-    @ValueObject
-    public record Category(String name, String color) {
+    @Entity
+    public record Category(CategoryId id, String name, String color) {
+
+        public record CategoryId(UUID value) {}
+
+        public static Category of(String name, String color) {
+            return new Category(new CategoryId(UUID.randomUUID()), name, color);
+        }
 
         public Category(String name) {
-            this(name, "red");
+            this(new CategoryId(UUID.randomUUID()), name, "red");
         }
 
         @Override

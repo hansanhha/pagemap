@@ -38,7 +38,7 @@ public class CategoryService {
         categoriesRepository
                 .findByAccountId(new Account.AccountId(accountId))
                 .ifPresentOrElse(categories -> {
-                    categories.addCategory(new Categories.Category(name, color));
+                    categories.addCategory(Categories.Category.of(name, color));
                     categoriesRepository.save(categories);
                     }, () -> {
                     throw new IllegalArgumentException("Not found categories by account id");

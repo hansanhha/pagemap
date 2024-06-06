@@ -1,6 +1,7 @@
 package com.bintage.pagemap.storage.application.dto;
 
 import com.bintage.pagemap.storage.domain.model.Map;
+import com.bintage.pagemap.storage.domain.model.RootMap;
 import com.bintage.pagemap.storage.domain.model.WebPage;
 
 import java.util.HashMap;
@@ -8,8 +9,25 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public record ArchiveResponse(MapDto currentMapDto,
+                              boolean IsCurrentRoot,
                               Set<MapDto> childrenMapDto,
                               Set<WebPageDto> webPageDtos) {
+
+    public static ArchiveResponse from(RootMap rootMap, Set<WebPage> webPages) {
+        var rootMapDto = MapDto.from(rootMap);
+
+        var childrenMapDto = rootMap.getChildren()
+                .stream()
+                .map(MapDto::from)
+                .collect(Collectors.toSet());
+
+        var webPageDtos = webPages
+                .stream()
+                .map(WebPageDto::from)
+                .collect(Collectors.toSet());
+
+        return new ArchiveResponse(rootMapDto, true, childrenMapDto, webPageDtos);
+    }
 
     public static ArchiveResponse from(Map map, Set<WebPage> webPages) {
         var crruentMapDto = MapDto.from(map);
@@ -24,7 +42,7 @@ public record ArchiveResponse(MapDto currentMapDto,
                 .map(WebPageDto::from)
                 .collect(Collectors.toSet());
 
-        return new ArchiveResponse(crruentMapDto, childrenMapDto, webPageDtos);
+        return new ArchiveResponse(crruentMapDto, false, childrenMapDto, webPageDtos);
     }
 
     public record MapDto(String id,
@@ -39,11 +57,16 @@ public record ArchiveResponse(MapDto currentMapDto,
             map.getCategories().forEach(category -> categories.put(category.name(), category.color()));
 
             return new MapDto(map.getId().value().toString(),
-                    map.getParent().getId().value().toString(),
+                    map.getParentId().getId().value().toString(),
                     map.getTitle(),
                     map.getDescription(),
                     categories,
                     map.getTags().getNames());
+        }
+
+        private static MapDto from(RootMap map) {
+            return new MapDto(map.getId().value().toString(),
+                    null, null, null, null, null);
         }
     }
 

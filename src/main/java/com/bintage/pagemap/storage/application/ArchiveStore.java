@@ -54,7 +54,7 @@ public class ArchiveStore {
                 .categories(useCategories)
                 .deleted(Trash.Delete.notScheduled())
                 .children(Set.of())
-                .parent(parent)
+                .parentId(parent)
                 .webPageIds(Set.of())
                 .build();
 
@@ -84,6 +84,10 @@ public class ArchiveStore {
 
         var saved = webPageRepository.save(webPage);
         return new WebPageStoreResponse(webPage.getId().value().toString());
+    }
+
+    public void updateLocation() {
+
     }
     
     private Set<Categories.Category> extractCategories(Categories categories, Set<String> appliedCategories) {

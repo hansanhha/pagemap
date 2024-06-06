@@ -5,6 +5,7 @@ import lombok.Getter;
 import org.jmolecules.ddd.annotation.AggregateRoot;
 import org.jmolecules.ddd.types.Identifier;
 import org.jmolecules.ddd.types.ValueObject;
+import org.springframework.modulith.NamedInterface;
 
 import java.time.Instant;
 
@@ -38,6 +39,7 @@ public class Account{
         this.lastModifiedAt = Instant.now();
     }
 
+    @NamedInterface
     public record AccountId(String value) implements Identifier {
     }
 

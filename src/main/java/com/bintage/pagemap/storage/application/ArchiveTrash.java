@@ -18,8 +18,6 @@ public class ArchiveTrash {
 
     private final TrashEventPublisher trashEventPublisher;
     private final TrashRepository trashRepository;
-    private final MapRepository mapRepository;
-    private final WebPageRepository webPageRepository;
 
     public void deleteMap(String accountId, String mapIdStr) {
         var trash = trashRepository.findByAccountId(new Account.AccountId(accountId))
@@ -28,6 +26,7 @@ public class ArchiveTrash {
         Map.MapId mapId = new Map.MapId(UUID.fromString(mapIdStr));
         trash.addMap(mapId);
 
+        trashRepository.update(trash);
         trashEventPublisher.publishDeleteMapEvent(mapId, Instant.now());
     }
 
@@ -37,6 +36,7 @@ public class ArchiveTrash {
 
         trash.removeMap(new Map.MapId(UUID.fromString(mapId)));
 
+        trashRepository.update(trash);
         trashEventPublisher.publishRestoreMapEvent(new Map.MapId(UUID.fromString(mapId)), Instant.now());
     }
 
@@ -46,6 +46,7 @@ public class ArchiveTrash {
 
         trash.addWebPage(new WebPage.WebPageId(UUID.fromString(webPageId)));
 
+        trashRepository.update(trash);
         trashEventPublisher.publishDeleteWebPageEvent(new WebPage.WebPageId(UUID.fromString(webPageId)), Instant.now());
     }
 
@@ -55,6 +56,7 @@ public class ArchiveTrash {
 
         trash.removeWebPage(new WebPage.WebPageId(UUID.fromString(webPageId)));
 
+        trashRepository.update(trash);
         trashEventPublisher.publishRestoreWebPageEvent(new WebPage.WebPageId(UUID.fromString(webPageId)), Instant.now());
     }
 }

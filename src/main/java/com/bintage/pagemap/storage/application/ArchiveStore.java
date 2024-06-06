@@ -18,9 +18,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import java.util.Set;
+import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @PrimaryPort
 @Service
@@ -37,13 +36,8 @@ public class ArchiveStore {
         var registeredCategories = categoriesRepository.findByAccountId(accountId)
                 .orElseThrow(() -> new IllegalArgumentException("Not found categories by account id"));
 
-        Set<Categories.Category> useCategories = extractCategories(registeredCategories, mapStoreRequest.categories());
+        var matchCategories = registeredCategories.getMatchCategories(mapStoreRequest.categories());
         var tags = Tags.of(mapStoreRequest.tags());
-
-        Map parent = Map.builder()
-                .id(new Map.MapId(UUID.fromString(mapStoreRequest.parentMapId())))
-                .accountId(accountId)
-                .build();
 
         var map = Map.builder()
                 .id(new Map.MapId(UUID.randomUUID()))
@@ -51,11 +45,11 @@ public class ArchiveStore {
                 .title(mapStoreRequest.title())
                 .description(mapStoreRequest.description())
                 .tags(tags)
-                .categories(useCategories)
+                .categories(matchCategories)
                 .deleted(Trash.Delete.notScheduled())
-                .children(Set.of())
-                .parentId(parent)
-                .webPageIds(Set.of())
+                .children(List.of())
+                .parentId(new Map.MapId(UUID.fromString(mapStoreRequest.parentMapId())))
+                .webPages(List.of())
                 .build();
 
         var saved = mapRepository.save(map);
@@ -66,7 +60,7 @@ public class ArchiveStore {
         var registeredCategories = categoriesRepository.findByAccountId(new Account.AccountId(webPageStoreRequest.accountId()))
                 .orElseThrow(() -> new IllegalArgumentException("Not found categories by account id"));
 
-        Set<Categories.Category> useCategories = extractCategories(registeredCategories, webPageStoreRequest.categories());
+        var matchCategories = registeredCategories.getMatchCategories(webPageStoreRequest.categories());
         var tags = Tags.of(webPageStoreRequest.tags());
 
         var webPage = WebPage.builder()
@@ -75,7 +69,7 @@ public class ArchiveStore {
                 .title(webPageStoreRequest.title())
                 .description(webPageStoreRequest.description())
                 .tags(tags)
-                .categories(useCategories)
+                .categories(matchCategories)
                 .deleted(Trash.Delete.notScheduled())
                 .parentId(new Map.MapId(UUID.fromString(webPageStoreRequest.mapId())))
                 .url(webPageStoreRequest.url())
@@ -88,12 +82,6 @@ public class ArchiveStore {
 
     public void updateLocation() {
 
-    }
-    
-    private Set<Categories.Category> extractCategories(Categories categories, Set<String> appliedCategories) {
-        return categories.getRegisteredCategories().stream()
-                .filter(registeredCategory -> appliedCategories.contains(registeredCategory.name()))
-                .collect(Collectors.toSet());
     }
 
     @Async

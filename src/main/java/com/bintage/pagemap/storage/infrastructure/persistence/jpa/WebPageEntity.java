@@ -31,23 +31,29 @@ public class WebPageEntity {
     @Setter
     private UUID parent;
 
+    @Setter
     private String title;
 
+    @Setter
     private String description;
 
+    @Setter
     private String uri;
 
+    @Setter
     private int visitCount;
 
     @Setter
     @Embedded
     private Delete delete;
 
+    @Setter
     @ElementCollection
     @CollectionTable(name = "web_page_categories", joinColumns = @JoinColumn(name = "web_page_id"))
     @Column(name = "category")
     private Set<UUID> categories;
 
+    @Setter
     @ElementCollection
     @CollectionTable(name = "web_page_tags", joinColumns = @JoinColumn(name = "web_page_id"))
     @Column(name = "tag")

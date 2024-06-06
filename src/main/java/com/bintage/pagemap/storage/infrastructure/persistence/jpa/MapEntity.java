@@ -43,18 +43,22 @@ public class MapEntity {
     @Embedded
     private Delete delete;
 
+    @Setter
     @ElementCollection
     @CollectionTable(name = "map_categories", joinColumns = @JoinColumn(name = "map_id"))
     @Column(name = "child_web_page")
     private Set<UUID> categories;
 
+    @Setter
     @ElementCollection
     @CollectionTable(name = "tags", joinColumns = @JoinColumn(name = "map_id"))
     @Column(name = "tag")
     private Set<String> tags = new HashSet<>();
 
+    @Setter
     private String title;
 
+    @Setter
     private String description;
 
     public record AccountEntity(String id) {}

@@ -1,5 +1,6 @@
 package com.bintage.pagemap.storage.infrastructure.persistence;
 
+import com.bintage.pagemap.storage.domain.model.Categories;
 import com.bintage.pagemap.storage.domain.model.Map;
 import com.bintage.pagemap.storage.domain.model.MapRepository;
 import com.bintage.pagemap.storage.domain.model.WebPage;
@@ -55,12 +56,24 @@ public class MapRepositoryJpaAdapter implements MapRepository {
     }
 
     @Override
+    public void updateMetadata(Map map) {
+        var entity = mapEntityRepository.findById(map.getId().value())
+                .orElseThrow(() -> new IllegalArgumentException("not found map by map id"));
+
+        entity.setTitle(map.getTitle());
+        entity.setDescription(map.getDescription());
+        entity.setCategories(map.getCategories().stream()
+                .map(category -> category.id().value()).collect(Collectors.toSet()));
+        entity.setTags(map.getTags().getNames());
+    }
+
+    @Override
     public void updateDeletedStatus(Map map) {
-        var mapEntity = mapEntityRepository.findById(map.getId().value())
+        var entity = mapEntityRepository.findById(map.getId().value())
                 .orElseThrow(() -> new IllegalArgumentException("not found map by map id"));
 
         Delete delete = Delete.fromValueObject(map.getDeleted());
-        mapEntity.setDelete(delete);
+        entity.setDelete(delete);
     }
 
     @Override

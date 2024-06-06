@@ -13,6 +13,8 @@ public interface MapRepository {
 
     Optional<Map> findById(Map.MapId mapId);
 
+    void updateMetadata(Map map);
+
     void updateDeletedStatus(Map map);
 
     void updateFamily(Map map);

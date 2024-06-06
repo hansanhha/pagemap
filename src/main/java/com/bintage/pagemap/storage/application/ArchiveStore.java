@@ -2,10 +2,7 @@ package com.bintage.pagemap.storage.application;
 
 import com.bintage.pagemap.PageTreeApplication;
 import com.bintage.pagemap.auth.domain.account.Account;
-import com.bintage.pagemap.storage.application.dto.MapStoreRequest;
-import com.bintage.pagemap.storage.application.dto.MapStoreResponse;
-import com.bintage.pagemap.storage.application.dto.WebPageStoreRequest;
-import com.bintage.pagemap.storage.application.dto.WebPageStoreResponse;
+import com.bintage.pagemap.storage.application.dto.*;
 import com.bintage.pagemap.storage.domain.event.MapMovedToTrash;
 import com.bintage.pagemap.storage.domain.event.MapRestored;
 import com.bintage.pagemap.storage.domain.event.WebPageMovedToTrash;
@@ -19,6 +16,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
@@ -80,6 +78,30 @@ public class ArchiveStore {
 
         var saved = webPageRepository.save(webPage);
         return new WebPageStoreResponse(webPage.getId().value().toString());
+    }
+
+    public void updateMapMetadata(MapUpdateRequest updateRequest) {
+        var map = mapRepository.findById(new Map.MapId(UUID.fromString(updateRequest.mapId())))
+                .orElseThrow(() -> new IllegalArgumentException("not found map by id"));
+
+        var categories = categoriesRepository.findByAccountId(map.getAccountId())
+                .orElseThrow(() -> new IllegalArgumentException("not found categories by account"));
+        var updateCategories = categories.getMatchCategories(updateRequest.categories());
+
+        map.update(updateRequest.title(), updateRequest.description(), updateCategories, updateRequest.tags());
+        mapRepository.updateMetadata(map);
+    }
+
+    public void updateWebPageMetadata(WebPageUpdateRequest webPageUpdateRequest) {
+        var webPage = webPageRepository.findById(new WebPage.WebPageId(UUID.fromString(webPageUpdateRequest.webPageId())))
+                .orElseThrow(() -> new IllegalArgumentException("not found webpage by id"));
+
+        var categories = categoriesRepository.findByAccountId(webPage.getAccountId())
+                .orElseThrow(() -> new IllegalArgumentException("not found categories by account"));
+        var updateCategories = categories.getMatchCategories(webPageUpdateRequest.categories());
+
+        webPage.update(URI.create(webPageUpdateRequest.uri()), webPageUpdateRequest.title(), webPageUpdateRequest.description(), updateCategories, webPageUpdateRequest.tags());
+        webPageRepository.updateMetadata(webPage);
     }
 
     public void updateWebLocation(String destMapIdStr, String targetMapIdStr) {

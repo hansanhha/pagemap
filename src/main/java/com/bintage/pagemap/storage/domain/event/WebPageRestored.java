@@ -7,4 +7,8 @@ import java.time.Instant;
 
 @DomainEvent
 public record WebPageRestored(WebPage.WebPageId webPageId) {
+
+    public static WebPageRestored of(WebPage.WebPageId webPageId) {
+        return new WebPageRestored(webPageId);
+    }
 }

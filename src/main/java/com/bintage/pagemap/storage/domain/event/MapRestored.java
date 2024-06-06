@@ -7,4 +7,8 @@ import java.time.Instant;
 
 @DomainEvent
 public record MapRestored(Map.MapId mapId) {
+
+    public static MapRestored of(Map.MapId mapId) {
+        return new MapRestored(mapId);
+    }
 }

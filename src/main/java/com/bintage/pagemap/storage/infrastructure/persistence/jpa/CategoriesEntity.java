@@ -33,9 +33,7 @@ public class CategoriesEntity {
     public List<CategoryEntity> getMatchCategories(Set<UUID> categoryIds) {
         return categoryEntities.stream()
                 .filter(categoryEntity ->
-                        categoryIds.stream()
-                                .filter(categoryId -> categoryEntity.getId().equals(categoryId))
-                                .isParallel())
+                        categoryIds.contains(categoryEntity.getId()))
                 .toList();
     }
 

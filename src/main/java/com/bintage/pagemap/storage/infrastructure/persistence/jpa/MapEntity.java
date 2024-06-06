@@ -64,7 +64,7 @@ public class MapEntity {
         entity.description = domainModel.getDescription();
         entity.parent = domainModel.getParentId().value();
         entity.children = extractChildrenMapEntity(domainModel);
-        entity.webPageEntities = extractChildrenWebPageEntity(domainModel.getWebPageIds());
+        entity.webPageEntities = extractChildrenWebPageEntity(domainModel.getWebPages());
         entity.delete = Delete.fromValueObject(domainModel.getDeleted());
         entity.categories = extractCategoryEntities(domainModel.getCategories());
         entity.tags = domainModel.getTags().getNames();
@@ -82,13 +82,13 @@ public class MapEntity {
         return children;
     }
 
-    private static Set<UUID> extractChildrenWebPageEntity(Set<WebPage.WebPageId> webPageIds) {
-        if (webPageIds == null || webPageIds.isEmpty()) {
+    private static Set<UUID> extractChildrenWebPageEntity(List<WebPage> webPage) {
+        if (webPage == null || webPage.isEmpty()) {
             return null;
         }
 
         Set<UUID> childWebPages = new HashSet<>();
-        webPageIds.forEach(wp -> childWebPages.add(wp.value()));
+        webPage.forEach(wp -> childWebPages.add(wp.getId().value()));
         return childWebPages;
     }
 
@@ -124,17 +124,16 @@ public class MapEntity {
     }
 
     public static Map toDomainModelWithRelatedMap(MapEntity currentMapEntity,
-                                                  Collection<CategoryEntity> currentMapEntityCategories,
+                                                  List<CategoryEntity> currentMapEntityCategories,
                                                   HashMap<MapEntity, List<CategoryEntity>> childMapEntities,
-                                                  java.util.Map<WebPageEntity, List<CategoryEntity>> childWebPageEntities) {
-        var webPages = new HashSet<WebPage>();
+                                                  List<WebPage> childWebPageEntities) {
+        var webPages = new LinkedList<WebPage>();
         var currentMapCategories = new HashSet<Categories.Category>();
         var currentMapId = new Map.MapId(currentMapEntity.getId());
-        var childrenMap = new HashSet<Map>();
+        var childrenMap = new LinkedList<Map>();
 
         if (childWebPageEntities != null && !childWebPageEntities.isEmpty()) {
-            childWebPageEntities.forEach((webPageEntity, webPageCategoryEntities) ->
-                    webPages.add(WebPageEntity.toDomainModel(webPageEntity, webPageCategoryEntities)));
+            Collections.copy(webPages, childWebPageEntities);
         }
 
         currentMapEntityCategories.forEach(categoryEntity -> currentMapCategories.add(CategoryEntity.toDomainModel(categoryEntity)));

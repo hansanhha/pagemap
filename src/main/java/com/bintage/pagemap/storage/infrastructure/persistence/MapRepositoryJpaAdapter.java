@@ -2,6 +2,7 @@ package com.bintage.pagemap.storage.infrastructure.persistence;
 
 import com.bintage.pagemap.storage.domain.model.Map;
 import com.bintage.pagemap.storage.domain.model.MapRepository;
+import com.bintage.pagemap.storage.domain.model.WebPage;
 import com.bintage.pagemap.storage.infrastructure.persistence.jpa.*;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
@@ -32,20 +33,23 @@ public class MapRepositoryJpaAdapter implements MapRepository {
     @Override
     public Optional<Map> findById(Map.MapId mapId) {
         return mapEntityRepository.findById(mapId.value())
-                .map(mapEntity -> {
+                .map(currentMapEntity -> {
                     var childrenMap = new HashMap<MapEntity, List<CategoryEntity>>();
 
-                    var registeredCategories = categoriesEntityRepository.findByAccountEntity(new CategoriesEntity.AccountEntity(mapEntity.getAccountEntity().id()))
+                    var registeredCategoriesInAccount = categoriesEntityRepository.findByAccountEntity(new CategoriesEntity.AccountEntity(currentMapEntity.getAccountEntity().id()))
                             .orElseThrow(() -> new IllegalArgumentException("not found categories by account id"));
 
-                    List<CategoryEntity> mapEntityCategories = registeredCategories.getMatchCategories(mapEntity.getCategories());
+                    var currentMapEntityCategories = registeredCategoriesInAccount.getMatchCategories(currentMapEntity.getCategories());
 
-                    List<MapEntity> childrenMapWithoutCategories = mapEntityRepository.findAllById(mapEntity.getChildren());
-                    childrenMapWithoutCategories.forEach(childMap -> childrenMap.put(childMap, registeredCategories.getMatchCategories(childMap.getCategories())));
+                    var childrenMapEntityWithoutCategories = mapEntityRepository.findAllById(currentMapEntity.getChildren());
+                    childrenMapEntityWithoutCategories.forEach(childMap -> childrenMap.put(childMap, registeredCategoriesInAccount.getMatchCategories(childMap.getCategories())));
 
-                    webPageEntityRepository.findByParent(mapEntity);
+                    var childrenWebpageEntityWithoutCategories = webPageEntityRepository.findAllByParent(currentMapEntity.getId());
+                    var childrenWebPage = childrenWebpageEntityWithoutCategories.stream()
+                            .map(webPageEntity -> WebPageEntity.toDomainModel(webPageEntity, registeredCategoriesInAccount.getMatchCategories(webPageEntity.getCategories())))
+                            .toList();
 
-                    return MapEntity.toDomainModelWithRelatedMap(mapEntity, mapEntityCategories, childrenMap);
+                    return MapEntity.toDomainModelWithRelatedMap(currentMapEntity, currentMapEntityCategories, childrenMap, childrenWebPage);
                 });
     }
 

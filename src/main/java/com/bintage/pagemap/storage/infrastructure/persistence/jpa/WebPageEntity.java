@@ -1,7 +1,10 @@
 package com.bintage.pagemap.storage.infrastructure.persistence.jpa;
 
 import com.bintage.pagemap.auth.domain.account.Account;
-import com.bintage.pagemap.storage.domain.model.*;
+import com.bintage.pagemap.storage.domain.model.Categories;
+import com.bintage.pagemap.storage.domain.model.Map;
+import com.bintage.pagemap.storage.domain.model.Tags;
+import com.bintage.pagemap.storage.domain.model.WebPage;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Table(name = "web_page")
 @Entity
@@ -51,7 +55,19 @@ public class WebPageEntity {
     public record AccountEntity(String id) {}
 
     public static WebPageEntity fromDomainModel(WebPage domainModel) {
-
+        var entity = new WebPageEntity();
+        entity.id = domainModel.getId().value();
+        entity.parent = domainModel.getParentId().value();
+        entity.accountEntity = new AccountEntity(domainModel.getAccountId().value());
+        entity.title = domainModel.getTitle();
+        entity.description = domainModel.getDescription();
+        entity.uri = domainModel.getUrl().toString();
+        entity.visitCount = domainModel.getVisitCount();
+        entity.delete = Delete.fromValueObject(domainModel.getDeleted());
+        entity.categories = domainModel.getCategories().stream()
+                .map(category -> category.id().value()).collect(Collectors.toSet());
+        entity.tags = domainModel.getTags().getNames();
+        return entity;
     }
 
     public static WebPage toDomainModel(WebPageEntity entity, List<CategoryEntity> entityCategories) {

@@ -23,14 +23,17 @@ public class MapEntity {
     @AttributeOverride(name = "account", column = @Column(name = "account_id"))
     private AccountEntity accountEntity;
 
+    @Setter
     @Column(name = "parent_id")
     private UUID parent;
 
+    @Setter
     @ElementCollection
     @CollectionTable(name = "map_children_map", joinColumns = @JoinColumn(name = "map_id"))
     @Column(name = "child_map")
     private Set<UUID> children;
 
+    @Setter
     @ElementCollection
     @CollectionTable(name = "map_children_web_page", joinColumns = @JoinColumn(name = "map_id"))
     @Column(name = "child_web_page")

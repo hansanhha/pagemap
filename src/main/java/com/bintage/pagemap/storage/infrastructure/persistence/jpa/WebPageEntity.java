@@ -28,6 +28,7 @@ public class WebPageEntity {
     @AttributeOverride(name = "account", column = @Column(name = "account_id"))
     private AccountEntity accountEntity;
 
+    @Setter
     private UUID parent;
 
     private String title;

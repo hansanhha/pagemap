@@ -6,6 +6,7 @@ import com.bintage.pagemap.storage.domain.model.WebPageRepository;
 import com.bintage.pagemap.storage.infrastructure.persistence.jpa.*;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
+import org.springframework.boot.autoconfigure.websocket.servlet.WebSocketServletAutoConfiguration;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ public class WebPageRepositoryJpaAdapter implements WebPageRepository {
 
     private final WebPageEntityRepository webPageEntityRepository;
     private final CategoriesEntityRepository categoriesEntityRepository;
+    private final WebSocketServletAutoConfiguration.TomcatWebSocketConfiguration tomcatWebSocketConfiguration;
 
     @Override
     public WebPage save(WebPage webPage) {
@@ -67,5 +69,13 @@ public class WebPageRepositoryJpaAdapter implements WebPageRepository {
 
         Delete delete = Delete.fromValueObject(webPage.getDeleted());
         entity.setDelete(delete);
+    }
+
+    @Override
+    public void updateParent(WebPage webPage) {
+        var entity = webPageEntityRepository.findById(webPage.getId().value())
+                .orElseThrow(() -> new IllegalArgumentException("not found webpage by id"));
+
+        entity.setParent(webPage.getParentId().value());
     }
 }

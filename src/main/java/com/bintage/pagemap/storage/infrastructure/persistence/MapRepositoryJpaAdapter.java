@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @SecondaryAdapter
 @Component
@@ -60,5 +61,17 @@ public class MapRepositoryJpaAdapter implements MapRepository {
 
         Delete delete = Delete.fromValueObject(map.getDeleted());
         mapEntity.setDelete(delete);
+    }
+
+    @Override
+    public void updateFamily(Map map) {
+        var entity = mapEntityRepository.findById(map.getId().value())
+                .orElseThrow(() -> new IllegalArgumentException("not found map by id"));
+
+        entity.setParent(map.getParentId().value());
+        entity.setChildren(map.getChildren().stream()
+                .map(child -> child.getId().value()).collect(Collectors.toSet()));
+        entity.setWebPageEntities(map.getWebPages().stream()
+                .map(child -> child.getId().value()).collect(Collectors.toSet()));
     }
 }

@@ -1,6 +1,6 @@
 package com.bintage.pagemap.auth.application;
 
-import com.bintage.pagemap.ArrowSeparatingNestedTest;
+import com.bintage.pagemap.HyphenSeparatingNestedTest;
 import com.bintage.pagemap.auth.domain.account.Account;
 import com.bintage.pagemap.auth.domain.account.Accounts;
 import com.bintage.pagemap.auth.domain.account.OAuth2Service;
@@ -57,7 +57,7 @@ class AuthPortTest {
             .build();
 
     @Nested
-    @ArrowSeparatingNestedTest
+    @HyphenSeparatingNestedTest
     @DisplayName("UserAgentTest")
     class SaveUserAgentTest {
 
@@ -94,7 +94,7 @@ class AuthPortTest {
     }
 
     @Nested
-    @ArrowSeparatingNestedTest
+    @HyphenSeparatingNestedTest
     @DisplayName("SignTest")
     class SignTest {
 

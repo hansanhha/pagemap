@@ -2,7 +2,10 @@ package com.bintage.pagemap.storage.application;
 
 import com.bintage.pagemap.HyphenSeparatingNestedTest;
 import com.bintage.pagemap.auth.domain.account.Account;
-import com.bintage.pagemap.storage.application.dto.*;
+import com.bintage.pagemap.storage.application.dto.MapStoreRequest;
+import com.bintage.pagemap.storage.application.dto.MapUpdateRequest;
+import com.bintage.pagemap.storage.application.dto.WebPageStoreRequest;
+import com.bintage.pagemap.storage.application.dto.WebPageUpdateRequest;
 import com.bintage.pagemap.storage.domain.model.Map;
 import com.bintage.pagemap.storage.domain.model.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -105,7 +108,7 @@ class ArchiveStoreTest {
 
         @Test
         void WhenStoreMapInRootMap() {
-            var request = generateRootMapStoreRequest();
+            var request = generateMapStoreRequest(rootMap.getId().value().toString());
 
             given(categoriesRepository.findByAccountId(any(Account.AccountId.class)))
                     .willReturn(Optional.of(categories));
@@ -113,7 +116,7 @@ class ArchiveStoreTest {
             given(rootMapRepository.findByAccountId(any(Account.AccountId.class)))
                     .willReturn(Optional.of(rootMap));
 
-            var response = archiveStore.storeMapInRootMap(request);
+            var response = archiveStore.storeMap(request);
 
             then(categoriesRepository).should(times(1)).findByAccountId(any(Account.AccountId.class));
             then(rootMapRepository).should(times(1)).findByAccountId(any(Account.AccountId.class));
@@ -170,7 +173,7 @@ class ArchiveStoreTest {
 
         @Test
         void WhenStoreWebPageInRootMap() {
-            var request = generateRootWebPageStoreRequest();
+            var request = generateWebPageStoreRequest(rootMap.getId().value().toString());
 
             given(categoriesRepository.findByAccountId(any(Account.AccountId.class)))
                     .willReturn(Optional.of(categories));
@@ -178,7 +181,7 @@ class ArchiveStoreTest {
             given(rootMapRepository.findByAccountId(any(Account.AccountId.class)))
                     .willReturn(Optional.of(rootMap));
 
-            var response = archiveStore.storeWebPageInRootMap(request);
+            var response = archiveStore.storeWebPage(request);
 
             then(categoriesRepository).should(times(1)).findByAccountId(any(Account.AccountId.class));
             then(rootMapRepository).should(times(1)).findByAccountId(any(Account.AccountId.class));
@@ -245,62 +248,63 @@ class ArchiveStoreTest {
             var tier1Map = rootMap.getChildren().getFirst();
             throwExceptionIfEmptyChildArchive(tier1Map);
 
-            var tier2Map = tier1Map.getChildren().getFirst();
+            var tier1MapChildMap = tier1Map.getChildren().getFirst();
 
             given(mapRepository.findById(tier1Map.getId()))
                     .willReturn(Optional.of(tier1Map));
 
-            given(mapRepository.findById(tier2Map.getId()))
-                    .willReturn(Optional.of(tier2Map));
+            given(mapRepository.findById(tier1MapChildMap.getId()))
+                    .willReturn(Optional.of(tier1MapChildMap));
 
             given(rootMapRepository.findByAccountId(any(Account.AccountId.class)))
                     .willReturn(Optional.of(rootMap));
 
-            archiveStore.updateMapLocationToRootMap(tier2Map.getId().value().toString());
+            archiveStore.updateMapLocation(rootMap.getId().value().toString(), tier1MapChildMap.getId().value().toString());
 
             then(mapRepository).should(times(2)).findById(any(Map.MapId.class));
             then(mapRepository).should(times(2)).updateFamily(any(Map.class));
             then(rootMapRepository).should(times(1)).findByAccountId(any(Account.AccountId.class));
             then(rootMapRepository).should(times(1)).updateFamily(any(RootMap.class));
 
-            assertThat(rootMap.getChildren().contains(tier2Map)).isTrue();
-            assertThat(tier1Map.getChildren().contains(tier2Map)).isFalse();
-            assertThat(tier2Map.getParentId()).isEqualTo(rootMap.getId());
+            assertThat(rootMap.getChildren().contains(tier1Map)).isTrue();
+            assertThat(rootMap.getChildren().contains(tier1MapChildMap)).isTrue();
+            assertThat(tier1Map.getChildren().contains(tier1MapChildMap)).isFalse();
+            assertThat(tier1MapChildMap.getParentId()).isEqualTo(rootMap.getId());
         }
 
         @Test
         void WhenMoveSomeChildMapToOtherMap() {
             throwExceptionIfEmptyChildArchive(rootMap);
 
-            var tier1Map = rootMap.getChildren().getFirst();
-            throwExceptionIfEmptyChildArchive(tier1Map);
+            var tier1Map_A = rootMap.getChildren().getFirst();
+            throwExceptionIfEmptyChildArchive(tier1Map_A);
 
-            var tier2Map = tier1Map.getChildren().getFirst();
-            throwExceptionIfEmptyChildArchive(tier2Map);
+            var tier1Map_B = rootMap.getChildren().getLast();
+            throwExceptionIfEmptyChildArchive(tier1Map_B);
 
-            var tier3Map = tier2Map.getChildren().getFirst();
+            var tier1Map_A_ChildMap = tier1Map_A.getChildren().getFirst();
 
-            given(mapRepository.findById(tier1Map.getId()))
-                    .willReturn(Optional.of(tier1Map));
+            given(mapRepository.findById(tier1Map_A.getId()))
+                    .willReturn(Optional.of(tier1Map_A));
 
-            given(mapRepository.findById(tier2Map.getId()))
-                    .willReturn(Optional.of(tier2Map));
+            given(mapRepository.findById(tier1Map_B.getId()))
+                    .willReturn(Optional.of(tier1Map_B));
 
-            given(mapRepository.findById(tier3Map.getId()))
-                    .willReturn(Optional.of(tier3Map));
+            given(mapRepository.findById(tier1Map_A_ChildMap.getId()))
+                    .willReturn(Optional.of(tier1Map_A_ChildMap));
 
             given(rootMapRepository.findByAccountId(any(Account.AccountId.class)))
                     .willReturn(Optional.of(rootMap));
 
-            archiveStore.updateMapLocation(tier1Map.getId().value().toString(), tier3Map.getId().value().toString());
+            archiveStore.updateMapLocation(tier1Map_B.getId().value().toString(), tier1Map_A_ChildMap.getId().value().toString());
 
             then(mapRepository).should(times(3)).findById(any(Map.MapId.class));
             then(mapRepository).should(times(3)).updateFamily(any(Map.class));
             then(rootMapRepository).should(times(1)).findByAccountId(any(Account.AccountId.class));
 
-            assertThat(tier1Map.getChildren().contains(tier3Map)).isTrue();
-            assertThat(tier2Map.getChildren().contains(tier3Map)).isFalse();
-            assertThat(tier3Map.getParentId()).isEqualTo(tier1Map.getId());
+            assertThat(tier1Map_A.getChildren().contains(tier1Map_A_ChildMap)).isFalse();
+            assertThat(tier1Map_B.getChildren().contains(tier1Map_A_ChildMap)).isTrue();
+            assertThat(tier1Map_A_ChildMap.getParentId()).isEqualTo(tier1Map_B.getId());
         }
 
         @Test
@@ -356,28 +360,24 @@ class ArchiveStoreTest {
             given(mapRepository.findById(tier1Map.getId()))
                     .willReturn(Optional.of(tier1Map));
 
-            given(mapRepository.findById(tier3Map.getParentId()))
+            given(mapRepository.findById(tier2Map.getId()))
                     .willReturn(Optional.of(tier2Map));
-
-            given(mapRepository.findById(tier3Map.getId()))
-                    .willReturn(Optional.of(tier3Map));
 
             given(rootMapRepository.findByAccountId(any(Account.AccountId.class)))
                     .willReturn(Optional.of(rootMap));
 
-            archiveStore.updateMapLocation(tier3Map.getId().value().toString(), tier1Map.getId().value().toString());
+            archiveStore.updateMapLocation(tier2Map.getId().value().toString(), tier1Map.getId().value().toString());
 
-            then(mapRepository).should(times(3)).findById(any(Map.MapId.class));
-            then(mapRepository).should(times(3)).updateFamily(any(Map.class));
+            then(mapRepository).should(times(2)).findById(any(Map.MapId.class));
+            then(mapRepository).should(times(2)).updateFamily(any(Map.class));
             then(rootMapRepository).should(times(1)).findByAccountId(any(Account.AccountId.class));
             then(rootMapRepository).should(times(1)).updateFamily(any(RootMap.class));
 
-            assertThat(tier1Map.getParentId()).isEqualTo(tier3Map.getId());
-            assertThat(tier1Map.getChildren().contains(tier2Map)).isTrue();
-            assertThat(tier2Map.getParentId()).isEqualTo(tier1Map.getId());
-            assertThat(tier2Map.getChildren().contains(tier3Map)).isFalse();
-            assertThat(tier3Map.getParentId()).isEqualTo(rootMap.getId());
-            assertThat(tier3Map.getChildren().contains(tier1Map)).isTrue();
+            assertThat(tier1Map.getParentId()).isEqualTo(tier2Map.getId());
+            assertThat(tier1Map.getChildren().contains(tier2Map)).isFalse();
+            assertThat(tier2Map.getParentId()).isEqualTo(rootMap.getId());
+            assertThat(tier2Map.getChildren().contains(tier1Map)).isTrue();
+            assertThat(tier3Map.getParentId()).isEqualTo(tier2Map.getId());
         }
 
         @Test
@@ -398,7 +398,7 @@ class ArchiveStoreTest {
             given(rootMapRepository.findByAccountId(any(Account.AccountId.class)))
                     .willReturn(Optional.of(rootMap));
 
-            archiveStore.updateWebPageLocationToRootMap(tier1MapChildWebPage.getId().value().toString());
+            archiveStore.updateWebPageLocation(rootMap.getId().value().toString(), tier1MapChildWebPage.getId().value().toString());
 
             then(webPageRepository).should(times(1)).findById(any(WebPage.WebPageId.class));
             then(webPageRepository).should(times(1)).updateParent(any(WebPage.class));
@@ -433,7 +433,7 @@ class ArchiveStoreTest {
 
             then(webPageRepository).should(times(1)).findById(any(WebPage.WebPageId.class));
             then(webPageRepository).should(times(1)).updateParent(any(WebPage.class));
-            then(mapRepository).should(times(1)).findById(any(Map.MapId.class));
+            then(mapRepository).should(times(2)).findById(any(Map.MapId.class));
             then(mapRepository).should(times(1)).updateFamily(any(Map.class));
             then(rootMapRepository).should(times(1)).findByAccountId(any(Account.AccountId.class));
             then(rootMapRepository).should(times(1)).updateFamily(any(RootMap.class));
@@ -591,25 +591,6 @@ class ArchiveStoreTest {
         }
     }
 
-    private RootMapStoreRequest generateRootMapStoreRequest() {
-        Random random = new Random();
-        int categoryLimit = random.nextInt(categories.getRegisteredCategories().size());
-        int tagLimit = random.nextInt(tags.getNames().size());
-
-        String now = Instant.now().toString();
-        var usedTitle = "test".concat(now);
-        var usedDescription = "test map description".concat(now);
-        var usedCategories = categories.getRegisteredCategories().stream()
-                .limit(categoryLimit).map(Categories.Category::name).collect(Collectors.toSet());
-        var usedTags = tags.getNames().stream().limit(tagLimit).collect(Collectors.toSet());
-
-        return new RootMapStoreRequest(ACCOUNT_ID.value(),
-                usedTitle,
-                usedDescription,
-                usedCategories,
-                usedTags);
-    }
-
     private MapStoreRequest generateMapStoreRequest(String parentId) {
         var random = new Random();
         var categoryLimit = random.nextInt(categories.getRegisteredCategories().size());
@@ -626,27 +607,6 @@ class ArchiveStoreTest {
                 parentId,
                 usedTitle,
                 usedDescription,
-                usedCategories,
-                usedTags);
-    }
-
-    private RootWebPageStoreRequest generateRootWebPageStoreRequest() {
-        var random = new Random();
-        var categoryLimit = random.nextInt(categories.getRegisteredCategories().size());
-        var tagLimit = random.nextInt(tags.getNames().size());
-
-        String now = Instant.now().toString();
-        var usedTitle = "test webpage title".concat(now);
-        var usedDescription = "test webpage description".concat(now);
-        var usedUri = URI.create("http://www.testuri.com".concat(now));
-        var usedCategories = categories.getRegisteredCategories().stream()
-                .limit(categoryLimit).map(Categories.Category::name).collect(Collectors.toSet());
-        var usedTags = tags.getNames().stream().limit(tagLimit).collect(Collectors.toSet());
-
-        return new RootWebPageStoreRequest(ACCOUNT_ID.value(),
-                usedTitle,
-                usedDescription,
-                usedUri,
                 usedCategories,
                 usedTags);
     }

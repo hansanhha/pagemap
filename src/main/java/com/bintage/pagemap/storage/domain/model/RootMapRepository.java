@@ -11,4 +11,6 @@ import java.util.Optional;
 public interface RootMapRepository {
 
     Optional<RootMap> findByAccountId(Account.AccountId accountId);
+
+    void updateFamily(RootMap rootMap);
 }

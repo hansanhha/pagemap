@@ -16,6 +16,8 @@ public interface WebPageRepository {
 
     List<WebPage> findByParentMapId(Map.MapId id);
 
+    void updateMetadata(WebPage webPage);
+
     void updateDeletedStatus(WebPage webPage);
 
     void updateParent(WebPage webPage);

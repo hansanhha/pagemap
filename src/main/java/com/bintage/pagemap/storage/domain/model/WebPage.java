@@ -6,7 +6,6 @@ import lombok.Getter;
 import org.jmolecules.ddd.annotation.Entity;
 
 import java.net.URI;
-import java.net.URL;
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
@@ -29,10 +28,12 @@ public class WebPage {
 
     public record WebPageId(UUID value) {}
 
-    public void updateMetadata(URI url, String title, String description) {
+    public void update(URI url, String title, String description, Set<Categories.Category> categories, Set<String> tags) {
         this.url = url;
         this.title = title;
         this.description = description;
+        this.categories = categories;
+        this.tags = Tags.of(tags);
     }
 
     public void updateParent(Map.MapId parentId) {
@@ -57,10 +58,6 @@ public class WebPage {
         }
 
         categories.remove(category);
-    }
-
-    public void updateTags(Tags tags) {
-        this.tags = tags;
     }
 
     public void delete(Instant requestedAt) {

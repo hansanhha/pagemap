@@ -6,8 +6,9 @@ import com.bintage.pagemap.storage.domain.model.RootMap;
 import com.bintage.pagemap.storage.domain.model.WebPage;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 
-import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -25,11 +26,13 @@ public class RootMapEntity {
     @AttributeOverride(name = "account", column = @Column(name = "account_id"))
     private AccountEntity accountEntity;
 
+    @Setter
     @ElementCollection
     @CollectionTable(name = "root_map_children_map", joinColumns = @JoinColumn(name = "root_map_id"))
     @Column(name = "root_child_map")
     private Set<UUID> children;
 
+    @Setter
     @ElementCollection
     @CollectionTable(name = "root_map_children_web_page", joinColumns = @JoinColumn(name = "root_map_id"))
     @Column(name = "root_child_web_page")
@@ -40,14 +43,14 @@ public class RootMapEntity {
     public static RootMap toDomainModel(RootMapEntity entity,
                                         java.util.Map<MapEntity, List<CategoryEntity>> childMapEntities,
                                         java.util.Map<WebPageEntity, List<CategoryEntity>> childWebPageEntities) {
-        var webPages = new HashSet<WebPage>();
+        var webPages = new LinkedList<WebPage>();
 
         if (childWebPageEntities != null && !childWebPageEntities.isEmpty()) {
             childWebPageEntities.forEach((webPageEntity, webPageCategoryEntities) ->
                     webPages.add(WebPageEntity.toDomainModel(webPageEntity, webPageCategoryEntities)));
         }
 
-        var childrenMap = new HashSet<Map>();
+        var childrenMap = new LinkedList<Map>();
 
         childMapEntities.forEach(((mapEntity, categoryEntities) -> {
             childrenMap.add(MapEntity.toDomainModelWithoutChildren(new Map.MapId(entity.getId()), mapEntity, categoryEntities));

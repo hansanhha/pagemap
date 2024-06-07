@@ -1,5 +1,6 @@
 package com.bintage.pagemap.storage.infrastructure.persistence;
 
+import com.bintage.pagemap.storage.domain.model.Categories;
 import com.bintage.pagemap.storage.domain.model.Map;
 import com.bintage.pagemap.storage.domain.model.MapRepository;
 import com.bintage.pagemap.storage.domain.model.WebPage;
@@ -42,12 +43,12 @@ public class MapRepositoryJpaAdapter implements MapRepository {
 
                     var currentMapEntityCategories = registeredCategoriesInAccount.getMatchCategories(currentMapEntity.getCategories());
 
-                    var childrenMapEntityWithoutCategories = mapEntityRepository.findAllById(currentMapEntity.getChildren());
-                    childrenMapEntityWithoutCategories.forEach(childMap -> childrenMap.put(childMap, registeredCategoriesInAccount.getMatchCategories(childMap.getCategories())));
+                    var childrenMapEntities = mapEntityRepository.findAllById(currentMapEntity.getChildren());
+                    childrenMapEntities.forEach(entity -> childrenMap.put(entity, registeredCategoriesInAccount.getMatchCategories(entity.getCategories())));
 
-                    var childrenWebpageEntityWithoutCategories = webPageEntityRepository.findAllByParent(currentMapEntity.getId());
-                    var childrenWebPage = childrenWebpageEntityWithoutCategories.stream()
-                            .map(webPageEntity -> WebPageEntity.toDomainModel(webPageEntity, registeredCategoriesInAccount.getMatchCategories(webPageEntity.getCategories())))
+                    var childrenWebPageEntities = webPageEntityRepository.findAllByParent(currentMapEntity.getId());
+                    var childrenWebPage = childrenWebPageEntities.stream()
+                            .map(entity -> WebPageEntity.toDomainModel(entity, registeredCategoriesInAccount.getMatchCategories(entity.getCategories())))
                             .toList();
 
                     return MapEntity.toDomainModelWithRelatedMap(currentMapEntity, currentMapEntityCategories, childrenMap, childrenWebPage);
@@ -55,12 +56,24 @@ public class MapRepositoryJpaAdapter implements MapRepository {
     }
 
     @Override
+    public void updateMetadata(Map map) {
+        var entity = mapEntityRepository.findById(map.getId().value())
+                .orElseThrow(() -> new IllegalArgumentException("not found map by map id"));
+
+        entity.setTitle(map.getTitle());
+        entity.setDescription(map.getDescription());
+        entity.setCategories(map.getCategories().stream()
+                .map(category -> category.id().value()).collect(Collectors.toSet()));
+        entity.setTags(map.getTags().getNames());
+    }
+
+    @Override
     public void updateDeletedStatus(Map map) {
-        var mapEntity = mapEntityRepository.findById(map.getId().value())
+        var entity = mapEntityRepository.findById(map.getId().value())
                 .orElseThrow(() -> new IllegalArgumentException("not found map by map id"));
 
         Delete delete = Delete.fromValueObject(map.getDeleted());
-        mapEntity.setDelete(delete);
+        entity.setDelete(delete);
     }
 
     @Override

@@ -33,7 +33,7 @@ public class RootMap {
         children.remove(child);
     }
 
-    public void addPage(WebPage webPage) {
+    public void addWebPage(WebPage webPage) {
         if (webPages.contains(webPage)) {
             throw new StorageException.AlreadyContainItemException(StorageException.Item.PAGE, webPage.getId().value());
         }
@@ -41,7 +41,7 @@ public class RootMap {
         webPages.add(webPage);
     }
 
-    public void removePage(WebPage webPage) {
+    public void removeWebPage(WebPage webPage) {
         if (!webPages.contains(webPage)) {
             throw new StorageException.NotExistContainItemException(StorageException.Item.PAGE, webPage.getId().value());
         }

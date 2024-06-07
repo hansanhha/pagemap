@@ -9,6 +9,6 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-@IndicativeSentencesGeneration(separator = "-> ")
-public @interface ArrowSeparatingNestedTest {
+@IndicativeSentencesGeneration(separator = "- ")
+public @interface HyphenSeparatingNestedTest {
 }

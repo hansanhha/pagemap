@@ -28,27 +28,23 @@ public class Map {
     private Set<Categories.Category> categories;
     private Tags tags;
 
+    public void update(String title, String description, Set<Categories.Category> updateCategories, Set<String> tags) {
+        this.title = title;
+        this.description = description;
+        this.categories = updateCategories;
+        this.tags = Tags.of(tags);
+    }
+
     public record MapId(UUID value) {}
 
     public void updateParent(final MapId parentId) {
         this.parentId = parentId;
     }
 
-    public void updateTitle(String title) {
-        this.title = title;
-    }
-
-    public void updateDescription(String description) {
-        this.description = description;
-    }
 
     public void addChild(Map child) {
         if (children.contains(child)) {
             throw new AlreadyItemExistException(Item.MAP, child.getId().value().toString());
-        }
-
-        if (child.equals(parentId)) {
-            parentId = null;
         }
 
         children.add(child);
@@ -62,7 +58,7 @@ public class Map {
         children.remove(child);
     }
 
-    public void addPage(WebPage webPage) {
+    public void addWebPage(WebPage webPage) {
         if (webPages.contains(webPage)) {
             throw new AlreadyContainItemException(Item.PAGE, webPage.getId().value());
         }
@@ -70,7 +66,7 @@ public class Map {
         webPages.add(webPage);
     }
 
-    public void removePage(WebPage webPage) {
+    public void removeWebPage(WebPage webPage) {
         if (!webPages.contains(webPage)) {
             throw new NotExistContainItemException(Item.PAGE, webPage.getId().value());
         }
@@ -92,10 +88,6 @@ public class Map {
         }
 
         categories.remove(category);
-    }
-
-    public void updateTags(Tags tags) {
-        this.tags = tags;
     }
 
     public void delete(Instant requestedAt) {

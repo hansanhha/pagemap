@@ -6,15 +6,13 @@ import com.bintage.pagemap.storage.domain.model.WebPageRepository;
 import com.bintage.pagemap.storage.infrastructure.persistence.jpa.*;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
-import org.springframework.boot.autoconfigure.websocket.servlet.WebSocketServletAutoConfiguration;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.swing.text.html.Option;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 @SecondaryAdapter
 @Component
@@ -24,7 +22,6 @@ public class WebPageRepositoryJpaAdapter implements WebPageRepository {
 
     private final WebPageEntityRepository webPageEntityRepository;
     private final CategoriesEntityRepository categoriesEntityRepository;
-    private final WebSocketServletAutoConfiguration.TomcatWebSocketConfiguration tomcatWebSocketConfiguration;
 
     @Override
     public WebPage save(WebPage webPage) {
@@ -60,6 +57,18 @@ public class WebPageRepositoryJpaAdapter implements WebPageRepository {
         }
 
         return webPages;
+    }
+
+    @Override
+    public void updateMetadata(WebPage webPage) {
+        var entity = webPageEntityRepository.findById(webPage.getId().value())
+                .orElseThrow(() -> new IllegalArgumentException("not found webpage by id"));
+
+        entity.setTitle(webPage.getTitle());
+        entity.setDescription(webPage.getDescription());
+        entity.setCategories(webPage.getCategories().stream().map(category -> category.id().value()).collect(Collectors.toSet()));
+        entity.setUri(webPage.getUrl().toString());
+        entity.setTags(webPage.getTags().getNames());
     }
 
     @Override

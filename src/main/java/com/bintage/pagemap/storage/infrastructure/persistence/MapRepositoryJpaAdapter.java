@@ -43,12 +43,12 @@ public class MapRepositoryJpaAdapter implements MapRepository {
 
                     var currentMapEntityCategories = registeredCategoriesInAccount.getMatchCategories(currentMapEntity.getCategories());
 
-                    var childrenMapEntityWithoutCategories = mapEntityRepository.findAllById(currentMapEntity.getChildren());
-                    childrenMapEntityWithoutCategories.forEach(childMap -> childrenMap.put(childMap, registeredCategoriesInAccount.getMatchCategories(childMap.getCategories())));
+                    var childrenMapEntities = mapEntityRepository.findAllById(currentMapEntity.getChildren());
+                    childrenMapEntities.forEach(entity -> childrenMap.put(entity, registeredCategoriesInAccount.getMatchCategories(entity.getCategories())));
 
-                    var childrenWebpageEntityWithoutCategories = webPageEntityRepository.findAllByParent(currentMapEntity.getId());
-                    var childrenWebPage = childrenWebpageEntityWithoutCategories.stream()
-                            .map(webPageEntity -> WebPageEntity.toDomainModel(webPageEntity, registeredCategoriesInAccount.getMatchCategories(webPageEntity.getCategories())))
+                    var childrenWebPageEntities = webPageEntityRepository.findAllByParent(currentMapEntity.getId());
+                    var childrenWebPage = childrenWebPageEntities.stream()
+                            .map(entity -> WebPageEntity.toDomainModel(entity, registeredCategoriesInAccount.getMatchCategories(entity.getCategories())))
                             .toList();
 
                     return MapEntity.toDomainModelWithRelatedMap(currentMapEntity, currentMapEntityCategories, childrenMap, childrenWebPage);

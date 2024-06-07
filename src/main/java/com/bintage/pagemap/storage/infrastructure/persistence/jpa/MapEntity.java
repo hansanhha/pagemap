@@ -52,7 +52,7 @@ public class MapEntity {
     @Setter
     @ElementCollection
     @CollectionTable(name = "tags", joinColumns = @JoinColumn(name = "map_id"))
-    @Column(name = "tag")
+    @Column(name = "tags")
     private Set<String> tags = new HashSet<>();
 
     @Setter

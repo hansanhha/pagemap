@@ -56,7 +56,7 @@ public class WebPageEntity {
     @Setter
     @ElementCollection
     @CollectionTable(name = "web_page_tags", joinColumns = @JoinColumn(name = "web_page_id"))
-    @Column(name = "tag")
+    @Column(name = "tags")
     private Set<String> tags;
 
     public record AccountEntity(String id) {}

@@ -58,7 +58,7 @@ public class Map {
         children.remove(child);
     }
 
-    public void addPage(WebPage webPage) {
+    public void addWebPage(WebPage webPage) {
         if (webPages.contains(webPage)) {
             throw new AlreadyContainItemException(Item.PAGE, webPage.getId().value());
         }
@@ -66,7 +66,7 @@ public class Map {
         webPages.add(webPage);
     }
 
-    public void removePage(WebPage webPage) {
+    public void removeWebPage(WebPage webPage) {
         if (!webPages.contains(webPage)) {
             throw new NotExistContainItemException(Item.PAGE, webPage.getId().value());
         }

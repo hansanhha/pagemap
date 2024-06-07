@@ -6,7 +6,7 @@ import java.util.Set;
 public record WebPageStoreRequest(String accountId,
                                   String mapId,
                                   String title,
-                                  URI url,
+                                  URI uri,
                                   String description,
                                   Set<String> categories,
                                   Set<String> tags) {

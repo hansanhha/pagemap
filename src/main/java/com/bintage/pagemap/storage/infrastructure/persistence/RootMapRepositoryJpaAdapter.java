@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @SecondaryAdapter
 @Component
@@ -20,6 +21,7 @@ import java.util.Optional;
 public class RootMapRepositoryJpaAdapter implements RootMapRepository {
 
     private final RootMapEntityRepository rootMapEntityRepository;
+    private final WebPageEntityRepository webPageEntityRepository;
     private final CategoriesEntityRepository categoriesEntityRepository;
     private final MapEntityRepository mapEntityRepository;
 
@@ -28,14 +30,29 @@ public class RootMapRepositoryJpaAdapter implements RootMapRepository {
         return rootMapEntityRepository.findByAccountEntity(new RootMapEntity.AccountEntity(accountId.value()))
                 .map(rootMapEntity -> {
                     var childrenMap = new HashMap<MapEntity, List<CategoryEntity>>();
+                    var childrenWebPage = new HashMap<WebPageEntity, List<CategoryEntity>>();
 
                     var registeredCategories = categoriesEntityRepository.findByAccountEntity(new CategoriesEntity.AccountEntity(rootMapEntity.getAccountEntity().id()))
                             .orElseThrow(() -> new IllegalArgumentException("not found categories by account id"));
 
-                    List<MapEntity> childrenMapWithoutCategories = mapEntityRepository.findAllById(rootMapEntity.getChildren());
-                    childrenMapWithoutCategories.forEach(childMap -> childrenMap.put(childMap, registeredCategories.getMatchCategories(childMap.getCategories())));
+                    List<MapEntity> childrenMapEntity = mapEntityRepository.findAllById(rootMapEntity.getChildren());
+                    childrenMapEntity.forEach(entity -> childrenMap.put(entity, registeredCategories.getMatchCategories(entity.getCategories())));
 
-                    return RootMapEntity.toDomainModel(rootMapEntity, childrenMap);
+                    List<WebPageEntity> childrenWebPageEntity = webPageEntityRepository.findAllByParent(rootMapEntity.getId());
+                    childrenWebPageEntity.forEach(entity -> childrenWebPage.put(entity, registeredCategories.getMatchCategories(entity.getCategories())));
+
+                    return RootMapEntity.toDomainModel(rootMapEntity, childrenMap, childrenWebPage);
                 });
+    }
+
+    @Override
+    public void updateFamily(RootMap rootMap) {
+        var entity = rootMapEntityRepository.findById(rootMap.getId().value())
+                .orElseThrow(() -> new IllegalArgumentException("not found map by id"));
+
+        entity.setChildren(rootMap.getChildren().stream()
+                .map(child -> child.getId().value()).collect(Collectors.toSet()));
+        entity.setWebPageEntities(rootMap.getWebPages().stream()
+                .map(child -> child.getId().value()).collect(Collectors.toSet()));
     }
 }

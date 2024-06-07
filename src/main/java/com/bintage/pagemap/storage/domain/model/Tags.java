@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.ddd.annotation.ValueObject;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -19,6 +20,10 @@ public class Tags {
 
     public static Tags of(Set<String> names) {
         return new Tags(getValidNames(names));
+    }
+
+    public static Tags empty() {
+        return new Tags(Collections.emptySet());
     }
 
     private static Set<String> getValidNames(Set<String> names) {

@@ -38,7 +38,7 @@ public class RootMapEntity {
     @Column(name = "root_child_web_page")
     private Set<UUID> webPageEntities;
 
-    public record AccountEntity(String id) {}
+    public record AccountEntity(String accountId) {}
 
     public static RootMap toDomainModel(RootMapEntity entity,
                                         java.util.Map<MapEntity, List<CategoryEntity>> childMapEntities,
@@ -58,7 +58,7 @@ public class RootMapEntity {
 
         return RootMap.builder()
                 .id(new Map.MapId(entity.getId()))
-                .accountId(new Account.AccountId(entity.getAccountEntity().id()))
+                .accountId(new Account.AccountId(entity.getAccountEntity().accountId()))
                 .webPages(webPages)
                 .children(childrenMap)
                 .build();

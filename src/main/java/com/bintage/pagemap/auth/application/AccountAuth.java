@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class AuthPort {
+public class AccountAuth {
 
     private final Accounts accounts;
     private final OAuth2Service oAuth2Service;

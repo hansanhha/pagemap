@@ -1,6 +1,7 @@
 package com.bintage.pagemap.auth.infrastructure.security;
 
-import com.bintage.pagemap.auth.application.AuthPort;
+import com.bintage.pagemap.auth.application.AccountAuth;
+import com.bintage.pagemap.global.exception.GlobalExceptionCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -16,16 +17,17 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class OAuth2LogoutHandler implements LogoutHandler {
 
-    private final AuthPort authPort;
+    private final AccountAuth accountAuth;
     private final SecurityErrorResponseSender securityErrorResponseSender;
 
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
         RequestInspector.findTokenByHttpHeader(request)
-                .ifPresentOrElse(authPort::signOut,
+                .ifPresentOrElse(accountAuth::signOut,
                         () -> {
                             try {
-                                securityErrorResponseSender.sendError(request, response, "where is token?");
+                                securityErrorResponseSender.sendError(request, response,
+                                        GlobalExceptionCode.UNAUTHORIZED.getStatusCode(), "Invalid token");
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }

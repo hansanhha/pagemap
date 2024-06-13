@@ -1,6 +1,6 @@
 package com.bintage.pagemap.auth.infrastructure.security;
 
-import com.bintage.pagemap.auth.application.AuthPort;
+import com.bintage.pagemap.auth.application.AccountAuth;
 import com.bintage.pagemap.auth.application.SignInResponse;
 import com.bintage.pagemap.auth.infrastructure.external.oauth2.client.OAuth2AuthenticatedUser;
 import jakarta.servlet.ServletException;
@@ -27,7 +27,7 @@ import java.net.URI;
 @RequiredArgsConstructor
 public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
-    private final AuthPort authPort;
+    private final AccountAuth accountAuth;
     private final OAuth2AuthorizationRequestService oAuth2AuthorizationRequestService;
     private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 
@@ -42,8 +42,8 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
 
         var userAgentId = oAuth2AuthorizationRequestService.getUserAgentIdAndRemoveAuthorizationRequest(request);
 
-        authPort.signUpIfFirst(accountId, tokenAttribute.getOAuth2ProviderName(), tokenAttribute.getMemberIdentifier());
-        var tokens = authPort.signIn(accountId, userAgentId);
+        accountAuth.signUpIfFirst(accountId, tokenAttribute.getOAuth2ProviderName(), tokenAttribute.getMemberIdentifier());
+        var tokens = accountAuth.signIn(accountId, userAgentId);
 
         var combinedRedirectUrl = combineRedirectUrl(tokens);
         redirectStrategy.sendRedirect(request, response, combinedRedirectUrl.toString());

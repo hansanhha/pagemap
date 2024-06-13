@@ -7,10 +7,9 @@ import com.bintage.pagemap.storage.domain.model.WebPage;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public record ArchiveResponse(MapDto currentMapDto,
-                              boolean IsCurrentRoot,
+                              boolean CurrentMapIsRootMap,
                               List<MapDto> childrenMapDto,
                               List<WebPageDto> webPageDtos) {
 
@@ -55,7 +54,7 @@ public record ArchiveResponse(MapDto currentMapDto,
 
         private static MapDto from(Map map) {
             java.util.Map<String, String> categories = new HashMap<>();
-            map.getCategories().forEach(category -> categories.put(category.name(), category.color()));
+            map.getCategories().forEach(category -> categories.put(category.getName(), category.getColor()));
 
             return new MapDto(map.getId().value().toString(),
                     map.getParentId().value().toString(),
@@ -80,7 +79,7 @@ public record ArchiveResponse(MapDto currentMapDto,
 
         public static WebPageDto from(WebPage webPage) {
             java.util.Map<String, String> categories = new HashMap<>();
-            webPage.getCategories().forEach(category -> categories.put(category.name(), category.color()));
+            webPage.getCategories().forEach(category -> categories.put(category.getName(), category.getColor()));
 
             return new WebPageDto(webPage.getId().value().toString(),
                     webPage.getTitle(),

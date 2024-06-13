@@ -1,7 +1,7 @@
 package com.bintage.pagemap.auth.infrastructure.web.restful;
 
 import com.bintage.pagemap.auth.application.AccountInfo;
-import com.bintage.pagemap.auth.application.AuthPort;
+import com.bintage.pagemap.auth.application.AccountAuth;
 import com.bintage.pagemap.auth.infrastructure.security.AuthenticatedAccount;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,7 +15,7 @@ import java.util.Map;
 public class AccountController {
 
     private final AccountInfo accountInfo;
-    private final AuthPort authPort;
+    private final AccountAuth accountAuth;
 
     @GetMapping("/me")
     public Map<String, String> getUser(@AuthenticationPrincipal AuthenticatedAccount authenticatedAccount) {
@@ -27,7 +27,7 @@ public class AccountController {
 
     @DeleteMapping("/me")
     public Map<String, String> signOut(@AuthenticationPrincipal AuthenticatedAccount account) {
-        authPort.deleteAccount(account.getName());
+        accountAuth.deleteAccount(account.getName());
         return Map.of("message", "deleted account");
     }
 
@@ -39,7 +39,7 @@ public class AccountController {
 
     @DeleteMapping("/me/devices/{deviceId}")
     public Map<String, String> signOutDevice(@AuthenticationPrincipal AuthenticatedAccount account, @PathVariable String deviceId) {
-        authPort.signOutForOtherDevice(deviceId);
+        accountAuth.signOutForOtherDevice(deviceId);
         return Map.of("message", "success");
     }
 

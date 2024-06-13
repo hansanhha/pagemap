@@ -133,7 +133,7 @@ public class UserAgentEntity {
     }
 
     public void updateAccount(String accountId) {
-        Assert.isNull(this.accountEntity, "account id already exists");
+        Assert.isNull(this.accountEntity, "account accountId already exists");
         this.accountEntity =  new AccountEntity(accountId);
     }
 

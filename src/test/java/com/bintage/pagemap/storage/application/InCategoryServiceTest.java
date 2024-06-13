@@ -1,9 +1,9 @@
 package com.bintage.pagemap.storage.application;
 
 import com.bintage.pagemap.auth.domain.account.Account;
+import com.bintage.pagemap.storage.domain.exception.DomainModelException;
 import com.bintage.pagemap.storage.domain.model.Categories;
 import com.bintage.pagemap.storage.domain.model.CategoriesRepository;
-import com.bintage.pagemap.storage.domain.model.StorageException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -18,7 +18,7 @@ import static org.mockito.BDDMockito.*;
 import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
-public class CategoryServiceTest {
+public class InCategoryServiceTest {
 
     @InjectMocks
     private CategoryService categoryService;
@@ -26,7 +26,7 @@ public class CategoryServiceTest {
     @Mock
     private CategoriesRepository categoriesRepository;
 
-    private static final Account.AccountId ACCOUNT_ID = new Account.AccountId("test id");
+    private static final Account.AccountId ACCOUNT_ID = new Account.AccountId("test accountId");
     private final Categories CATEGORIES = Categories.builder()
             .accountId(ACCOUNT_ID)
             .id(new Categories.CategoriesId(UUID.randomUUID()))
@@ -107,7 +107,7 @@ public class CategoryServiceTest {
         given(categoriesRepository.findByAccountId(any(Account.AccountId.class)))
                 .willReturn(Optional.of(CATEGORIES));
 
-        assertThrows(StorageException.AlreadyItemExistException.class,
+        assertThrows(DomainModelException.AlreadyContainChildException.class,
                 () -> categoryService.create(ACCOUNT_ID.value(), alreadyCategoryName));
     }
 
@@ -118,7 +118,7 @@ public class CategoryServiceTest {
         given(categoriesRepository.findByAccountId(any(Account.AccountId.class)))
                 .willReturn(Optional.of(CATEGORIES));
 
-        assertThrows(StorageException.NotExistContainItemException.class,
+        assertThrows(DomainModelException.NotContainChildException.class,
                 () -> categoryService.delete(ACCOUNT_ID.value(), notExistCategoryName));
     }
 

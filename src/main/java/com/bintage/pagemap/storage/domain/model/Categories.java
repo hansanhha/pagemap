@@ -1,18 +1,15 @@
 package com.bintage.pagemap.storage.domain.model;
 
 import com.bintage.pagemap.auth.domain.account.Account;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import com.bintage.pagemap.storage.domain.exception.DomainModelException;
+import lombok.*;
 import org.jmolecules.ddd.annotation.AggregateRoot;
 import org.jmolecules.ddd.annotation.Entity;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.bintage.pagemap.storage.domain.model.StorageException.*;
+import static com.bintage.pagemap.storage.domain.exception.StorageException.*;
 
 @AggregateRoot
 @Builder
@@ -28,14 +25,25 @@ public class Categories {
 
     public record CategoriesId(UUID value) {}
 
-    public Set<Category> getMatchCategories(Set<String> categories) {
+    public Set<Category> getMatchCategories(Set<UUID> categories) {
         return registeredCategories.stream()
-                .filter(registerCategory -> categories.contains(registerCategory.name()))
+                .filter(registerCategory -> categories.contains(registerCategory.getId().value()))
                 .collect(Collectors.toSet());
     }
 
     @Entity
-    public record Category(CategoryId id, String name, String color) {
+    @Getter
+    @AllArgsConstructor
+    public static class Category {
+
+        private final CategoryId id;
+        private String name;
+        private String color;
+
+        public void update(String name, String color) {
+            this.name = name;
+            this.color = color;
+        }
 
         public record CategoryId(UUID value) {}
 
@@ -50,26 +58,35 @@ public class Categories {
         @Override
         public boolean equals(Object obj) {
             return obj.getClass().isAssignableFrom(Category.class)
-                    && name.equals(((Category) obj).name);
+                    && getId().equals(((Category) obj).getId());
+        }
+
+        @Override
+        public int hashCode() {
+            return getId().hashCode();
         }
     }
 
     public void addCategory(Category category) {
-        if (registeredCategories.contains(category)) {
-            throw new AlreadyItemExistException(Item.CATEGORY, category.name);
+        if (registeredCategories.contains(category) || registeredCategories.stream().anyMatch(c -> c.getName().equals(category.getName()))) {
+            throw DomainModelException.AlreadyContainChildException.hideParentId(Item.ROOT_CATEGORY, Item.CATEGORY, category.getId().value());
         }
 
         registeredCategories.add(category);
         newCategories.add(category);
     }
 
-    public void removeCategory(Category category) {
-        if (!registeredCategories.contains(category)) {
-            throw new NotExistContainItemException(Item.CATEGORY, category.name());
+    public void removeCategory(Category.CategoryId categoryId) {
+        var foundCategory = registeredCategories.stream()
+                .filter(c -> c.getId().equals(categoryId))
+                .findFirst();
+
+        if (foundCategory.isEmpty()) {
+            throw DomainModelException.NotContainChildException.hideParentId(Item.ROOT_CATEGORY, Item.CATEGORY, categoryId.value());
         }
 
-        registeredCategories.remove(category);
-        removedCategories.add(category);
+        registeredCategories.remove(foundCategory.get());
+        removedCategories.add(foundCategory.get());
     }
     
 }

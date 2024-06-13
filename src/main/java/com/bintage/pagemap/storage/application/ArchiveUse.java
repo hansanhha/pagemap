@@ -2,13 +2,13 @@ package com.bintage.pagemap.storage.application;
 
 import com.bintage.pagemap.auth.domain.account.Account;
 import com.bintage.pagemap.storage.application.dto.ArchiveResponse;
+import com.bintage.pagemap.storage.domain.exception.DomainModelNotFoundException;
 import com.bintage.pagemap.storage.domain.model.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.hexagonal.PrimaryPort;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
 import java.util.UUID;
 
 @PrimaryPort
@@ -26,16 +26,20 @@ public class ArchiveUse {
                 .ifPresent(WebPage::visit);
     }
 
-    public ArchiveResponse getRootMap(String accountId) {
-        var rootMap = rootMapRepository.findByAccountId(new Account.AccountId(accountId))
-                .orElseThrow(() -> new IllegalArgumentException("Not found root map by account id"));
+    public ArchiveResponse getRootMap(String accountIdStr) {
+        var accountId = new Account.AccountId(accountIdStr);
+        var rootMap = rootMapRepository.findByAccountId(accountId)
+                .orElseThrow(() -> new DomainModelNotFoundException.InRootMap(accountId));
+
         var webPages = webPageRepository.findByParentMapId(new Map.MapId(rootMap.getId().value()));
         return ArchiveResponse.from(rootMap, webPages);
     }
 
     public ArchiveResponse getMap(String mapIdStr) {
-        Map.MapId mapId = new Map.MapId(UUID.fromString(mapIdStr));
-        var map = mapRepository.findById(mapId).orElseThrow(() -> new IllegalArgumentException("Not found map by id"));
+        var mapId = new Map.MapId(UUID.fromString(mapIdStr));
+        var map = mapRepository.findById(mapId)
+                .orElseThrow(() -> new DomainModelNotFoundException.InMap(mapId));
+
         var webPages = webPageRepository.findByParentMapId(mapId);
         return ArchiveResponse.from(map, webPages);
     }

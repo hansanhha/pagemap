@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HttpBasicConfigurer;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.IpAddressMatcher;
@@ -31,6 +32,7 @@ public class SecurityConfig {
     private final OAuth2AuthenticationSuccessHandler authenticationSuccessHandler;
     private final OAuth2AuthorizationRequestService userAgentAuthorizationRepository;
     private final OAuth2LogoutHandler logoutHandler;
+    private final JwtBearerAuthenticationFilter jwtBearerAuthenticationFilter;
 
     {
         authRequireRequests.add(new AntPathRequestMatcher( "/account/me"));
@@ -42,8 +44,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    @Qualifier("authRequiredRequestInspector")
-    public RequestInspector authRequiredRequestInspector() {
+    public RequestInspector requestInspector() {
         return new RequestInspector(authRequireRequests, privateApis, permittedAddresses);
     }
 
@@ -61,6 +62,8 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        jwtBearerAuthenticationFilter.setAuthRequireRequests(requestInspector());
+
         http
                 .httpBasic(HttpBasicConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
@@ -70,6 +73,7 @@ public class SecurityConfig {
                         .dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll()
                         .anyRequest().permitAll()
                 )
+                .addFilterBefore(jwtBearerAuthenticationFilter, OAuth2AuthorizationRequestRedirectFilter.class)
                 .oauth2Login(loginConfigurer -> loginConfigurer
                         .userInfoEndpoint(config -> config.userService(oauth2UserService))
                         .successHandler(authenticationSuccessHandler)

@@ -31,7 +31,7 @@ public class TrashRepositoryJpaAdapter implements TrashRepository {
     public void update(Trash trash) {
         var entity = trashEntityRepository
                 .findByAccountEntity(new TrashEntity.AccountEntity(trash.getAccountId().value()))
-                .orElseThrow(() -> new IllegalArgumentException("not found trash by account id"));
+                .orElseThrow(() -> new IllegalArgumentException("not found trash by account accountId"));
 
         entity.setDeleteScheduledMapIds(trash.getDeleteScheduledMapIds().stream()
                 .map(Map.MapId::value).collect(Collectors.toSet()));

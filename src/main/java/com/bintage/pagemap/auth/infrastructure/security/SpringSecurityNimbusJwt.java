@@ -40,14 +40,11 @@ public class SpringSecurityNimbusJwt implements TokenService {
     @Value("${application.security.jwt.refresh-token-expiration}")
     private Instant refreshTokenExpiration;
 
-    private SecretKeySpec secretKeySpec;
-    private JWSAlgorithm algorithm;
-
     @PostConstruct
     public void init() {
         byte[] plainSecretKeyBytes = plainSecretKey.getBytes(StandardCharsets.UTF_8);
-        algorithm = JWSAlgorithm.HS256;
-        secretKeySpec = new SecretKeySpec(plainSecretKeyBytes, algorithm.getName());
+        var algorithm = JWSAlgorithm.HS256;
+        var secretKeySpec = new SecretKeySpec(plainSecretKeyBytes, algorithm.getName());
         jwsHeader = JwsHeader.with(MacAlgorithm.valueOf(algorithm.getName())).build();
         jwtEncoder = new NimbusJwtEncoder(new ImmutableSecret<>(secretKeySpec));
         jwtDecoder = NimbusJwtDecoder.withSecretKey(secretKeySpec).macAlgorithm(MacAlgorithm.valueOf(algorithm.getName())).build();

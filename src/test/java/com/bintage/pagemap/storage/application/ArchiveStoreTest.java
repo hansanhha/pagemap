@@ -2,9 +2,9 @@ package com.bintage.pagemap.storage.application;
 
 import com.bintage.pagemap.HyphenSeparatingNestedTest;
 import com.bintage.pagemap.auth.domain.account.Account;
-import com.bintage.pagemap.storage.application.dto.MapStoreRequest;
+import com.bintage.pagemap.storage.application.dto.MapSaveRequest;
 import com.bintage.pagemap.storage.application.dto.MapUpdateRequest;
-import com.bintage.pagemap.storage.application.dto.WebPageStoreRequest;
+import com.bintage.pagemap.storage.application.dto.WebPageSaveRequest;
 import com.bintage.pagemap.storage.application.dto.WebPageUpdateRequest;
 import com.bintage.pagemap.storage.domain.model.Map;
 import com.bintage.pagemap.storage.domain.model.*;
@@ -44,7 +44,7 @@ class ArchiveStoreTest {
     @Mock
     private RootMapRepository rootMapRepository;
 
-    private static final Account.AccountId ACCOUNT_ID = new Account.AccountId("test id");
+    private static final Account.AccountId ACCOUNT_ID = new Account.AccountId("test accountId");
     private final ArgumentCaptor<Map> mapArgumentCaptor = ArgumentCaptor.forClass(Map.class);
     private final ArgumentCaptor<WebPage> webPageArgumentCaptor = ArgumentCaptor.forClass(WebPage.class);
     private final ArgumentCaptor<Categories> categoriesArgumentCaptor = ArgumentCaptor.forClass(Categories.class);
@@ -116,7 +116,7 @@ class ArchiveStoreTest {
             given(rootMapRepository.findByAccountId(any(Account.AccountId.class)))
                     .willReturn(Optional.of(rootMap));
 
-            var response = archiveStore.storeMap(request);
+            var response = archiveStore.saveMap(request);
 
             then(categoriesRepository).should(times(1)).findByAccountId(any(Account.AccountId.class));
             then(rootMapRepository).should(times(1)).findByAccountId(any(Account.AccountId.class));
@@ -150,7 +150,7 @@ class ArchiveStoreTest {
             given(mapRepository.findById(any(Map.MapId.class)))
                     .willReturn(Optional.of(parentMap));
 
-            var response = archiveStore.storeMap(request);
+            var response = archiveStore.saveMap(request);
 
             then(categoriesRepository).should(times(1)).findByAccountId(any(Account.AccountId.class));
             then(mapRepository).should(times(1)).findById(any(Map.MapId.class));
@@ -181,7 +181,7 @@ class ArchiveStoreTest {
             given(rootMapRepository.findByAccountId(any(Account.AccountId.class)))
                     .willReturn(Optional.of(rootMap));
 
-            var response = archiveStore.storeWebPage(request);
+            var response = archiveStore.saveWebPage(request);
 
             then(categoriesRepository).should(times(1)).findByAccountId(any(Account.AccountId.class));
             then(rootMapRepository).should(times(1)).findByAccountId(any(Account.AccountId.class));
@@ -215,7 +215,7 @@ class ArchiveStoreTest {
             given(mapRepository.findById(any(Map.MapId.class)))
                     .willReturn(Optional.of(parentMap));
 
-            var response = archiveStore.storeWebPage(request);
+            var response = archiveStore.saveWebPage(request);
 
             then(categoriesRepository).should(times(1)).findByAccountId(any(Account.AccountId.class));
             then(mapRepository).should(times(1)).findById(any(Map.MapId.class));
@@ -444,7 +444,7 @@ class ArchiveStoreTest {
         }
 
         @Test
-        void MoveSomeMapChildWebPageToOtherMap() {
+        void WhenMoveSomeMapChildWebPageToOtherMap() {
             throwExceptionIfEmptyChildArchive(rootMap);
 
             var tier1Map_A = rootMap.getChildren().getFirst();
@@ -526,8 +526,8 @@ class ArchiveStoreTest {
             int categoryLimit = random.nextInt(categories.getRegisteredCategories().size());
             String updateTitle = "test update title";
             String updateDescription = "test update description";
-            Set<String> updateCategories = categories.getRegisteredCategories().stream()
-                    .map(Categories.Category::name).limit(categoryLimit).collect(Collectors.toSet());
+            Set<UUID> updateCategories = categories.getRegisteredCategories().stream()
+                    .map(category -> category.getId().value()).limit(categoryLimit).collect(Collectors.toSet());
             Set<String> updateTags = Set.of("update tag1", "update tag2", "update tag3");
 
             given(mapRepository.findById(any(Map.MapId.class)))
@@ -545,7 +545,7 @@ class ArchiveStoreTest {
 
             Map updatedMap = mapArgumentCaptor.getValue();
             assertThat(updatedMap).isNotNull();
-            Set<String> updatedCategories = updatedMap.getCategories().stream().map(Categories.Category::name).collect(Collectors.toSet());
+            Set<UUID> updatedCategories = updatedMap.getCategories().stream().map(category -> category.getId().value()).collect(Collectors.toSet());
             assertThat(updatedMap.getTitle()).isEqualTo(updateTitle);
             assertThat(updatedMap.getDescription()).isEqualTo(updateDescription);
             assertThat(updatedCategories).containsExactlyInAnyOrderElementsOf(updateCategories);
@@ -563,8 +563,8 @@ class ArchiveStoreTest {
             String updateTitle = "test update title";
             String updateUri = "http://www.update-test.com";
             String updateDescription = "test update description";
-            Set<String> updateCategories = categories.getRegisteredCategories().stream()
-                    .map(Categories.Category::name).limit(categoryLimit).collect(Collectors.toSet());
+            Set<UUID> updateCategories = categories.getRegisteredCategories().stream()
+                    .map(category -> category.getId().value()).limit(categoryLimit).collect(Collectors.toSet());
             Set<String> updateTags = Set.of("update tag1", "update tag2", "update tag3");
 
             given(webPageRepository.findById(any(WebPage.WebPageId.class)))
@@ -574,7 +574,7 @@ class ArchiveStoreTest {
                     .willReturn(Optional.of(categories));
 
             archiveStore.updateWebPageMetadata(new WebPageUpdateRequest(webPage.getId().value().toString(), updateTitle,
-                    updateDescription, updateUri, updateCategories, updateTags));
+                    updateDescription, URI.create(updateUri), updateCategories, updateTags));
 
             then(webPageRepository).should(times(1)).findById(any(WebPage.WebPageId.class));
             then(categoriesRepository).should(times(1)).findByAccountId(any(Account.AccountId.class));
@@ -582,7 +582,7 @@ class ArchiveStoreTest {
 
             var updatedWebPage = webPageArgumentCaptor.getValue();
             assertThat(updatedWebPage).isNotNull();
-            Set<String> updatedCategories = updatedWebPage.getCategories().stream().map(Categories.Category::name).collect(Collectors.toSet());
+            Set<UUID> updatedCategories = updatedWebPage.getCategories().stream().map(category -> category.getId().value()).collect(Collectors.toSet());
             assertThat(updatedWebPage.getTitle()).isEqualTo(updateTitle);
             assertThat(updatedWebPage.getUrl().toString()).isEqualTo(updateUri);
             assertThat(updatedWebPage.getDescription()).isEqualTo(updateDescription);
@@ -591,7 +591,7 @@ class ArchiveStoreTest {
         }
     }
 
-    private MapStoreRequest generateMapStoreRequest(String parentId) {
+    private MapSaveRequest generateMapStoreRequest(String parentId) {
         var random = new Random();
         var categoryLimit = random.nextInt(categories.getRegisteredCategories().size());
         var tagLimit = random.nextInt(tags.getNames().size());
@@ -600,10 +600,10 @@ class ArchiveStoreTest {
         var usedTitle = "test".concat(now);
         var usedDescription = "test map description".concat(now);
         var usedCategories = categories.getRegisteredCategories().stream()
-                .limit(categoryLimit).map(Categories.Category::name).collect(Collectors.toSet());
+                .limit(categoryLimit).map(category -> category.getId().value()).collect(Collectors.toSet());
         var usedTags = tags.getNames().stream().limit(tagLimit).collect(Collectors.toSet());
 
-        return new MapStoreRequest(ACCOUNT_ID.value(),
+        return new MapSaveRequest(ACCOUNT_ID.value(),
                 parentId,
                 usedTitle,
                 usedDescription,
@@ -611,7 +611,7 @@ class ArchiveStoreTest {
                 usedTags);
     }
 
-    private WebPageStoreRequest generateWebPageStoreRequest(String parentId) {
+    private WebPageSaveRequest generateWebPageStoreRequest(String parentId) {
         var random = new Random();
         var categoryLimit = random.nextInt(categories.getRegisteredCategories().size());
         var tagLimit = random.nextInt(tags.getNames().size());
@@ -621,10 +621,10 @@ class ArchiveStoreTest {
         var usedDescription = "test webpage description".concat(now);
         var usedUri = URI.create("http://www.testuri.com".concat(now));
         var usedCategories = categories.getRegisteredCategories().stream()
-                .limit(categoryLimit).map(Categories.Category::name).collect(Collectors.toSet());
+                .limit(categoryLimit).map(category -> category.getId().value()).collect(Collectors.toSet());
         var usedTags = tags.getNames().stream().limit(tagLimit).collect(Collectors.toSet());
 
-        return new WebPageStoreRequest(ACCOUNT_ID.value(),
+        return new WebPageSaveRequest(ACCOUNT_ID.value(),
                 parentId,
                 usedTitle,
                 usedUri,

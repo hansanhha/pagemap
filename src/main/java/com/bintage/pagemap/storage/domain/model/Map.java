@@ -1,6 +1,7 @@
 package com.bintage.pagemap.storage.domain.model;
 
 import com.bintage.pagemap.auth.domain.account.Account;
+import com.bintage.pagemap.storage.domain.exception.DomainModelException;
 import lombok.Builder;
 import lombok.Getter;
 import org.jmolecules.ddd.annotation.AggregateRoot;
@@ -10,7 +11,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.bintage.pagemap.storage.domain.model.StorageException.*;
+import static com.bintage.pagemap.storage.domain.exception.StorageException.*;
 
 @AggregateRoot
 @Builder
@@ -44,7 +45,7 @@ public class Map {
 
     public void addChild(Map child) {
         if (children.contains(child)) {
-            throw new AlreadyItemExistException(Item.MAP, child.getId().value().toString());
+            throw new DomainModelException.AlreadyContainChildException(Item.MAP, getId().value, Item.MAP, child.getId().value());
         }
 
         children.add(child);
@@ -52,7 +53,7 @@ public class Map {
 
     public void removeChild(Map child) {
         if (!children.contains(child)) {
-            throw new NotExistContainItemException(Item.MAP, child.getId().value().toString());
+            throw new DomainModelException.NotContainChildException(Item.MAP, getId().value, Item.MAP, child.getId().value());
         }
 
         children.remove(child);
@@ -60,7 +61,7 @@ public class Map {
 
     public void addWebPage(WebPage webPage) {
         if (webPages.contains(webPage)) {
-            throw new AlreadyContainItemException(Item.PAGE, webPage.getId().value());
+            throw new DomainModelException.AlreadyContainChildException(Item.MAP, getId().value, Item.WEB_PAGE, webPage.getId().value());
         }
 
         webPages.add(webPage);
@@ -68,7 +69,7 @@ public class Map {
 
     public void removeWebPage(WebPage webPage) {
         if (!webPages.contains(webPage)) {
-            throw new NotExistContainItemException(Item.PAGE, webPage.getId().value());
+            throw new DomainModelException.NotContainChildException(Item.MAP, getId().value, Item.WEB_PAGE, webPage.getId().value());
         }
 
         webPages.remove(webPage);
@@ -76,7 +77,7 @@ public class Map {
 
     public void addCategory(Categories.Category category) {
         if (categories.contains(category)) {
-            throw new AlreadyContainItemException(Item.CATEGORY, category.name());
+            throw new DomainModelException.AlreadyContainChildException(Item.MAP, getId().value, Item.CATEGORY, category.getId().value());
         }
 
         categories.add(category);
@@ -84,7 +85,7 @@ public class Map {
 
     public void removeCategory(Categories.Category category) {
         if (!categories.contains(category)) {
-            throw new NotExistContainItemException(Item.CATEGORY, category.name());
+            throw new DomainModelException.NotContainChildException(Item.MAP, getId().value, Item.CATEGORY, category.getId().value());
         }
 
         categories.remove(category);

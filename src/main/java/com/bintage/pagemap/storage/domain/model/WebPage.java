@@ -1,6 +1,8 @@
 package com.bintage.pagemap.storage.domain.model;
 
 import com.bintage.pagemap.auth.domain.account.Account;
+import com.bintage.pagemap.storage.domain.exception.DomainModelException;
+import com.bintage.pagemap.storage.domain.exception.StorageException;
 import lombok.Builder;
 import lombok.Getter;
 import org.jmolecules.ddd.annotation.Entity;
@@ -9,6 +11,8 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
+
+import static com.bintage.pagemap.storage.domain.exception.StorageException.*;
 
 @Entity
 @Getter
@@ -46,7 +50,7 @@ public class WebPage {
 
     public void addCategory(Categories.Category category) {
         if (categories.contains(category)) {
-            throw new StorageException.AlreadyContainItemException(StorageException.Item.CATEGORY, category.name());
+            throw new DomainModelException.AlreadyContainChildException(Item.WEB_PAGE, getId().value, Item.CATEGORY, category.getId().value());
         }
 
         categories.add(category);
@@ -54,7 +58,7 @@ public class WebPage {
 
     public void removeCategory(Categories.Category category) {
         if (!categories.contains(category)) {
-            throw new StorageException.NotExistContainItemException(StorageException.Item.CATEGORY, category.name());
+            throw new DomainModelException.NotContainChildException(Item.WEB_PAGE, getId().value, Item.CATEGORY, category.getId().value());
         }
 
         categories.remove(category);

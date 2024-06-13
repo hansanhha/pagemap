@@ -1,11 +1,15 @@
 package com.bintage.pagemap.storage.domain.model;
 
 import com.bintage.pagemap.auth.domain.account.Account;
+import com.bintage.pagemap.storage.domain.exception.DomainModelException;
+import com.bintage.pagemap.storage.domain.exception.StorageException;
 import lombok.Builder;
 import lombok.Getter;
 import org.jmolecules.ddd.annotation.AggregateRoot;
 
 import java.util.List;
+
+import static com.bintage.pagemap.storage.domain.exception.StorageException.*;
 
 @AggregateRoot
 @Builder
@@ -19,7 +23,7 @@ public class RootMap {
 
     public void addChild(Map child) {
         if (children.contains(child)) {
-            throw new StorageException.AlreadyItemExistException(StorageException.Item.MAP, child.getId().value().toString());
+            throw DomainModelException.AlreadyContainChildException.hideParentId(Item.ROOT_MAP, Item.MAP, child.getId().value());
         }
 
         children.add(child);
@@ -27,7 +31,7 @@ public class RootMap {
 
     public void removeChild(Map child) {
         if (!children.contains(child)) {
-            throw new StorageException.NotExistContainItemException(StorageException.Item.MAP, child.getId().value().toString());
+            throw DomainModelException.NotContainChildException.hideParentId(Item.ROOT_MAP, Item.MAP, child.getId().value());
         }
 
         children.remove(child);
@@ -35,7 +39,7 @@ public class RootMap {
 
     public void addWebPage(WebPage webPage) {
         if (webPages.contains(webPage)) {
-            throw new StorageException.AlreadyContainItemException(StorageException.Item.PAGE, webPage.getId().value());
+            throw DomainModelException.AlreadyContainChildException.hideParentId(Item.ROOT_MAP, Item.WEB_PAGE, webPage.getId().value());
         }
 
         webPages.add(webPage);
@@ -43,7 +47,7 @@ public class RootMap {
 
     public void removeWebPage(WebPage webPage) {
         if (!webPages.contains(webPage)) {
-            throw new StorageException.NotExistContainItemException(StorageException.Item.PAGE, webPage.getId().value());
+            throw DomainModelException.NotContainChildException.hideParentId(Item.ROOT_MAP, Item.WEB_PAGE, webPage.getId().value());
         }
 
         webPages.remove(webPage);

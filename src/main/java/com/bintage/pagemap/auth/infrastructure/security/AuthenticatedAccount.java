@@ -2,11 +2,13 @@ package com.bintage.pagemap.auth.infrastructure.security;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import org.springframework.modulith.NamedInterface;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Collection;
 
+@NamedInterface
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class AuthenticatedAccount implements Authentication {
 

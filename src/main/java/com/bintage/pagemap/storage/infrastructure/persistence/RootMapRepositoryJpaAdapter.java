@@ -4,6 +4,7 @@ import com.bintage.pagemap.auth.domain.account.Account;
 import com.bintage.pagemap.storage.domain.model.RootMap;
 import com.bintage.pagemap.storage.domain.model.RootMapRepository;
 import com.bintage.pagemap.storage.infrastructure.persistence.jpa.*;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
 import org.springframework.stereotype.Component;
@@ -32,8 +33,8 @@ public class RootMapRepositoryJpaAdapter implements RootMapRepository {
                     var childrenMap = new HashMap<MapEntity, List<CategoryEntity>>();
                     var childrenWebPage = new HashMap<WebPageEntity, List<CategoryEntity>>();
 
-                    var registeredCategories = categoriesEntityRepository.findByAccountEntity(new CategoriesEntity.AccountEntity(rootMapEntity.getAccountEntity().id()))
-                            .orElseThrow(() -> new IllegalArgumentException("not found categories by account id"));
+                    var registeredCategories = categoriesEntityRepository.findByAccountEntity(new CategoriesEntity.AccountEntity(rootMapEntity.getAccountEntity().accountId()))
+                            .orElseThrow(() -> new EntityNotFoundException("not found categories by account accountId"));
 
                     List<MapEntity> childrenMapEntity = mapEntityRepository.findAllById(rootMapEntity.getChildren());
                     childrenMapEntity.forEach(entity -> childrenMap.put(entity, registeredCategories.getMatchCategories(entity.getCategories())));
@@ -48,7 +49,7 @@ public class RootMapRepositoryJpaAdapter implements RootMapRepository {
     @Override
     public void updateFamily(RootMap rootMap) {
         var entity = rootMapEntityRepository.findById(rootMap.getId().value())
-                .orElseThrow(() -> new IllegalArgumentException("not found map by id"));
+                .orElseThrow(() -> new EntityNotFoundException("not found map by accountId"));
 
         entity.setChildren(rootMap.getChildren().stream()
                 .map(child -> child.getId().value()).collect(Collectors.toSet()));

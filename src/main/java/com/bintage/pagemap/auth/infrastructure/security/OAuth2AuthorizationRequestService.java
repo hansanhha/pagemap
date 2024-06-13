@@ -1,6 +1,6 @@
 package com.bintage.pagemap.auth.infrastructure.security;
 
-import com.bintage.pagemap.auth.application.AuthPort;
+import com.bintage.pagemap.auth.application.AccountAuth;
 import com.bintage.pagemap.auth.infrastructure.persistence.entity.OAuth2AuthorizationRequestEntity;
 import com.bintage.pagemap.auth.infrastructure.persistence.repository.OAuth2AuthorizationRequestEntityRepository;
 import jakarta.annotation.PostConstruct;
@@ -33,7 +33,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class OAuth2AuthorizationRequestService implements AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
 
-    private final AuthPort authPort;
+    private final AccountAuth accountAuth;
     private final OAuth2AuthorizationRequestEntityRepository oAuth2AuthorizationRequestEntityRepository;
     private final UserAgentExtractor userAgentExtractor;
 
@@ -76,7 +76,7 @@ public class OAuth2AuthorizationRequestService implements AuthorizationRequestRe
     @Override
     public void saveAuthorizationRequest(OAuth2AuthorizationRequest authorizationRequest, HttpServletRequest request, HttpServletResponse response) {
         var userAgentInfo = userAgentExtractor.extract(request);
-        var userAgentId = authPort.saveUserAgent(userAgentInfo.type(), userAgentInfo.os(), userAgentInfo.device(), userAgentInfo.application());
+        var userAgentId = accountAuth.saveUserAgent(userAgentInfo.type(), userAgentInfo.os(), userAgentInfo.device(), userAgentInfo.application());
 
         var state = authorizationRequest.getState();
         var id = sort(state);
@@ -120,7 +120,7 @@ public class OAuth2AuthorizationRequestService implements AuthorizationRequestRe
             return Base64.getEncoder().encodeToString(cipherText);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new IllegalArgumentException("authorization request id generation failure among authorization request encryption");
+            throw new IllegalArgumentException("authorization request accountId generation failure among authorization request encryption");
         }
     }
 
@@ -133,7 +133,7 @@ public class OAuth2AuthorizationRequestService implements AuthorizationRequestRe
             var plainText = cipher.doFinal(source.getBytes());
             return new String(plainText);
         } catch (Exception e) {
-            throw new IllegalArgumentException("authorization request id generation failure among source authorization request decryption");
+            throw new IllegalArgumentException("authorization request accountId generation failure among source authorization request decryption");
         }
     }
 }

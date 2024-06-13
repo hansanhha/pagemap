@@ -1,21 +1,26 @@
 package com.bintage.pagemap.storage.infrastructure.web.restful.dto;
 
 import jakarta.validation.constraints.NotEmpty;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.Set;
 import java.util.UUID;
 
 @Getter
 @Setter
-public class MapCreateRequest {
+@AllArgsConstructor(staticName = "of")
+public class WebPageUpdateRestRequest {
+
+    String title;
+
+    String description;
 
     @NotEmpty
-    String parentMapId;
-    String title;
-    String description;
+    String uri;
+
     Set<UUID> categories;
+
     Set<String> tags;
 }

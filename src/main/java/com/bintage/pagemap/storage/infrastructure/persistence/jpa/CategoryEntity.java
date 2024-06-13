@@ -23,10 +23,10 @@ public class CategoryEntity {
 
     public static CategoryEntity fromDomainModel(CategoriesEntity parent, Categories.Category category) {
         var entity = new CategoryEntity();
-        entity.id = category.id().value();
+        entity.id = category.getId().value();
         entity.parent = parent;
-        entity.name = category.name();
-        entity.color = category.color();
+        entity.name = category.getName();
+        entity.color = category.getColor();
         return entity;
     }
 

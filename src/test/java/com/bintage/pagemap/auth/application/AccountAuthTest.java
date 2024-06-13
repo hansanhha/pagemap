@@ -23,10 +23,10 @@ import static org.mockito.BDDMockito.*;
 
 @DisplayName("AuthPort Unit Testing")
 @ExtendWith(MockitoExtension.class)
-class AuthPortTest {
+class AccountAuthTest {
 
     @InjectMocks
-    private AuthPort authPort;
+    private AccountAuth accountAuth;
 
     @Mock
     private OAuth2Service oAuth2Service;
@@ -69,7 +69,7 @@ class AuthPortTest {
                     .when(userAgents)
                     .save(any(UserAgent.class));
 
-            var userAgentId = authPort.saveUserAgent(userAgentInfo.type(), userAgentInfo.os(), userAgentInfo.device(), userAgentInfo.application());
+            var userAgentId = accountAuth.saveUserAgent(userAgentInfo.type(), userAgentInfo.os(), userAgentInfo.device(), userAgentInfo.application());
 
             verify(userAgents, times(1)).save(any(UserAgent.class));
             assertNotNull(userAgentId);
@@ -80,7 +80,7 @@ class AuthPortTest {
             var invalidUserAgentInfo = getInvalidUserAgentInfo();
 
             assertThrows(IllegalArgumentException.class, () -> {
-                authPort.saveUserAgent(invalidUserAgentInfo.type(), invalidUserAgentInfo.os(), invalidUserAgentInfo.device(), invalidUserAgentInfo.application());
+                accountAuth.saveUserAgent(invalidUserAgentInfo.type(), invalidUserAgentInfo.os(), invalidUserAgentInfo.device(), invalidUserAgentInfo.application());
             });
         }
 
@@ -111,7 +111,7 @@ class AuthPortTest {
             given(accounts.findById(any(Account.AccountId.class)))
                     .willReturn(Optional.empty());
 
-            authPort.signUpIfFirst(newAccountId, oauth2Provider, oauth2MemberNumber);
+            accountAuth.signUpIfFirst(newAccountId, oauth2Provider, oauth2MemberNumber);
 
             then(accounts).should(times(1)).findById(any(Account.AccountId.class));
             then(accounts).should(times(1)).save(accountCaptor.capture());
@@ -133,7 +133,7 @@ class AuthPortTest {
                     .willReturn(Optional.empty());
 
             assertThrows(IllegalArgumentException.class,
-                    () -> authPort.signUpIfFirst(newAccountId, "invalidProvider", oauth2MemberNumber));
+                    () -> accountAuth.signUpIfFirst(newAccountId, "invalidProvider", oauth2MemberNumber));
 
             then(accounts).should(times(1)).findById(any(Account.AccountId.class));
             then(accounts).should(times(0)).save(any(Account.class));
@@ -178,7 +178,7 @@ class AuthPortTest {
                     .given(signEventPublisher)
                     .signedIn(any(Account.AccountId.class), any(UserAgent.UserAgentId.class), any(SignEventPublisher.TokenIdMap.class), any(Instant.class));
 
-            var signInResponse = authPort.signIn(signedUpAccount.getId().value(), newUserAgent.getId().value().toString());
+            var signInResponse = accountAuth.signIn(signedUpAccount.getId().value(), newUserAgent.getId().value().toString());
 
             then(userAgents).should(times(1)).findById(any(UserAgent.UserAgentId.class));
             then(accounts).should(times(1)).findById(any(Account.AccountId.class));
@@ -239,7 +239,7 @@ class AuthPortTest {
                     .given(signEventPublisher)
                     .signedIn(any(Account.AccountId.class), any(UserAgent.UserAgentId.class), any(SignEventPublisher.TokenIdMap.class), any(Instant.class));
 
-            var signInResponse = authPort.signIn(signedUpAccount.getId().value(), newUserAgent.getId().value().toString());
+            var signInResponse = accountAuth.signIn(signedUpAccount.getId().value(), newUserAgent.getId().value().toString());
 
 
             then(userAgents).should(times(1)).findById(any(UserAgent.UserAgentId.class));
@@ -287,7 +287,7 @@ class AuthPortTest {
                     .given(signEventPublisher)
                     .signedOut(any(UserAgent.UserAgentId.class), any(Account.AccountId.class));
 
-            authPort.signOut(accessToken.getId().value().toString());
+            accountAuth.signOut(accessToken.getId().value().toString());
 
             then(tokens).should(times(1)).findById(any(Token.TokenId.class));
             then(userAgents).should(times(1)).findTokensById(any(UserAgent.UserAgentId.class));
@@ -311,7 +311,7 @@ class AuthPortTest {
                     .given(signEventPublisher)
                     .signedOut(any(UserAgent.UserAgentId.class), any(Account.AccountId.class));
 
-            authPort.signOutForOtherDevice(otherUserAgent.getId().value().toString());
+            accountAuth.signOutForOtherDevice(otherUserAgent.getId().value().toString());
 
             then(userAgents).should(times(1)).findTokensById(any(UserAgent.UserAgentId.class));
             then(userAgents).should(times(1)).markAsSignedOut(any(UserAgent.class));
@@ -335,8 +335,8 @@ class AuthPortTest {
             given(userAgents.findByAccountId(any(Account.AccountId.class)))
                     .willReturn(List.of(signedUserAgent));
 
-            var authenticationResponse = authPort.authenticate(accessToken.getId().value().toString(),
-                    new AuthPort.RequestUserAgentInfo("DESKTOP", "WINDOWS", "WINDOWS", "CHROME"));
+            var authenticationResponse = accountAuth.authenticate(accessToken.getId().value().toString(),
+                    new AccountAuth.RequestUserAgentInfo("DESKTOP", "WINDOWS", "WINDOWS", "CHROME"));
 
             then(tokens).should(times(1)).findById(any(Token.TokenId.class));
             then(tokenService).should(times(1)).decode(any(Token.class));
@@ -369,7 +369,7 @@ class AuthPortTest {
                     .given(signEventPublisher)
                     .deletedAccount(any(Account.AccountId.class), any(Instant.class));
 
-            authPort.deleteAccount(signedUpAccount.getId().value());
+            accountAuth.deleteAccount(signedUpAccount.getId().value());
 
             then(accounts).should(times(1)).findById(any(Account.AccountId.class));
             then(oAuth2Service).should(times(1)).unlinkForAccount(any(Account.AccountId.class), any(Account.OAuth2Provider.class), any(Account.OAuth2MemberIdentifier.class));

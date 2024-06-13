@@ -59,7 +59,7 @@ public class WebPageEntity {
     @Column(name = "tags")
     private Set<String> tags;
 
-    public record AccountEntity(String id) {}
+    public record AccountEntity(String accountId) {}
 
     public static WebPageEntity fromDomainModel(WebPage domainModel) {
         var entity = new WebPageEntity();
@@ -72,7 +72,7 @@ public class WebPageEntity {
         entity.visitCount = domainModel.getVisitCount();
         entity.delete = Delete.fromValueObject(domainModel.getDeleted());
         entity.categories = domainModel.getCategories().stream()
-                .map(category -> category.id().value()).collect(Collectors.toSet());
+                .map(category -> category.getId().value()).collect(Collectors.toSet());
         entity.tags = domainModel.getTags().getNames();
         return entity;
     }
@@ -89,7 +89,7 @@ public class WebPageEntity {
         return WebPage.builder()
                 .id(new WebPage.WebPageId(entity.getId()))
                 .parentId(new Map.MapId(entity.getParent()))
-                .accountId(new Account.AccountId(entity.getAccountEntity().id))
+                .accountId(new Account.AccountId(entity.getAccountEntity().accountId))
                 .title(entity.getTitle())
                 .description(entity.getDescription())
                 .url(URI.create(entity.getUri()))

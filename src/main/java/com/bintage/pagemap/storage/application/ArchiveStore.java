@@ -6,6 +6,7 @@ import com.bintage.pagemap.storage.domain.event.MapMovedToTrash;
 import com.bintage.pagemap.storage.domain.event.MapRestored;
 import com.bintage.pagemap.storage.domain.event.WebPageMovedToTrash;
 import com.bintage.pagemap.storage.domain.event.WebPageRestored;
+import com.bintage.pagemap.storage.domain.exception.DomainModelNotFoundException;
 import com.bintage.pagemap.storage.domain.model.*;
 import com.bintage.pagemap.storage.util.RandomTitleGenerator;
 import lombok.RequiredArgsConstructor;
@@ -16,9 +17,9 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import java.net.URI;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @PrimaryPort
@@ -32,25 +33,25 @@ public class ArchiveStore {
     private final WebPageRepository webPageRepository;
     private final CategoriesRepository categoriesRepository;
 
-    public MapStoreResponse storeMap(MapStoreRequest request) {
+    public MapSaveResponse saveMap(MapSaveRequest request) {
         var accountId = new Account.AccountId(request.accountId());
         var parentMapId = new Map.MapId(UUID.fromString(request.parentMapId()));
 
         var registeredCategories = categoriesRepository.findByAccountId(accountId)
-                .orElseThrow(() -> new IllegalArgumentException("not found categories by account id"));
+                .orElseThrow(() -> new DomainModelNotFoundException.InCategories(accountId));
 
         var parentOptional = mapRepository.findById(parentMapId);
 
         if (parentOptional.isEmpty()) {
             var rootMap = rootMapRepository.findByAccountId(accountId)
-                    .orElseThrow(() -> new IllegalArgumentException("not found root map by account"));
+                    .orElseThrow(() -> new DomainModelNotFoundException.InRootMap(accountId));
 
             var map = convertDtoToMap(request, registeredCategories, accountId, rootMap.getId());
 
             rootMap.addChild(map);
             rootMapRepository.updateFamily(rootMap);
             mapRepository.save(map);
-            return new MapStoreResponse(map.getId().value().toString());
+            return new MapSaveResponse(map.getId().value().toString());
         }
 
         var parentMap = parentOptional.get();
@@ -59,28 +60,28 @@ public class ArchiveStore {
         parentMap.addChild(map);
         mapRepository.updateFamily(parentMap);
         mapRepository.save(map);
-        return new MapStoreResponse(map.getId().value().toString());
+        return new MapSaveResponse(map.getId().value().toString());
     }
 
-    public WebPageStoreResponse storeWebPage(WebPageStoreRequest request) {
+    public WebPageSaveResponse saveWebPage(WebPageSaveRequest request) {
         var accountId = new Account.AccountId(request.accountId());
         var parentMapId = new Map.MapId(UUID.fromString(request.mapId()));
 
         var registeredCategories = categoriesRepository.findByAccountId(accountId)
-                .orElseThrow(() -> new IllegalArgumentException("Not found categories by account id"));
+                .orElseThrow(() -> new DomainModelNotFoundException.InCategories(accountId));
 
         var parentMapOptional = mapRepository.findById(parentMapId);
 
         if (parentMapOptional.isEmpty()) {
             var rootMap = rootMapRepository.findByAccountId(accountId)
-                    .orElseThrow(() -> new IllegalArgumentException("not found root map by account"));
+                    .orElseThrow(() -> new DomainModelNotFoundException.InRootMap(accountId));
 
             var webPage = convertDtoToWebPage(request, registeredCategories, accountId, rootMap.getId());
 
             rootMap.addWebPage(webPage);
             rootMapRepository.updateFamily(rootMap);
             webPageRepository.save(webPage);
-            return new WebPageStoreResponse(webPage.getId().value().toString());
+            return new WebPageSaveResponse(webPage.getId().value().toString());
         }
 
         var parentMap = parentMapOptional.get();
@@ -90,30 +91,37 @@ public class ArchiveStore {
 
         webPageRepository.save(webPage);
         mapRepository.updateFamily(parentMap);
-        return new WebPageStoreResponse(webPage.getId().value().toString());
+        return new WebPageSaveResponse(webPage.getId().value().toString());
     }
 
-    public void updateMapMetadata(MapUpdateRequest updateRequest) {
-        var map = mapRepository.findById(new Map.MapId(UUID.fromString(updateRequest.mapId())))
-                .orElseThrow(() -> new IllegalArgumentException("not found map by id"));
+    public void updateMapMetadata(MapUpdateRequest request) {
+        var mapId = new Map.MapId(UUID.fromString(request.mapId()));
 
-        var categories = categoriesRepository.findByAccountId(map.getAccountId())
-                .orElseThrow(() -> new IllegalArgumentException("not found categories by account"));
-        var updateCategories = categories.getMatchCategories(updateRequest.categories());
+        var map = mapRepository.findById(mapId)
+                .orElseThrow(() -> new DomainModelNotFoundException.InMap(mapId));
 
-        map.update(updateRequest.title(), updateRequest.description(), updateCategories, updateRequest.tags());
+        var accountId = map.getAccountId();
+        var registeredCategories = categoriesRepository.findByAccountId(accountId)
+                .orElseThrow(() -> new DomainModelNotFoundException.InCategories(accountId));
+
+        var archiveMetadata = getArchiveMetadata(request.title(), request.description(), request.categories(), request.tags(), registeredCategories);
+
+        map.update(archiveMetadata.title(), archiveMetadata.description(), archiveMetadata.categories(), archiveMetadata.tags().getNames());
         mapRepository.updateMetadata(map);
     }
 
-    public void updateWebPageMetadata(WebPageUpdateRequest webPageUpdateRequest) {
-        var webPage = webPageRepository.findById(new WebPage.WebPageId(UUID.fromString(webPageUpdateRequest.webPageId())))
-                .orElseThrow(() -> new IllegalArgumentException("not found webpage by id"));
+    public void updateWebPageMetadata(WebPageUpdateRequest request) {
+        var webPageId = new WebPage.WebPageId(UUID.fromString(request.webPageId()));
+        var webPage = webPageRepository.findById(webPageId)
+                .orElseThrow(() -> new DomainModelNotFoundException.InWebPage(webPageId));
 
-        var categories = categoriesRepository.findByAccountId(webPage.getAccountId())
-                .orElseThrow(() -> new IllegalArgumentException("not found categories by account"));
-        var updateCategories = categories.getMatchCategories(webPageUpdateRequest.categories());
+        var accountId = webPage.getAccountId();
+        var registeredCategories = categoriesRepository.findByAccountId(accountId)
+                .orElseThrow(() -> new DomainModelNotFoundException.InCategories(accountId));
 
-        webPage.update(URI.create(webPageUpdateRequest.uri()), webPageUpdateRequest.title(), webPageUpdateRequest.description(), updateCategories, webPageUpdateRequest.tags());
+        var archiveMetadata = getArchiveMetadata(request.title(), request.description(), request.categories(), request.tags(), registeredCategories);
+
+        webPage.update(request.uri(), archiveMetadata.title(), archiveMetadata.description(), archiveMetadata.categories(), archiveMetadata.tags().getNames());
         webPageRepository.updateMetadata(webPage);
     }
 
@@ -122,20 +130,22 @@ public class ArchiveStore {
         var sourceMapId = new Map.MapId(UUID.fromString(sourceMapIdStr));
 
         var sourceMap = mapRepository.findById(sourceMapId)
-                .orElseThrow(() -> new IllegalArgumentException("not found map by id"));
+                .orElseThrow(() -> new DomainModelNotFoundException.InMap(sourceMapId));
 
         var sourceMapParentId = sourceMap.getParentId();
         if (sourceMapParentId.equals(destMapId)) {
             return;
         }
 
-        var rootMap = rootMapRepository.findByAccountId(sourceMap.getAccountId())
-                .orElseThrow(() -> new IllegalArgumentException("not found rootMap by account"));
+        var accountId = sourceMap.getAccountId();
+        var rootMap = rootMapRepository.findByAccountId(accountId)
+                .orElseThrow(() -> new DomainModelNotFoundException.InRootMap(accountId));
         var rootMapId = rootMap.getId();
 
         // 다른 Map으로 이동하려는 Map의 부모가 rootMap인 경우
         if (sourceMapParentId.equals(rootMapId)) {
-            var destMap = mapRepository.findById(destMapId).orElseThrow(() -> new IllegalArgumentException("not found map by id"));
+            var destMap = mapRepository.findById(destMapId)
+                    .orElseThrow(() -> new DomainModelNotFoundException.InMap(destMapId));
 
             // 이동하려는 Map의 부모가 RootMap이면서, 자신의 자식 Map 하위로 이동하는 경우
             if (sourceMapId.equals(destMap.getParentId())) {
@@ -155,7 +165,7 @@ public class ArchiveStore {
         }
 
         var sourceMapParent = mapRepository.findById(sourceMapParentId)
-                .orElseThrow(() -> new IllegalArgumentException("not found map by id"));
+                .orElseThrow(() -> new DomainModelNotFoundException.InMap(sourceMapParentId));
 
         // 목적지가 RootMap인 경우
         if (destMapId.equals(rootMapId)) {
@@ -169,7 +179,8 @@ public class ArchiveStore {
             return;
         }
 
-        var destMap = mapRepository.findById(destMapId).orElseThrow(() -> new IllegalArgumentException("not found map by id"));
+        var destMap = mapRepository.findById(destMapId)
+                .orElseThrow(() -> new DomainModelNotFoundException.InMap(destMapId));
 
         // 목적지가 RootMap이 아니면서 자신의 자식 Map으로 이동하는 경우
         if (sourceMapId.equals(destMap.getParentId())) {
@@ -195,13 +206,15 @@ public class ArchiveStore {
         var sourceWebPageId = new WebPage.WebPageId(UUID.fromString(sourceWebPageIdStr));
 
         var sourceWebPage = webPageRepository.findById(sourceWebPageId)
-                .orElseThrow(() -> new IllegalArgumentException("not found webpage by id"));
+                .orElseThrow(() -> new DomainModelNotFoundException.InWebPage(sourceWebPageId));
 
-        var rootMap = rootMapRepository.findByAccountId(sourceWebPage.getAccountId())
-                .orElseThrow(() -> new IllegalArgumentException("not found rootMap by id"));
+        var accountId = sourceWebPage.getAccountId();
+        var rootMap = rootMapRepository.findByAccountId(accountId)
+                .orElseThrow(() -> new DomainModelNotFoundException.InRootMap(accountId));
 
-        var sourceWebPageParentMap = mapRepository.findById(sourceWebPage.getParentId())
-                .orElseThrow(() -> new IllegalArgumentException("not found webpage by id"));
+        var sourceWebPageParentMapId = sourceWebPage.getParentId();
+        var sourceWebPageParentMap = mapRepository.findById(sourceWebPageParentMapId)
+                .orElseThrow(() -> new DomainModelNotFoundException.InMap(sourceWebPageParentMapId));
 
         // WebPage를 RootMap으로 옮기는 경우
         if (destMapId.equals(rootMap.getId())) {
@@ -216,7 +229,7 @@ public class ArchiveStore {
         }
 
         var destMap = mapRepository.findById(destMapId)
-                .orElseThrow(() -> new IllegalArgumentException("not found map by id"));
+                .orElseThrow(() -> new DomainModelNotFoundException.InMap(destMapId));
 
         // WebPage의 부모가 RootMap인 경우
         if (sourceWebPage.getParentId().equals(rootMap.getId())) {
@@ -245,7 +258,7 @@ public class ArchiveStore {
     @TransactionalEventListener
     void on(MapMovedToTrash event) {
         var map = mapRepository.findById(event.mapId())
-                .orElseThrow(() -> new IllegalArgumentException("Not found map by id"));
+                .orElseThrow(() -> new IllegalArgumentException("Not found map by accountId"));
 
         map.delete(event.movedAt());
         mapRepository.updateDeletedStatus(map);
@@ -256,7 +269,7 @@ public class ArchiveStore {
     @TransactionalEventListener
     void on(MapRestored event) {
         var map = mapRepository.findById(event.mapId())
-                .orElseThrow(() -> new IllegalArgumentException("Not found map by id"));
+                .orElseThrow(() -> new IllegalArgumentException("Not found map by accountId"));
 
         map.restore();
         mapRepository.updateDeletedStatus(map);
@@ -267,7 +280,7 @@ public class ArchiveStore {
     @TransactionalEventListener
     void on(WebPageMovedToTrash event) {
         var webPage = webPageRepository.findById(event.webPageId())
-                .orElseThrow(() -> new IllegalArgumentException("Not found web page by id"));
+                .orElseThrow(() -> new IllegalArgumentException("Not found web page by accountId"));
 
         webPage.delete(event.movedAt());
         webPageRepository.updateDeletedStatus(webPage);
@@ -278,37 +291,24 @@ public class ArchiveStore {
     @TransactionalEventListener
     void on(WebPageRestored event) {
         var webPage = webPageRepository.findById(event.webPageId())
-                .orElseThrow(() -> new IllegalArgumentException("Not found web page by id"));
+                .orElseThrow(() -> new IllegalArgumentException("Not found web page by accountId"));
 
         webPage.restore();
         webPageRepository.updateDeletedStatus(webPage);
     }
 
-    private static Map convertDtoToMap(MapStoreRequest request, Categories registeredCategories,
+    private static Map convertDtoToMap(MapSaveRequest request, Categories registeredCategories,
                                        Account.AccountId accountId, Map.MapId parentMapId) {
-        var categories = new HashSet<Categories.Category>();
-        var tags = Tags.empty();
-        var title = RandomTitleGenerator.generate();
+        var archiveMetadata = getArchiveMetadata(request.title(), request.description(),
+                request.categories(), request.tags(), registeredCategories);
 
-        if(!request.categories().isEmpty()) {
-            categories = (HashSet<Categories.Category>) registeredCategories.getMatchCategories(request.categories());
-        }
-
-        if (!request.tags().isEmpty()) {
-            tags = Tags.of(request.tags());
-        }
-
-        if (!request.title().isEmpty() && !request.title().isBlank()) {
-            title = request.title();
-        }
-
-        return Map.builder()
+        return com.bintage.pagemap.storage.domain.model.Map.builder()
                 .id(new Map.MapId(UUID.randomUUID()))
                 .accountId(accountId)
-                .title(title)
-                .description(request.description())
-                .tags(tags)
-                .categories(categories)
+                .title(archiveMetadata.title())
+                .description(archiveMetadata.description())
+                .tags(archiveMetadata.tags())
+                .categories(archiveMetadata.categories())
                 .deleted(Trash.Delete.notScheduled())
                 .children(List.of())
                 .parentId(parentMapId)
@@ -316,36 +316,53 @@ public class ArchiveStore {
                 .build();
     }
 
-    private static WebPage convertDtoToWebPage(WebPageStoreRequest request, Categories registeredCategories,
+    private static WebPage convertDtoToWebPage(WebPageSaveRequest request, Categories registeredCategories,
                                                Account.AccountId accountId, Map.MapId parentMapId) {
-        var categories = new HashSet<Categories.Category>();
-        var tags = Tags.empty();
-        var title = request.title();
+        var archiveMetadata = getArchiveMetadata(request.title(), request.description(),
+                request.categories(), request.tags(), registeredCategories);
 
-        if (title.isBlank() || title.isEmpty()) {
-            URI uri = request.uri();
-            title = uri.getScheme().concat(uri.getHost());
-        }
-
-        if (!request.tags().isEmpty()) {
-            tags = Tags.of(request.tags());
-        }
-
-        if (!request.categories().isEmpty()) {
-            categories= (HashSet<Categories.Category>) registeredCategories.getMatchCategories(request.categories());
-        }
-
-        return WebPage.builder()
+        return com.bintage.pagemap.storage.domain.model.WebPage.builder()
                 .id(new WebPage.WebPageId(UUID.randomUUID()))
                 .accountId(accountId)
-                .title(title)
-                .description(request.description())
-                .tags(tags)
-                .categories(categories)
+                .title(archiveMetadata.title())
+                .description(archiveMetadata.description())
+                .tags(archiveMetadata.tags())
+                .categories(archiveMetadata.categories())
                 .deleted(Trash.Delete.notScheduled())
                 .parentId(parentMapId)
                 .url(request.uri())
                 .visitCount(0)
                 .build();
+    }
+
+    private static ArchiveMetadata getArchiveMetadata(String reqTitle, String reqDescription,
+                                                      Set<UUID> reqCategories, Set<String> reqTags,
+                                                      Categories registeredCategories) {
+
+        var title = RandomTitleGenerator.generate();
+        var description = "";
+        var categories = new HashSet<Categories.Category>();
+        var tags = Tags.empty();
+
+        if (!reqTitle.isEmpty() && !reqTitle.isBlank()) {
+            title = reqTitle;
+        }
+
+        if (!reqDescription.isEmpty() && !reqDescription.isBlank()) {
+            description = reqDescription;
+        }
+
+        if(!reqCategories.isEmpty()) {
+            categories = (HashSet<Categories.Category>) registeredCategories.getMatchCategories(reqCategories);
+        }
+
+        if (!reqTags.isEmpty()) {
+            tags = Tags.of(reqTags);
+        }
+
+        return new ArchiveMetadata(title, description, categories, tags);
+    }
+
+    private record ArchiveMetadata(String title, String description, HashSet<Categories.Category> categories, Tags tags) {
     }
 }

@@ -44,7 +44,7 @@ public class TrashEntity {
     @Column(name = "delete_scheduled_export")
     private Set<UUID> deleteScheduledExportIds;
 
-    public record AccountEntity(String id) {}
+    public record AccountEntity(String accountId) {}
 
     public static TrashEntity fromDomainModel(Trash domainModel) {
         var entity = new TrashEntity();
@@ -67,7 +67,7 @@ public class TrashEntity {
 
         return Trash.builder()
                 .id(new Trash.TrashId(entity.getId()))
-                .accountId(new Account.AccountId(entity.getAccountEntity().id()))
+                .accountId(new Account.AccountId(entity.getAccountEntity().accountId()))
                 .deleteScheduledMapIds(mapIds)
                 .deleteScheduledWebPageIds(webPageIds)
                 .deleteScheduledExportIds(exportIds)

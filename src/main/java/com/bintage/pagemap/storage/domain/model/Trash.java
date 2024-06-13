@@ -1,6 +1,7 @@
 package com.bintage.pagemap.storage.domain.model;
 
 import com.bintage.pagemap.auth.domain.account.Account;
+import com.bintage.pagemap.storage.domain.exception.DomainModelException;
 import lombok.Builder;
 import lombok.Getter;
 import org.jmolecules.ddd.annotation.AggregateRoot;
@@ -10,7 +11,7 @@ import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.bintage.pagemap.storage.domain.model.StorageException.*;
+import static com.bintage.pagemap.storage.domain.exception.StorageException.*;
 
 @AggregateRoot
 @Builder
@@ -25,7 +26,7 @@ public class Trash {
 
     public void addMap(Map.MapId mapId) {
         if (deleteScheduledMapIds.contains(mapId)) {
-            throw new AlreadyContainItemException(Item.MAP, mapId.value());
+            throw new DomainModelException.AlreadyContainChildException(Item.TRASH, getId().value, Item.MAP, mapId.value());
         }
 
         deleteScheduledMapIds.add(mapId);
@@ -33,7 +34,7 @@ public class Trash {
 
     public void addWebPage(WebPage.WebPageId webPageId) {
         if (deleteScheduledWebPageIds.contains(webPageId)) {
-            throw new AlreadyItemExistException(Item.PAGE, webPageId.value());
+            throw new DomainModelException.AlreadyContainChildException(Item.TRASH, getId().value, Item.WEB_PAGE, webPageId.value());
         }
 
         deleteScheduledWebPageIds.add(webPageId);
@@ -41,7 +42,7 @@ public class Trash {
 
     public void addExport(Export.ExportId exportId) {
         if (deleteScheduledExportIds.contains(exportId)) {
-            throw new AlreadyItemExistException(Item.EXPORT, exportId.value());
+            throw new DomainModelException.AlreadyContainChildException(Item.TRASH, getId().value, Item.EXPORT, exportId.value());
         }
 
         deleteScheduledExportIds.add(exportId);
@@ -49,7 +50,7 @@ public class Trash {
 
     public void removeMap(Map.MapId mapId) {
         if (!deleteScheduledMapIds.contains(mapId)) {
-            throw new NotExistContainItemException(Item.MAP, mapId.value());
+            throw DomainModelException.NotContainChildException.hideParentId(Item.TRASH, ARCHIVE_ID_MASK, Item.MAP, mapId.value());
         }
 
         deleteScheduledMapIds.remove(mapId);
@@ -57,7 +58,7 @@ public class Trash {
 
     public void removeWebPage(WebPage.WebPageId webPageId) {
         if (!deleteScheduledWebPageIds.contains(webPageId)) {
-            throw new NotExistContainItemException(Item.PAGE, webPageId.value());
+            throw DomainModelException.NotContainChildException.hideParentId(Item.TRASH, ARCHIVE_ID_MASK, Item.WEB_PAGE, webPageId.value());
         }
 
         deleteScheduledWebPageIds.remove(webPageId);
@@ -65,7 +66,7 @@ public class Trash {
 
     public void removeExport(Export.ExportId exportId) {
         if (!deleteScheduledExportIds.contains(exportId)) {
-            throw new NotExistContainItemException(Item.EXPORT, exportId.value());
+            throw DomainModelException.NotContainChildException.hideParentId(Item.TRASH, Item.EXPORT, exportId.value());
         }
 
         deleteScheduledExportIds.remove(exportId);

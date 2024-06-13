@@ -3,6 +3,7 @@ package com.bintage.pagemap.auth.application;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Set;
 
@@ -23,10 +24,14 @@ public class AuthenticationResponse {
         return new AuthenticationResponse(false, null, null, cause);
     }
 
+    @Getter
+    @RequiredArgsConstructor
     public enum Cause {
-        INVALID,
-        EXPIRED,
-        DIFFERENT_USER_AGENT,
-        TEMPERED;
+        INVALID("Invalid Token"),
+        EXPIRED("Expired Token"),
+        DIFFERENT_USER_AGENT("Different User Agent"),
+        TEMPERED("Tempered Token"),;
+
+        private final String message;
     }
 }

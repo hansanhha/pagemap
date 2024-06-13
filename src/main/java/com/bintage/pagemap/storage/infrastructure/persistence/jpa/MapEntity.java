@@ -61,7 +61,7 @@ public class MapEntity {
     @Setter
     private String description;
 
-    public record AccountEntity(String id) {}
+    public record AccountEntity(String accountId) {}
 
     public static MapEntity fromDomainModel(Map domainModel) {
         var entity = new MapEntity();
@@ -105,7 +105,7 @@ public class MapEntity {
         }
 
         Set<UUID> categoryEntities = new HashSet<>();
-        categories.forEach(category -> categoryEntities.add(category.id().value()));
+        categories.forEach(category -> categoryEntities.add(category.getId().value()));
         return categoryEntities;
     }
 
@@ -121,7 +121,7 @@ public class MapEntity {
         return Map.builder()
                 .id(new Map.MapId(currentMapEntity.id))
                 .parentId(parentMapId)
-                .accountId(new Account.AccountId(currentMapEntity.getAccountEntity().id()))
+                .accountId(new Account.AccountId(currentMapEntity.getAccountEntity().accountId()))
                 .title(currentMapEntity.getTitle())
                 .description(currentMapEntity.getDescription())
                 .deleted(Delete.toValueObject(currentMapEntity.getDelete()))
@@ -151,7 +151,7 @@ public class MapEntity {
         return Map.builder()
                 .id(currentMapId)
                 .parentId(new Map.MapId(currentMapEntity.parent))
-                .accountId(new Account.AccountId(currentMapEntity.getAccountEntity().id()))
+                .accountId(new Account.AccountId(currentMapEntity.getAccountEntity().accountId()))
                 .title(currentMapEntity.getTitle())
                 .description(currentMapEntity.getDescription())
                 .webPages(webPages)

@@ -14,7 +14,7 @@ public class SecurityErrorResponseSender {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public void sendError(HttpServletRequest request, HttpServletResponse response, String message) throws IOException {
+    public void sendError(HttpServletRequest request, HttpServletResponse response, int status, String message) throws IOException {
         Map<String, String> result = Map.of("reason", message);
 
         response.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
@@ -27,7 +27,7 @@ public class SecurityErrorResponseSender {
         response.setHeader(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS, "Authorization");
         response.setHeader(HttpHeaders.ACCESS_CONTROL_MAX_AGE, "3600");
         response.getWriter().write(objectMapper.writeValueAsString(result));
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setStatus(status);
         response.flushBuffer();
     }
 }

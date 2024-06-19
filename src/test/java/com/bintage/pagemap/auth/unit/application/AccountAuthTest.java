@@ -1,6 +1,7 @@
-package com.bintage.pagemap.auth.application;
+package com.bintage.pagemap.auth.unit.application;
 
 import com.bintage.pagemap.HyphenSeparatingNestedTest;
+import com.bintage.pagemap.auth.application.AccountAuth;
 import com.bintage.pagemap.auth.domain.account.Account;
 import com.bintage.pagemap.auth.domain.account.Accounts;
 import com.bintage.pagemap.auth.domain.account.OAuth2Service;
@@ -47,7 +48,7 @@ class AccountAuthTest {
     private TokenService tokenService;
 
     private static final Account signedUpAccount = Account.builder()
-            .id(new Account.AccountId("가입된 테스트 유저"))
+            .id(new Account.AccountId("authTestAccount"))
             .oAuth2Provider(Account.OAuth2Provider.KAKAO)
             .oAuth2MemberIdentifier(new Account.OAuth2MemberIdentifier("1234567890"))
             .role(Account.Role.USER)
@@ -154,7 +155,7 @@ class AccountAuthTest {
             given(accounts.findById(any(Account.AccountId.class)))
                     .willReturn(Optional.of(signedUpAccount));
 
-            given(userAgents.findByAccountId(any(Account.AccountId.class)))
+            given(userAgents.findAllByAccountId(any(Account.AccountId.class)))
                     .willReturn(List.of());
 
             willDoNothing()
@@ -165,10 +166,10 @@ class AccountAuthTest {
                     .given(userAgents)
                     .markAsSignedIn(any(UserAgent.class));
 
-            given(tokenService.generate(any(UserAgent.UserAgentId.class), any(Account.AccountId.class), eq(Token.TokenType.ACCESS_TOKEN)))
+            given(tokenService.generate(any(UserAgent.UserAgentId.class), any(Account.AccountId.class), anyString(), eq(Token.TokenType.ACCESS_TOKEN)))
                     .willReturn(accessToken);
 
-            given(tokenService.generate(any(UserAgent.UserAgentId.class), any(Account.AccountId.class), eq(Token.TokenType.REFRESH_TOKEN)))
+            given(tokenService.generate(any(UserAgent.UserAgentId.class), any(Account.AccountId.class), anyString(), eq(Token.TokenType.REFRESH_TOKEN)))
                     .willReturn(refreshToken);
 
             given(tokens.save(any(Token.class)))
@@ -182,7 +183,7 @@ class AccountAuthTest {
 
             then(userAgents).should(times(1)).findById(any(UserAgent.UserAgentId.class));
             then(accounts).should(times(1)).findById(any(Account.AccountId.class));
-            then(userAgents).should(times(1)).findByAccountId(any(Account.AccountId.class));
+            then(userAgents).should(times(1)).findAllByAccountId(any(Account.AccountId.class));
             then(userAgents).should(times(1)).registerUserAgent(newUserAgent);
             then(userAgents).should(times(0)).delete(any(UserAgent.UserAgentId.class));
             then(userAgents).should(times(1)).markAsSignedIn(newUserAgent);
@@ -215,7 +216,7 @@ class AccountAuthTest {
             given(accounts.findById(any(Account.AccountId.class)))
                     .willReturn(Optional.of(signedUpAccount));
 
-            given(userAgents.findByAccountId(any(Account.AccountId.class)))
+            given(userAgents.findAllByAccountId(any(Account.AccountId.class)))
                     .willReturn(List.of(existUserAgent));
 
             willDoNothing()
@@ -226,10 +227,10 @@ class AccountAuthTest {
                     .given(userAgents)
                     .markAsSignedIn(any(UserAgent.class));
 
-            given(tokenService.generate(any(UserAgent.UserAgentId.class), any(Account.AccountId.class), eq(Token.TokenType.ACCESS_TOKEN)))
+            given(tokenService.generate(any(UserAgent.UserAgentId.class), any(Account.AccountId.class), anyString(), eq(Token.TokenType.ACCESS_TOKEN)))
                     .willReturn(accessToken);
 
-            given(tokenService.generate(any(UserAgent.UserAgentId.class), any(Account.AccountId.class), eq(Token.TokenType.REFRESH_TOKEN)))
+            given(tokenService.generate(any(UserAgent.UserAgentId.class), any(Account.AccountId.class), anyString(), eq(Token.TokenType.REFRESH_TOKEN)))
                     .willReturn(refreshToken);
 
             given(tokens.save(any(Token.class)))
@@ -244,7 +245,7 @@ class AccountAuthTest {
 
             then(userAgents).should(times(1)).findById(any(UserAgent.UserAgentId.class));
             then(accounts).should(times(1)).findById(any(Account.AccountId.class));
-            then(userAgents).should(times(1)).findByAccountId(any(Account.AccountId.class));
+            then(userAgents).should(times(1)).findAllByAccountId(any(Account.AccountId.class));
             then(userAgents).should(times(0)).registerUserAgent(newUserAgent);
             then(userAgents).should(times(1)).delete(any(UserAgent.UserAgentId.class));
             then(userAgents).should(times(1)).markAsSignedIn(existUserAgent);
@@ -329,18 +330,15 @@ class AccountAuthTest {
             given(tokenService.decode(accessToken))
                     .willReturn(accessToken);
 
-            given(accounts.findById(any(Account.AccountId.class)))
-                    .willReturn(Optional.of(signedUpAccount));
-
-            given(userAgents.findByAccountId(any(Account.AccountId.class)))
-                    .willReturn(List.of(signedUserAgent));
+            given(userAgents.findById(any(UserAgent.UserAgentId.class)))
+                    .willReturn(Optional.of(signedUserAgent));
 
             var authenticationResponse = accountAuth.authenticate(accessToken.getId().value().toString(),
                     new AccountAuth.RequestUserAgentInfo("DESKTOP", "WINDOWS", "WINDOWS", "CHROME"));
 
             then(tokens).should(times(1)).findById(any(Token.TokenId.class));
             then(tokenService).should(times(1)).decode(any(Token.class));
-            then(userAgents).should(times(1)).findByAccountId(any(Account.AccountId.class));
+            then(userAgents).should(times(1)).findById(any(UserAgent.UserAgentId.class));
 
             assertNotNull(authenticationResponse);
             assertTrue(authenticationResponse.isSuccess());
@@ -384,8 +382,9 @@ class AccountAuthTest {
                 .id(new Token.TokenId(UUID.randomUUID()))
                 .userAgentId(userAgent.getId())
                 .accountId(signedUpAccount.getId())
+                .accountRole(Account.Role.USER.name())
                 .type(Token.TokenType.ACCESS_TOKEN)
-                .issuer("pagetree")
+                .issuer("http://localhost:8080")
                 .issuedAt(now)
                 .expiresIn(now.plusSeconds(60 * 60 * 24))
                 .build();
@@ -396,8 +395,9 @@ class AccountAuthTest {
                 .id(new Token.TokenId(UUID.randomUUID()))
                 .userAgentId(userAgent.getId())
                 .accountId(signedUpAccount.getId())
+                .accountRole(Account.Role.USER.name())
                 .type(Token.TokenType.REFRESH_TOKEN)
-                .issuer("pagetree")
+                .issuer("http://localhost:8080")
                 .issuedAt(now)
                 .expiresIn(now.plusSeconds(60 * 60 * 24))
                 .build();

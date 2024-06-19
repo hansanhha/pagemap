@@ -51,7 +51,7 @@ public class SpringSecurityNimbusJwt implements TokenService {
     }
 
     @Override
-    public Token generate(UserAgent.UserAgentId userAgentId, Account.AccountId accountId, Token.TokenType tokenType) {
+    public Token generate(UserAgent.UserAgentId userAgentId, Account.AccountId accountId, String role, Token.TokenType tokenType) {
         var issuedAt = Instant.now();
         var expiredAt = calculateExpiredAt(issuedAt, tokenType);
         var tokenId = UUID.randomUUID();
@@ -61,6 +61,7 @@ public class SpringSecurityNimbusJwt implements TokenService {
                 .issuer(issuer)
                 .issuedAt(issuedAt)
                 .expiresAt(expiredAt)
+                .claim("role", role)
                 .subject(accountId.value())
                 .build();
         var jwtEncoderParameters = JwtEncoderParameters.from(jwsHeader, claims);
@@ -86,6 +87,7 @@ public class SpringSecurityNimbusJwt implements TokenService {
             return Token.builder()
                     .id(new Token.TokenId(UUID.fromString(decoded.getId())))
                     .accountId(new Account.AccountId(decoded.getSubject()))
+                    .accountRole(decoded.getClaimAsString("role"))
                     .issuer(decoded.getIssuer().toString())
                     .userAgentId(token.getUserAgentId())
                     .type(token.getType())

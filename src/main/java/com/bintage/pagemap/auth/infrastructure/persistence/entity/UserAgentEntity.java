@@ -120,6 +120,14 @@ public class UserAgentEntity {
                 .build();
     }
 
+
+    public void newUserAgentSignIn() {
+        var now = Timestamp.from(Instant.now());
+        this.signedIn = true;
+        this.lastSignedInAt = now;
+        this.lastModifiedAt = now;
+    }
+
     public void updateSignIn(UserAgent userAgent) {
         this.signedIn = userAgent.isSignedIn();
         this.lastSignedInAt = Timestamp.from(userAgent.getLastSignedIn());

@@ -15,7 +15,7 @@ public class SecurityErrorResponseSender {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public void sendError(HttpServletRequest request, HttpServletResponse response, int status, String message) throws IOException {
-        Map<String, String> result = Map.of("reason", message);
+        Map<String, String> result = Map.of("message", "access denied", "reason", message);
 
         response.setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
         response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");

@@ -1,6 +1,7 @@
 package com.bintage.pagemap.auth.infrastructure.security;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.web.util.matcher.IpAddressMatcher;
@@ -9,10 +10,10 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 import java.util.List;
 import java.util.Optional;
 
-@RequiredArgsConstructor
+@Builder
 public class RequestInspector {
 
-    private final List<RequestMatcher> requestMatchers;
+    private final List<RequestMatcher> permitApis;
     private final List<RequestMatcher> privateApiMatchers;
     private final List<IpAddressMatcher> permittedAddresses;
 
@@ -29,8 +30,8 @@ public class RequestInspector {
                 && permittedAddresses.stream().anyMatch(ipAddressMatcher -> ipAddressMatcher.matches(request));
     }
 
-    public boolean match(HttpServletRequest request) {
-        return requestMatchers.stream()
+    public boolean isPermitApi(HttpServletRequest request) {
+        return permitApis.stream()
                 .anyMatch(requestMatcher -> requestMatcher.matches(request));
     }
 

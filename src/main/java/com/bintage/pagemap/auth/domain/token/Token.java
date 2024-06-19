@@ -18,6 +18,7 @@ public class Token {
     private final TokenId id;
     private final UserAgent.UserAgentId userAgentId;
     private final Account.AccountId accountId;
+    private final String accountRole;
     private final String issuer;
     private final TokenValue content;
     private TokenStatus status;

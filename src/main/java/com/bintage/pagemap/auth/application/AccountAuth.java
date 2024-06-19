@@ -1,9 +1,10 @@
 package com.bintage.pagemap.auth.application;
 
 import com.bintage.pagemap.auth.domain.account.Account;
-import com.bintage.pagemap.auth.domain.account.OAuth2Service;
 import com.bintage.pagemap.auth.domain.account.Accounts;
+import com.bintage.pagemap.auth.domain.account.OAuth2Service;
 import com.bintage.pagemap.auth.domain.account.SignEventPublisher;
+import com.bintage.pagemap.auth.domain.exception.AccountItemNotFoundException;
 import com.bintage.pagemap.auth.domain.token.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,6 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 
 @PrimaryPort
 @Service
@@ -56,13 +56,13 @@ public class AccountAuth {
     public SignInResponse signIn(String accountIdStr, String newUserAgentIdStr) {
         var accountId = new Account.AccountId(accountIdStr);
         var newUserAgentId = new UserAgent.UserAgentId(UUID.fromString(newUserAgentIdStr));
-        var newUserAgent = userAgents.findById(newUserAgentId).orElseThrow(() -> new IllegalArgumentException("new user agent not found"));
-        var account = accounts.findById(accountId).orElseThrow(() -> new IllegalArgumentException("account not found"));
+        var newUserAgent = userAgents.findById(newUserAgentId).orElseThrow(() -> AccountItemNotFoundException.ofUserAgent(accountId));
+        var account = accounts.findById(accountId).orElseThrow(() -> AccountItemNotFoundException.ofAccount(accountId));
 
         // 로그인 중 저장된 UserAgent(newUserAgent)가 이미 존재하는(이전에 로그인한 장치) UserAgent와 동일한지 확인
         // 동일하면 기존 UserAgent 사용, newUserAgent 삭제
         // 다르다면 newUserAgent 저장
-        var signedUserAgents = userAgents.findByAccountId(accountId);
+        var signedUserAgents = userAgents.findAllByAccountId(accountId);
         var matchedUserAgent = signedUserAgents.stream()
                 .filter(signedUserAgent -> UserAgent.isSame(signedUserAgent, newUserAgent))
                 .findAny()
@@ -78,8 +78,8 @@ public class AccountAuth {
         matchedUserAgent.signIn();
         userAgents.markAsSignedIn(matchedUserAgent);
 
-        var accessToken = tokenService.generate(matchedUserAgent.getId(), accountId, Token.TokenType.ACCESS_TOKEN);
-        var refreshToken = tokenService.generate(matchedUserAgent.getId(), accountId, Token.TokenType.REFRESH_TOKEN);
+        var accessToken = tokenService.generate(matchedUserAgent.getId(), accountId, account.getRole().name(), Token.TokenType.ACCESS_TOKEN);
+        var refreshToken = tokenService.generate(matchedUserAgent.getId(), accountId, account.getRole().name(), Token.TokenType.REFRESH_TOKEN);
         tokens.save(accessToken);
         tokens.save(refreshToken);
 
@@ -94,23 +94,25 @@ public class AccountAuth {
 
     public void signOut(String tokenIdStr) {
         var token = tokens.findById(new Token.TokenId(UUID.fromString(tokenIdStr)))
-                .orElseThrow(() -> new IllegalArgumentException("token not found"));
+                .orElseThrow(() -> AccountItemNotFoundException.ofToken(new Token.TokenId(UUID.fromString(tokenIdStr))));
 
         var signedUserAgent = userAgents.findTokensById(token.getUserAgentId())
-                .orElseThrow(() -> new IllegalArgumentException("signed application not found"));
+                .orElseThrow(() -> AccountItemNotFoundException.ofUserAgent(token.getAccountId(), token.getUserAgentId()));
 
         signedUserAgent.signOut();
         userAgents.markAsSignedOut(signedUserAgent);
 
-        var account = accounts.findById(signedUserAgent.getAccountId()).orElseThrow(() -> new IllegalArgumentException("account not found"));
+        var accountId = signedUserAgent.getAccountId();
+        var account = accounts.findById(accountId).orElseThrow(() -> AccountItemNotFoundException.ofAccount(accountId));
         oAuth2Service.signOut(account.getId(), account.getOAuth2Provider(), account.getOAuth2MemberIdentifier());
 
-        signEventPublisher.signedOut(token.getUserAgentId(), signedUserAgent.getAccountId());
+        signEventPublisher.signedOut(token.getUserAgentId(), accountId);
     }
 
     public void signOutForOtherDevice(String otherUserAgentIdStr) {
-        var otherUserAgent = userAgents.findTokensById(new UserAgent.UserAgentId(UUID.fromString(otherUserAgentIdStr)))
-                .orElseThrow(() -> new IllegalArgumentException("signed application not found"));
+        var userAgentId = new UserAgent.UserAgentId(UUID.fromString(otherUserAgentIdStr));
+        var otherUserAgent = userAgents.findTokensById(userAgentId)
+                .orElseThrow(() -> AccountItemNotFoundException.ofUserAgent(userAgentId));
 
         otherUserAgent.signOut();
         userAgents.markAsSignedOut(otherUserAgent);
@@ -129,46 +131,44 @@ public class AccountAuth {
                         .oAuth2Provider(Account.OAuth2Provider.valueOf(oauth2Provider.toUpperCase()))
                         .role(Account.Role.USER)
                         .nickname(UUID.randomUUID().toString())
+                        .lastNicknameModifiedAt(now)
                         .createdAt(now)
                         .lastModifiedAt(now)
                         .build()));
     }
 
-    public AuthenticationResponse authenticate(String tokenId, RequestUserAgentInfo requestUserAgent) {
+    public AuthenticationResponse authenticate(String tokenIdStr, RequestUserAgentInfo requestUserAgent) {
+        var tokenId = new Token.TokenId(UUID.fromString(tokenIdStr));
+        Token savedToken = tokens.findById(tokenId)
+                .orElseThrow(() -> AccountItemNotFoundException.ofToken(tokenId ));
+
+        Token decodedToken;
+        try {
+            decodedToken = tokenService.decode(savedToken);
+        } catch (TokenException e) {
+            return AuthenticationResponse.inValid(AuthenticationResponse.FailureCause.INVALID);
+        }
+
+        var userAgentIdInToken = decodedToken.getUserAgentId();
+        var userAgent = userAgents.findById(userAgentIdInToken)
+                .orElseThrow(() -> AccountItemNotFoundException.ofUserAgent(decodedToken.getAccountId(), userAgentIdInToken));
+
         var requestType = UserAgent.Type.valueOf(requestUserAgent.type().toUpperCase());
         var requestOS = UserAgent.OS.valueOf(requestUserAgent.os().toUpperCase());
         var requestDevice = UserAgent.Device.valueOf(requestUserAgent.device().toUpperCase());
         var requestApplication = UserAgent.Application.valueOf(requestUserAgent.application().toUpperCase());
 
-        Token decodedToken;
-        Token savedToken = tokens.findById(new Token.TokenId(UUID.fromString(tokenId)))
-                .orElseThrow(() -> new IllegalArgumentException("token not found"));
-
-        try {
-            decodedToken = tokenService.decode(savedToken);
-        } catch (TokenException e) {
-            return AuthenticationResponse.inValid(AuthenticationResponse.Cause.INVALID);
+        if (userAgent.isSame(requestType, requestOS, requestDevice, requestApplication)) {
+            return AuthenticationResponse.valid(decodedToken.getAccountId().value(), Set.of(decodedToken.getAccountRole()));
         }
 
-        var accountId = decodedToken.getAccountId();
-        var account = accounts.findById(accountId).orElseThrow(() -> new IllegalArgumentException("account not found"));
-        var userAgents = this.userAgents.findByAccountId(accountId);
-
-        AtomicReference<AuthenticationResponse> authenticationResponse = new AtomicReference<>();
-        userAgents.stream()
-                .filter(userAgent ->
-                        userAgent.getId().value().equals(savedToken.getUserAgentId().value())
-                                && userAgent.isSame(requestType, requestOS, requestDevice, requestApplication))
-                .findAny()
-                .ifPresentOrElse(userAgent -> authenticationResponse.set(AuthenticationResponse.valid(accountId.value(), Set.of(account.getRole().name()))),
-                        () -> authenticationResponse.set(AuthenticationResponse.inValid(AuthenticationResponse.Cause.DIFFERENT_USER_AGENT)));
-
-        return authenticationResponse.get();
+        return AuthenticationResponse.inValid(AuthenticationResponse.FailureCause.DIFFERENT_USER_AGENT);
     }
 
     public void deleteAccount(String accountIdStr) {
         var accountId = new Account.AccountId(accountIdStr);
-        var account = accounts.findById(accountId).orElseThrow(() -> new IllegalArgumentException("account not found"));
+        var account = accounts.findById(accountId)
+                .orElseThrow(() -> AccountItemNotFoundException.ofAccount(accountId));
 
         oAuth2Service.unlinkForAccount(account.getId(), account.getOAuth2Provider(), account.getOAuth2MemberIdentifier());
         userAgents.deleteAllByAccountId(accountId);

@@ -1,7 +1,7 @@
 package com.bintage.pagemap.auth.infrastructure.security;
 
 import com.bintage.pagemap.auth.application.AccountAuth;
-import com.bintage.pagemap.global.exception.GlobalExceptionCode;
+import com.bintage.pagemap.auth.domain.exception.AccountExceptionCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ public class OAuth2LogoutHandler implements LogoutHandler {
                         () -> {
                             try {
                                 securityErrorResponseSender.sendError(request, response,
-                                        GlobalExceptionCode.UNAUTHORIZED.getStatusCode(), "Invalid token");
+                                        AccountExceptionCode.UNAUTHORIZED.getStatus(), "Invalid token");
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }

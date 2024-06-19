@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -33,6 +34,9 @@ public class AccountEntity {
     private Timestamp createdAt;
 
     @Setter
+    private Timestamp lastNicknameModifiedAt;
+
+    @Setter
     private Timestamp lastModifiedAt;
 
     public static AccountEntity fromDomainModel(Account account) {
@@ -42,6 +46,7 @@ public class AccountEntity {
                 account.getOAuth2Provider(),
                 account.getOAuth2MemberIdentifier().value(),
                 Timestamp.from(account.getCreatedAt()),
+                Timestamp.from(account.getLastNicknameModifiedAt()),
                 Timestamp.from(account.getLastModifiedAt()));
     }
 
@@ -53,6 +58,7 @@ public class AccountEntity {
                 accountEntity.oAuth2Provider,
                 new Account.OAuth2MemberIdentifier(accountEntity.oAuth2MemberIdentifier),
                 accountEntity.createdAt.toInstant(),
+                accountEntity.lastNicknameModifiedAt.toInstant(),
                 accountEntity.lastModifiedAt.toInstant());
     }
 }

@@ -44,7 +44,7 @@ public class UserAgentsJpaAdapter implements UserAgents {
     }
 
     @Override
-    public List<UserAgent> findByAccountId(Account.AccountId accountId) {
+    public List<UserAgent> findAllByAccountId(Account.AccountId accountId) {
         return userAgentEntityRepository.findByAccountEntity(new UserAgentEntity.AccountEntity(accountId.value()))
                 .stream()
                 .map(UserAgentEntity::toDomainModel)
@@ -76,7 +76,7 @@ public class UserAgentsJpaAdapter implements UserAgents {
         var foundUserAgentEntity = userAgentEntityRepository.findById(newUserAgent.getId().value())
                 .orElseThrow(() -> new IllegalArgumentException("user agent not found"));
 
-        foundUserAgentEntity.updateSignIn(newUserAgent);
+        foundUserAgentEntity.newUserAgentSignIn();
         foundUserAgentEntity.updateAccount(newUserAgent.getAccountId().value());
     }
 

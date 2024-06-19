@@ -2,7 +2,7 @@ package com.bintage.pagemap.auth.infrastructure.security;
 
 import com.bintage.pagemap.auth.application.AccountAuth;
 import com.bintage.pagemap.auth.application.AuthenticationResponse;
-import com.bintage.pagemap.global.exception.GlobalExceptionCode;
+import com.bintage.pagemap.auth.domain.exception.AccountExceptionCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -10,7 +10,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.jmolecules.architecture.hexagonal.PrimaryAdapter;
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -20,7 +19,6 @@ import java.io.IOException;
 import java.util.stream.Collectors;
 
 @PrimaryAdapter
-@Profile("dev")
 @Component
 @RequiredArgsConstructor
 public class JwtBearerAuthenticationFilter extends OncePerRequestFilter {
@@ -29,15 +27,15 @@ public class JwtBearerAuthenticationFilter extends OncePerRequestFilter {
     private final SecurityErrorResponseSender securityErrorResponseSender;
     private final UserAgentExtractor userAgentExtractor;
     @Setter
-    private RequestInspector authRequireRequests;
+    private RequestInspector requestInspector;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         var tokenId = RequestInspector.findTokenByHttpHeader(request);
 
         if (tokenId.isEmpty()) {
-            securityErrorResponseSender.sendError(request, response, GlobalExceptionCode.UNAUTHORIZED.getStatusCode(),
-                    "Invalid token");
+            securityErrorResponseSender.sendError(request, response, AccountExceptionCode.UNAUTHORIZED.getStatus(),
+                    "empty token");
             return;
         }
 
@@ -50,14 +48,14 @@ public class JwtBearerAuthenticationFilter extends OncePerRequestFilter {
             saveAuthentication(tokenId.get(), authenticateResponse);
             filterChain.doFilter(request, response);
         } else {
-            securityErrorResponseSender.sendError(request, response, GlobalExceptionCode.UNAUTHORIZED.getStatusCode(),
-                    authenticateResponse.getCause().getMessage());
+            securityErrorResponseSender.sendError(request, response, AccountExceptionCode.UNAUTHORIZED.getStatus(),
+                    authenticateResponse.getFailureCause().getMessage());
         }
     }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        return !authRequireRequests.match(request) && !authRequireRequests.isPrivateApi(request);
+        return requestInspector.isPermitApi(request) && !requestInspector.isPrivateApi(request);
     }
 
     private void saveAuthentication(String tokenId, AuthenticationResponse authenticateResponse) {

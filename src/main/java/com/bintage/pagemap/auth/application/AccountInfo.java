@@ -2,6 +2,8 @@ package com.bintage.pagemap.auth.application;
 
 import com.bintage.pagemap.auth.domain.account.Account;
 import com.bintage.pagemap.auth.domain.account.Accounts;
+import com.bintage.pagemap.auth.domain.exception.AccountDomainModelException;
+import com.bintage.pagemap.auth.domain.exception.AccountItemNotFoundException;
 import com.bintage.pagemap.auth.domain.token.Token;
 import com.bintage.pagemap.auth.domain.token.Tokens;
 import com.bintage.pagemap.auth.domain.token.UserAgents;
@@ -25,14 +27,18 @@ public class AccountInfo {
     private final UserAgents userAgents;
     private final Tokens tokens;
 
-    public AccountInfoResponse getAccountInfo(String accountId) {
-        Account account = accounts.findById(new Account.AccountId(accountId)).orElseThrow(() -> new IllegalArgumentException("Account not found"));
+    public AccountInfoResponse getAccountInfo(String accountIdStr) {
+        var accountId = new Account.AccountId(accountIdStr);
+        Account account = accounts.findById(accountId)
+                .orElseThrow(() -> AccountItemNotFoundException.ofAccount(accountId));
         return AccountInfoResponse.of(account.getNickname());
     }
 
     public AccountDeviceResponse getAccountDevice(String accountId, String tokenIdStr) {
-        var accountUserAgents = userAgents.findByAccountId(new Account.AccountId(accountId));
-        var token = tokens.findById(new Token.TokenId(UUID.fromString(tokenIdStr))).orElseThrow(() -> new IllegalArgumentException("Token not found"));
+        var accountUserAgents = userAgents.findAllByAccountId(new Account.AccountId(accountId));
+        var tokenId = new Token.TokenId(UUID.fromString(tokenIdStr));
+        var token = tokens.findById(tokenId)
+                .orElseThrow(() -> AccountItemNotFoundException.ofToken(tokenId));
 
         var accountDevices = accountUserAgents.stream()
                 .map(userAgent -> {
@@ -53,11 +59,13 @@ public class AccountInfo {
         return new AccountDeviceResponse(accountDevices, token.getUserAgentId().value().toString());
     }
 
-    public String changeNickname(String accountId, String nickname) {
-        Account account = accounts.findById(new Account.AccountId(accountId)).orElseThrow(() -> new IllegalArgumentException("Account not found"));
+    public String changeNickname(String accountIdStr, String nickname) {
+        var accountId = new Account.AccountId(accountIdStr);
+        Account account = accounts.findById(accountId)
+                .orElseThrow(() -> AccountItemNotFoundException.ofAccount(accountId));
 
         accounts.findByNickname(nickname).ifPresent(a -> {
-            throw new IllegalArgumentException("Nickname already exists");
+            throw new AccountDomainModelException.DuplicatedAccountNickname(accountId, nickname);
         });
 
         account.updateNickname(nickname);

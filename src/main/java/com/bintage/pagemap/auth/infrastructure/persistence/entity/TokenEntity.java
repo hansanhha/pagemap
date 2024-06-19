@@ -25,6 +25,7 @@ public class TokenEntity {
     @AttributeOverride(name = "signedDevice", column = @Column(name = "signed_device_id"))
     private UserAgentEntity userAgentEntity;
 
+    @Column(columnDefinition = "TEXT")
     private String tokenValue;
 
     private String issuer;

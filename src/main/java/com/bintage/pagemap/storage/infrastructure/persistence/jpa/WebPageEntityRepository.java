@@ -1,13 +1,13 @@
 package com.bintage.pagemap.storage.infrastructure.persistence.jpa;
 
+import com.bintage.pagemap.storage.infrastructure.persistence.jpa.entity.WebPageEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
-import java.util.UUID;
 
-public interface WebPageEntityRepository extends JpaRepository<WebPageEntity, UUID> {
+public interface WebPageEntityRepository extends JpaRepository<WebPageEntity, Long> {
 
-    @Query("SELECT w FROM WebPageEntity w WHERE w.parent = :parent")
-    List<WebPageEntity> findAllByParent(UUID parent);
+    @Query("SELECT w FROM WebPageEntity w WHERE w.parentMap = :parentMap")
+    List<WebPageEntity> findAllByParentMap(Long parentMap);
 }

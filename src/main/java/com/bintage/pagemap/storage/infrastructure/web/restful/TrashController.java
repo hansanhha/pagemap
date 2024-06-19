@@ -15,7 +15,7 @@ import static com.bintage.pagemap.storage.infrastructure.web.restful.ResponseMes
 
 @PrimaryAdapter
 @RestController
-@RequestMapping("/storage/trash")
+@RequestMapping("/storage")
 @RequiredArgsConstructor
 public class TrashController {
 
@@ -23,7 +23,7 @@ public class TrashController {
 
     @DeleteMapping("/maps/{id}")
     public ResponseEntity<Map<String, String>> deleteMap(@AuthenticationPrincipal AuthenticatedAccount account,
-                                                         @PathVariable String id) {
+                                                         @PathVariable Long id) {
         archiveTrash.deleteMap(account.getName(), id);
 
         return ResponseEntity.ok(DeletedArchiveResponseBody.of());
@@ -31,23 +31,23 @@ public class TrashController {
 
     @DeleteMapping("/webpages/{id}")
     public ResponseEntity<Map<String, String>> deleteWebPage(@AuthenticationPrincipal AuthenticatedAccount account,
-                                                             @PathVariable String id) {
+                                                             @PathVariable Long id) {
         archiveTrash.deleteWebPage(account.getName(), id);
 
         return ResponseEntity.ok(DeletedArchiveResponseBody.of());
     }
 
-    @PostMapping("/maps/{id}")
+    @PostMapping("/trash/maps/{id}")
     public ResponseEntity<Map<String, String>> restoreMap(@AuthenticationPrincipal AuthenticatedAccount account,
-                                                          @PathVariable String id) {
+                                                          @PathVariable Long id) {
         archiveTrash.restoreMap(account.getName(), id);
 
         return ResponseEntity.ok(RestoredArchiveResponseBody.of());
     }
 
-    @PostMapping("/webpages/{id}")
+    @PostMapping("/trash/webpages/{id}")
     public ResponseEntity<Map<String, String>> restoreWebPage(@AuthenticationPrincipal AuthenticatedAccount account,
-                                                              @PathVariable String id) {
+                                                              @PathVariable Long id) {
         archiveTrash.restoreWebPage(account.getName(), id);
 
         return ResponseEntity.ok(RestoredArchiveResponseBody.of());

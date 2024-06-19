@@ -1,6 +1,8 @@
 package com.bintage.pagemap.storage.infrastructure.web.restful.dto;
 
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,10 +17,9 @@ import java.util.UUID;
 @AllArgsConstructor(staticName = "of")
 public class MapCreateRestRequest {
 
-    @NotEmpty
-    String parentMapId;
+    Long parentMapId;
     String title;
     String description;
-    Set<UUID> categories;
+    Set<Long> categories;
     Set<String> tags;
 }

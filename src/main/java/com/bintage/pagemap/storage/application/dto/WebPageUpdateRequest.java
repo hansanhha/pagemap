@@ -2,12 +2,12 @@ package com.bintage.pagemap.storage.application.dto;
 
 import java.net.URI;
 import java.util.Set;
-import java.util.UUID;
 
-public record WebPageUpdateRequest(String webPageId,
+public record WebPageUpdateRequest(String accountId,
+                                   long webPageId,
                                    String title,
                                    String description,
                                    URI uri,
-                                   Set<UUID> categories,
+                                   Set<Long> categories,
                                    Set<String> tags) {
 }

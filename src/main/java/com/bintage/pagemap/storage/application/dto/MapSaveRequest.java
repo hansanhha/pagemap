@@ -4,9 +4,9 @@ import java.util.Set;
 import java.util.UUID;
 
 public record MapSaveRequest(String accountId,
-                             String parentMapId,
+                             Long parentMapId,
                              String title,
                              String description,
-                             Set<UUID> categories,
+                             Set<Long> categories,
                              Set<String> tags) {
 }

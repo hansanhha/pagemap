@@ -2,18 +2,15 @@ package com.bintage.pagemap.storage.application;
 
 import com.bintage.pagemap.auth.domain.account.Account;
 import com.bintage.pagemap.storage.application.dto.CategoryResponse;
-import com.bintage.pagemap.storage.domain.exception.DomainModelException;
-import com.bintage.pagemap.storage.domain.exception.DomainModelNotFoundException;
-import com.bintage.pagemap.storage.domain.model.Categories;
-import com.bintage.pagemap.storage.domain.model.CategoriesRepository;
+import com.bintage.pagemap.storage.domain.model.category.CategoryException;
+import com.bintage.pagemap.storage.domain.model.category.Category;
+import com.bintage.pagemap.storage.domain.model.category.CategoryRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.hexagonal.PrimaryPort;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-
-import static com.bintage.pagemap.storage.domain.exception.StorageException.*;
+import java.util.List;
 
 @PrimaryPort
 @Service
@@ -21,77 +18,55 @@ import static com.bintage.pagemap.storage.domain.exception.StorageException.*;
 @RequiredArgsConstructor
 public class CategoryService {
 
-    private final CategoriesRepository categoriesRepository;
+    private final CategoryRepository categoryRepository;
 
-    public CategoryResponse getCategory(String accountIdStr, String categoryIdStr) {
-        var accountId = new Account.AccountId(accountIdStr);
-        var categoriesId = new Categories.Category.CategoryId(UUID.fromString(categoryIdStr));
-        var categories = categoriesRepository.findByAccountId(accountId)
-                .orElseThrow(() -> new DomainModelNotFoundException.InCategories(accountId));
+    public CategoryResponse getCategory(String accountIdStr, Long categoryIdLong) {
+        var categoryId = new Category.CategoryId(categoryIdLong);
+        var category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> CategoryException.notFound(new Account.AccountId(accountIdStr), categoryId));
 
-        var category = categories.getRegisteredCategories().stream()
-                .filter(c -> c.getId().equals(categoriesId))
-                .findFirst()
-                .orElseThrow(() -> DomainModelException.NotContainChildException.hideParentId(Item.ROOT_CATEGORY, accountId.value(), Item.CATEGORY, categoriesId.value()));
-
-        return CategoryResponse.of(category);
+        return CategoryResponse.from(category);
     }
 
     public List<CategoryResponse> getCategories(String accountIdStr) {
-        Account.AccountId accountId = new Account.AccountId(accountIdStr);
+        var accountId = new Account.AccountId(accountIdStr);
 
-        var categories = categoriesRepository.findByAccountId(accountId)
-                .orElseThrow(() -> new DomainModelNotFoundException.InCategories(accountId));
+        var categories = categoryRepository.findAllByAccountId(accountId);
 
-        return categories.getRegisteredCategories()
-                .stream().map(CategoryResponse::of)
+        return categories
+                .stream().map(CategoryResponse::from)
                 .toList();
     }
 
-    public String create(String accountId, String name) {
+    public Long create(String accountId, String name) {
         return create(accountId, name, "red");
     }
 
-    public String create(String accountIdStr, String name, String color) {
-        var accountId = new Account.AccountId(accountIdStr);
+    public Long create(String accountId, String name, String color) {
+        var newCategory = Category.create(new Account.AccountId(accountId), name, color);
 
-        var categories = categoriesRepository
-                .findByAccountId(accountId).orElseThrow(() -> new DomainModelNotFoundException.InCategories(accountId));
-
-        var category = Categories.Category.of(name, color);
-        categories.addCategory(category);
-
-        categoriesRepository.save(categories);
-        return category.getId().value().toString();
+        var savedCategory = categoryRepository.save(newCategory);
+        return savedCategory.getId().value();
     }
 
-    public void update(String accountIdStr, String categoryIdStr, String updateName, String updateColor) {
+    public void update(String accountIdStr, Long categoryIdLong, String updateName, String updateColor) {
         var accountId = new Account.AccountId(accountIdStr);
-        var categoryId = new Categories.Category.CategoryId(UUID.fromString(categoryIdStr));
+        var categoryId = new Category.CategoryId(categoryIdLong);
 
-        var categories = categoriesRepository.findByAccountId(accountId).orElseThrow(() ->
-                new DomainModelNotFoundException.InCategories(accountId));
+        var category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> CategoryException.notFound(accountId, categoryId));
 
-        categories.getRegisteredCategories().stream()
-                .filter(c -> c.getId().equals(categoryId))
-                .findFirst()
-                .ifPresentOrElse(category -> {
-                            category.update(updateName, updateColor);
-                            categoriesRepository.save(categories);
-                        },
-                        () -> {
-                            throw new DomainModelNotFoundException.InCategory(categoryId);
-                        });
+        category.update(updateName, updateColor);
+        categoryRepository.save(category);
     }
 
-    public void delete(String accountIdStr, String categoryIdStr) {
+    public void delete(String accountIdStr, Long categoryIdLong) {
         var accountId = new Account.AccountId(accountIdStr);
-        var categoryId = new Categories.Category.CategoryId(UUID.fromString(categoryIdStr));
+        var categoryId = new Category.CategoryId(categoryIdLong);
 
-        var categories = categoriesRepository.findByAccountId(accountId)
-                .orElseThrow(() -> new DomainModelNotFoundException.InCategories(accountId));
+        var category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> CategoryException.notFound(accountId, categoryId));
 
-        categories.removeCategory(categoryId);
-        categoriesRepository.deleteCategory(categories);
+        categoryRepository.delete(category);
     }
 }

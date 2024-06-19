@@ -14,6 +14,6 @@ public class MapUpdateRestRequest {
 
     String title;
     String description;
-    Set<UUID> categories;
+    Set<Long> categories;
     Set<String> tags;
 }

@@ -8,6 +8,7 @@ build/
 !**/src/test/**/build/
 **/application*.yml
 **/application*.properties
+**/*.sql
 
 ### STS ###
 .apt_generated

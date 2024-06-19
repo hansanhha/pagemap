@@ -17,7 +17,7 @@ public interface UserAgents {
 
     Optional<UserAgent> findTokensById(UserAgent.UserAgentId id);
 
-    List<UserAgent> findByAccountId(Account.AccountId accountId);
+    List<UserAgent> findAllByAccountId(Account.AccountId accountId);
 
     void delete(UserAgent.UserAgentId id);
 

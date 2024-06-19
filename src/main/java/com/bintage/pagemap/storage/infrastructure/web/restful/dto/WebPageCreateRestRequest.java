@@ -1,20 +1,20 @@
 package com.bintage.pagemap.storage.infrastructure.web.restful.dto;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Set;
-import java.util.UUID;
 
 @Getter
 @Setter
 @AllArgsConstructor(staticName = "of")
 public class WebPageCreateRestRequest {
 
-    @NotEmpty
-    String mapId;
+    Long mapId;
 
     String title;
 
@@ -23,7 +23,7 @@ public class WebPageCreateRestRequest {
 
     String description;
 
-    Set<UUID> categories;
+    Set<Long> categories;
 
     Set<String> tags;
 }

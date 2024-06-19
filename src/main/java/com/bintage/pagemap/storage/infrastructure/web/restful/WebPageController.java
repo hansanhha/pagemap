@@ -6,7 +6,6 @@ import com.bintage.pagemap.storage.application.ArchiveUse;
 import com.bintage.pagemap.storage.application.dto.WebPageSaveRequest;
 import com.bintage.pagemap.storage.application.dto.WebPageUpdateRequest;
 import com.bintage.pagemap.storage.infrastructure.web.restful.dto.WebPageCreateRestRequest;
-import com.bintage.pagemap.storage.infrastructure.web.restful.dto.WebPageLocationUpdateRestRequest;
 import com.bintage.pagemap.storage.infrastructure.web.restful.dto.WebPageUpdateRestRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,39 +30,42 @@ public class WebPageController {
     private final ArchiveUse archiveUse;
 
     @PostMapping
-    public ResponseEntity<Map<String, String>> createWebPage(@AuthenticationPrincipal AuthenticatedAccount account,
+    public ResponseEntity<Map<String, Object>> createWebPage(@AuthenticationPrincipal AuthenticatedAccount account,
                                                              @Valid @RequestBody WebPageCreateRestRequest request) {
-        var response = archiveStore.saveWebPage(new WebPageSaveRequest(account.getName(), request.getMapId(),
+        var saveResponse = archiveStore.saveWebPage(new WebPageSaveRequest(account.getName(), request.getMapId(),
                 request.getTitle(), URI.create(request.getUri()), request.getDescription(), request.getCategories(), request.getTags()));
 
-        return ResponseEntity.ok(CreatedWebPageResponseBody.of(response.storedWebPageId()));
+        return ResponseEntity.ok(CreatedWebPageResponseBody.of(saveResponse));
     }
 
     @PostMapping("/{id}/visit")
-    public void visitWebPage(@PathVariable String id) {
+    public void visitWebPage(@PathVariable Long id) {
         archiveUse.visitWebPage(id);
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Map<String, String>> updateWebPage(@PathVariable String id,
+    public ResponseEntity<Map<String, String>> updateWebPage(@AuthenticationPrincipal AuthenticatedAccount account,
+                                                             @PathVariable Long id,
                                                              @Valid @RequestBody WebPageUpdateRestRequest request) {
-        archiveStore.updateWebPageMetadata(new WebPageUpdateRequest(id, request.getTitle(), request.getDescription(),
+        archiveStore.updateWebPageMetadata(new WebPageUpdateRequest(account.getName(), id, request.getTitle(), request.getDescription(),
                 URI.create(request.getUri()), request.getCategories(), request.getTags()));
 
         return ResponseEntity.ok(UpdatedWebPageResponseBody.of());
     }
 
     @PatchMapping("/{sourceId}/location")
-    public ResponseEntity<Map<String, String>> updateWebPageLocation(@PathVariable String sourceId,
-                                                                     @RequestParam("dest-map-id") String destMapId) {
-        archiveStore.updateWebPageLocation(destMapId, sourceId);
+    public ResponseEntity<Map<String, String>> updateWebPageLocation(@AuthenticationPrincipal AuthenticatedAccount account,
+                                                                     @PathVariable Long sourceId,
+                                                                     @RequestParam(value = "dest-map-id", required = false) Long destMapId) {
+        archiveStore.updateWebPageLocation(account.getName(), destMapId, sourceId);
 
         return ResponseEntity.ok(UpdatedWebPageResponseBody.of());
     }
 
     public static class CreatedWebPageResponseBody {
-        public static Map<String, String> of(String id) {
-            return Map.of(MESSAGE_NAME, SUCCESS, "id", id);
+        public static final String CREATED_WEB_PAGE_ID = "id";
+        public static Map<String, Object> of(Long id) {
+            return Map.of(MESSAGE_NAME, SUCCESS, CREATED_WEB_PAGE_ID, id);
         }
     }
 

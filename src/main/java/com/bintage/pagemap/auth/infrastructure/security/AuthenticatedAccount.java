@@ -8,13 +8,13 @@ import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Collection;
 
-@NamedInterface
+@NamedInterface("authenticatedAccount")
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class AuthenticatedAccount implements Authentication {
 
     private final boolean authenticated;
     private final String tokenId;
-    private final String account;
+    private final String accountId;
     private final Collection<? extends GrantedAuthority> authorities;
 
     public static AuthenticatedAccount authenticated(String tokenId, String accountId, Collection<? extends GrantedAuthority> authorities) {
@@ -57,6 +57,6 @@ public class AuthenticatedAccount implements Authentication {
 
     @Override
     public String getName() {
-        return account;
+        return accountId;
     }
 }

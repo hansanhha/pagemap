@@ -1,3 +1,4 @@
+*.log
 .DS_Store
 HELP.md
 .gradle
@@ -7,6 +8,7 @@ build/
 !**/src/test/**/build/
 **/application*.yml
 **/application*.properties
+**/*.sql
 
 ### STS ###
 .apt_generated

@@ -1,15 +1,17 @@
 package com.bintage.pagemap.storage.application;
 
 import com.bintage.pagemap.auth.domain.account.Account;
-import com.bintage.pagemap.storage.application.dto.ArchiveResponse;
-import com.bintage.pagemap.storage.domain.exception.DomainModelNotFoundException;
-import com.bintage.pagemap.storage.domain.model.*;
+import com.bintage.pagemap.storage.application.dto.SpecificArchiveResponse;
+import com.bintage.pagemap.storage.application.dto.TopArchiveResponse;
+import com.bintage.pagemap.storage.domain.model.map.MapException;
+import com.bintage.pagemap.storage.domain.model.map.Map;
+import com.bintage.pagemap.storage.domain.model.map.MapRepository;
+import com.bintage.pagemap.storage.domain.model.webpage.WebPage;
+import com.bintage.pagemap.storage.domain.model.webpage.WebPageRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.hexagonal.PrimaryPort;
 import org.springframework.stereotype.Service;
-
-import java.util.UUID;
 
 @PrimaryPort
 @Service
@@ -17,30 +19,30 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ArchiveUse {
 
-    private final RootMapRepository rootMapRepository;
     private final MapRepository mapRepository;
     private final WebPageRepository webPageRepository;
 
-    public void visitWebPage(String webPageId) {
-        webPageRepository.findById(new WebPage.WebPageId(UUID.fromString(webPageId)))
+    public void visitWebPage(long webPageIdLong) {
+        webPageRepository.findById(new WebPage.WebPageId(webPageIdLong))
                 .ifPresent(WebPage::visit);
     }
 
-    public ArchiveResponse getRootMap(String accountIdStr) {
+    public SpecificArchiveResponse getMap(String accountIdStr, long mapIdLong) {
         var accountId = new Account.AccountId(accountIdStr);
-        var rootMap = rootMapRepository.findByAccountId(accountId)
-                .orElseThrow(() -> new DomainModelNotFoundException.InRootMap(accountId));
 
-        var webPages = webPageRepository.findByParentMapId(new Map.MapId(rootMap.getId().value()));
-        return ArchiveResponse.from(rootMap, webPages);
+        var mapId = new Map.MapId(mapIdLong);
+        var map = mapRepository.findFetchFamilyById(mapId)
+                .orElseThrow(() -> MapException.notFound(accountId, mapId));
+
+        return SpecificArchiveResponse.from(map);
     }
 
-    public ArchiveResponse getMap(String mapIdStr) {
-        var mapId = new Map.MapId(UUID.fromString(mapIdStr));
-        var map = mapRepository.findById(mapId)
-                .orElseThrow(() -> new DomainModelNotFoundException.InMap(mapId));
+    public TopArchiveResponse getTopMaps(String accountIdStr) {
+        var accountId = new Account.AccountId(accountIdStr);
 
-        var webPages = webPageRepository.findByParentMapId(mapId);
-        return ArchiveResponse.from(map, webPages);
+        var topMaps = mapRepository.findAllTopMap(accountId);
+        var topWebPages = webPageRepository.findAllTopWebPage(accountId);
+
+        return TopArchiveResponse.from(topMaps, topWebPages);
     }
 }

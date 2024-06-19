@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
+import static com.bintage.pagemap.storage.application.dto.CategoryResponse.*;
 import static com.bintage.pagemap.storage.infrastructure.web.restful.ResponseMessage.MESSAGE_NAME;
 import static com.bintage.pagemap.storage.infrastructure.web.restful.ResponseMessage.SUCCESS;
 
@@ -26,7 +27,7 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @PostMapping
-    public ResponseEntity<Map<String, String>> createCategory(@AuthenticationPrincipal AuthenticatedAccount account,
+    public ResponseEntity<Map<String, Object>> createCategory(@AuthenticationPrincipal AuthenticatedAccount account,
                                                               @Valid @RequestBody CategoryCreateRestRequest request) {
         if (request.getColor().isBlank()) {
             var createdId = categoryService.create(account.getName(), request.getName());
@@ -44,14 +45,14 @@ public class CategoryController {
 
     @GetMapping("/{categoryId}")
     public ResponseEntity<Map<String, Object>> getCategory(@AuthenticationPrincipal AuthenticatedAccount account,
-                                                           @PathVariable String categoryId) {
+                                                           @PathVariable Long categoryId) {
         var category = categoryService.getCategory(account.getName(), categoryId);
         return ResponseEntity.ok(GetCategoriesResponseBody.of(Collections.singletonList(category)));
     }
 
     @PutMapping("/{categoryId}")
     public ResponseEntity<Map<String, String>> updateCategory(@AuthenticationPrincipal AuthenticatedAccount account,
-                                                              @PathVariable String categoryId,
+                                                              @PathVariable Long categoryId,
                                                               @Valid @RequestBody CategoryUpdateRestRequest request) {
         categoryService.update(account.getName(), categoryId, request.getName(), request.getColor());
         return ResponseEntity.ok(ResponseMessage.success());
@@ -59,28 +60,32 @@ public class CategoryController {
 
     @DeleteMapping("/{categoryId}")
     public ResponseEntity<Map<String, String>> deleteCategory(@AuthenticationPrincipal AuthenticatedAccount account,
-                                                              @PathVariable String categoryId) {
+                                                              @PathVariable Long categoryId) {
         categoryService.delete(account.getName(), categoryId);
         return ResponseEntity.ok(ResponseMessage.success());
     }
 
     public static class CreatedCategoryResponseBody {
-        public static Map<String, String> of(String createdId) {
-            return Map.of(MESSAGE_NAME, SUCCESS, "createdId", createdId);
+        public static final String CREATED_ID = "createdId";
+
+        public static Map<String, Object> of(Long createdId) {
+            return Map.of(MESSAGE_NAME, SUCCESS, CREATED_ID, createdId);
         }
     }
 
     public static class GetCategoriesResponseBody {
+        public static final String CATEGORIES = "categories";
+
         public static Map<String, Object> of(List<CategoryResponse> responses) {
             var result = new HashMap<String, Object>();
             result.put(MESSAGE_NAME, SUCCESS);
 
-            var categoriesMap = new LinkedList<>();
-            result.put("categories", categoriesMap);
+            var categories = new LinkedList<>();
+            result.put(CATEGORIES, categories);
 
             responses.forEach(response -> {
                 var category = response.category();
-                categoriesMap.add(Map.of("id", category.get("id"), "name", category.get("name"), "color", category.get("color")));
+                categories.add(Map.of(ID, category.get(ID), NAME, category.get(NAME), COLOR, category.get(COLOR)));
             });
 
             return result;

@@ -1,12 +1,12 @@
 package com.bintage.pagemap.storage.infrastructure.event;
 
-import com.bintage.pagemap.storage.domain.event.MapMovedToTrash;
-import com.bintage.pagemap.storage.domain.event.MapRestored;
-import com.bintage.pagemap.storage.domain.event.WebPageMovedToTrash;
-import com.bintage.pagemap.storage.domain.event.WebPageRestored;
-import com.bintage.pagemap.storage.domain.model.Map;
-import com.bintage.pagemap.storage.domain.model.TrashEventPublisher;
-import com.bintage.pagemap.storage.domain.model.WebPage;
+import com.bintage.pagemap.storage.domain.model.trash.MapMovedToTrash;
+import com.bintage.pagemap.storage.domain.model.trash.MapRestored;
+import com.bintage.pagemap.storage.domain.model.trash.WebPageMovedToTrash;
+import com.bintage.pagemap.storage.domain.model.trash.WebPageRestored;
+import com.bintage.pagemap.storage.domain.model.map.Map;
+import com.bintage.pagemap.storage.domain.model.trash.TrashEventPublisher;
+import com.bintage.pagemap.storage.domain.model.webpage.WebPage;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
 import org.springframework.context.ApplicationEventPublisher;

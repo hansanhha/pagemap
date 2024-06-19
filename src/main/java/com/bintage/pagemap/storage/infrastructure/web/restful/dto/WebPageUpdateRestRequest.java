@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Set;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -20,7 +19,7 @@ public class WebPageUpdateRestRequest {
     @NotEmpty
     String uri;
 
-    Set<UUID> categories;
+    Set<Long> categories;
 
     Set<String> tags;
 }

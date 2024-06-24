@@ -1,0 +1,69 @@
+.main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #ffffff;
+    text-align: center;
+}
+
+.title_box {
+    padding-bottom: 50px;
+}
+
+.title {
+    font-size: 4.5rem;
+    font-weight: 400;
+    color: #362929;
+    background-image: -webkit-linear-gradient(45deg, #362929 0%, #87ade6 33%, #c999c9 67%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    text-fill-color: transparent;
+    -webkit-text-fill-color: transparent;
+}
+
+.title_box > div:nth-child(2) {
+    font-size: 3rem;
+    font-weight: 400;
+    color: #333;
+    margin-top: 20px;
+}
+
+.login_box {
+
+}
+
+.login_box > div:first-child {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #333;
+    padding-bottom: 20px;
+}
+
+.kakao_login_btn {
+    padding: 0;
+    outline: none;
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor : pointer;
+}
+
+.kakao_login_btn > img {
+    width: 60%;
+    height: 60%;
+    transition: box-shadow 0.3s ease;
+    border-radius: 12px;
+}
+
+.kakao_login_btn > img:hover {
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.25);
+}
+
+.kakao_login_btn > img:active {
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.25);
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+

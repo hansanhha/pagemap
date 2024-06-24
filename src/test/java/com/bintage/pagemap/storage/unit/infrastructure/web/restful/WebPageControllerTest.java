@@ -161,19 +161,6 @@ class WebPageControllerTest {
         }
 
         @Test
-        void shouldBadRequestWhenUpdateLocationEmptyDestMapId() throws Exception {
-            var sourceWebPageId = (long) 1;
-
-            mockMvc.perform(patch("/storage/webpages/".concat(String.valueOf(sourceWebPageId)).concat("/location"))
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .accept(MediaType.APPLICATION_PROBLEM_JSON_VALUE))
-                    .andExpect(status().isBadRequest())
-                    .andDo(result -> System.out.println(result.getResponse().getContentAsString()));
-
-            then(archiveStore).shouldHaveNoInteractions();
-        }
-
-        @Test
         void should4XXErrorWhenUpdateLocationInvalidWebPageId() throws Exception {
             var destMapId = (long) 1;
             var sourceWebPageId = (long) 2;

@@ -1,0 +1,57 @@
+.archive_util_btn_container {
+    display: flex;
+    justify-content: flex-start;
+    gap: 0.4rem;
+}
+
+.archive_util_btn {
+    font-size: 1.3vw;
+    border : none;
+    background-color: white;
+    border-bottom: 1px solid black;
+    transition: box-shadow 0.5s ease;
+}
+
+.archive_util_btn:hover {
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3);
+}
+
+.bookmark_util_btn_container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.util_sub_btn_container {
+    display: flex;
+    gap: 0.3rem;
+    width: 130%;
+    height: 4vh;
+}
+
+.util_sub_btn {
+    font-size: 1.2vw;
+    height: 4vh;
+    border: none;
+    outline: none;
+    background-color: white;
+}
+
+.util_sub_btn:hover {
+    border-bottom: 1px solid black;
+}
+
+.util_sub_btn:active {
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: white;
+}
+
+.folder_util_btn_container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.trash_util_btn_container {
+}
+

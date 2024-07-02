@@ -1,7 +1,6 @@
 package com.bintage.pagemap.storage.infrastructure.web.restful.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,5 +14,8 @@ public class CategoryUpdateRestRequest {
     private String name;
 
     @NotBlank
-    private String color;
+    private String bgColor;
+
+    @NotBlank
+    private String fontColor;
 }

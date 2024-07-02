@@ -29,11 +29,11 @@ public class CategoryController {
     @PostMapping
     public ResponseEntity<Map<String, Object>> createCategory(@AuthenticationPrincipal AuthenticatedAccount account,
                                                               @Valid @RequestBody CategoryCreateRestRequest request) {
-        if (request.getColor().isBlank()) {
+        if (request.getBgColor().isBlank() || request.getFontColor().isBlank()) {
             var createdId = categoryService.create(account.getName(), request.getName());
             return ResponseEntity.ok(CreatedCategoryResponseBody.of(createdId));
         }
-        var createdId = categoryService.create(account.getName(), request.getName(), request.getColor());
+        var createdId = categoryService.create(account.getName(), request.getName(), request.getBgColor(), request.getFontColor());
         return ResponseEntity.ok(CreatedCategoryResponseBody.of(createdId));
     }
 
@@ -54,7 +54,7 @@ public class CategoryController {
     public ResponseEntity<Map<String, String>> updateCategory(@AuthenticationPrincipal AuthenticatedAccount account,
                                                               @PathVariable Long categoryId,
                                                               @Valid @RequestBody CategoryUpdateRestRequest request) {
-        categoryService.update(account.getName(), categoryId, request.getName(), request.getColor());
+        categoryService.update(account.getName(), categoryId, request.getName(), request.getBgColor(), request.getFontColor());
         return ResponseEntity.ok(ResponseMessage.success());
     }
 
@@ -85,7 +85,7 @@ public class CategoryController {
 
             responses.forEach(response -> {
                 var category = response.category();
-                categories.add(Map.of(ID, category.get(ID), NAME, category.get(NAME), COLOR, category.get(COLOR)));
+                categories.add(Map.of(ID, category.get(ID), NAME, category.get(NAME), BG_COLOR, category.get(BG_COLOR), FONT_COLOR, category.get(FONT_COLOR)));
             });
 
             return result;

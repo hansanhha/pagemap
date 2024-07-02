@@ -5,13 +5,13 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Set;
-import java.util.UUID;
 
 @Getter
 @Setter
 @AllArgsConstructor(staticName = "of")
 public class MapUpdateRestRequest {
 
+    Long parentMapId;
     String title;
     String description;
     Set<Long> categories;

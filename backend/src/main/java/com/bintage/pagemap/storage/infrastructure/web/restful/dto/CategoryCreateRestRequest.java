@@ -15,5 +15,7 @@ public class CategoryCreateRestRequest {
     @NotBlank
     private String name;
 
-    private String color;
+    private String bgColor;
+
+    private String fontColor;
 }

@@ -1,11 +1,14 @@
-import { BrowserRouter as Router } from "react-router-dom";
 import RootRoute from "./routes/RootRoute";
+import {BrowserRouter as Router} from "react-router-dom";
+import {AppContext} from "./service/AppContext";
 
 function App() {
   return (
-      <Router>
+      <AppContext>
+          <Router>
             <RootRoute />
-      </Router>
+          </Router>
+      </AppContext>
   );
 }
 

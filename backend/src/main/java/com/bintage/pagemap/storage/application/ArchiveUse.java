@@ -1,17 +1,24 @@
 package com.bintage.pagemap.storage.application;
 
 import com.bintage.pagemap.auth.domain.account.Account;
+import com.bintage.pagemap.storage.application.dto.CurrentMapResponse;
+import com.bintage.pagemap.storage.application.dto.MapDto;
 import com.bintage.pagemap.storage.application.dto.SpecificArchiveResponse;
-import com.bintage.pagemap.storage.application.dto.TopArchiveResponse;
+import com.bintage.pagemap.storage.application.dto.WebPageDto;
+import com.bintage.pagemap.storage.domain.model.category.Category;
 import com.bintage.pagemap.storage.domain.model.map.MapException;
 import com.bintage.pagemap.storage.domain.model.map.Map;
 import com.bintage.pagemap.storage.domain.model.map.MapRepository;
 import com.bintage.pagemap.storage.domain.model.webpage.WebPage;
+import com.bintage.pagemap.storage.domain.model.webpage.WebPageException;
 import com.bintage.pagemap.storage.domain.model.webpage.WebPageRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.hexagonal.PrimaryPort;
 import org.springframework.stereotype.Service;
+
+import java.util.Collections;
+import java.util.List;
 
 @PrimaryPort
 @Service
@@ -27,22 +34,59 @@ public class ArchiveUse {
                 .ifPresent(WebPage::visit);
     }
 
-    public SpecificArchiveResponse getMap(String accountIdStr, long mapIdLong) {
+    public CurrentMapResponse getMap(String accountIdStr, long mapIdLong) {
         var accountId = new Account.AccountId(accountIdStr);
 
         var mapId = new Map.MapId(mapIdLong);
         var map = mapRepository.findFetchFamilyById(mapId)
                 .orElseThrow(() -> MapException.notFound(accountId, mapId));
 
-        return SpecificArchiveResponse.from(map);
+        return CurrentMapResponse.from(map);
     }
 
-    public TopArchiveResponse getTopMaps(String accountIdStr) {
+    public List<MapDto> getChildrenMap(String accountIdStr, long mapIdLong) {
+        var accountId = new Account.AccountId(accountIdStr);
+        var mapId = new Map.MapId(mapIdLong);
+
+        return mapRepository.findAllByParentId(accountId, mapId)
+                .stream()
+                .map(MapDto::from)
+                .toList();
+    }
+
+    public SpecificArchiveResponse getAllOnTheTop(String accountIdStr) {
         var accountId = new Account.AccountId(accountIdStr);
 
         var topMaps = mapRepository.findAllTopMap(accountId);
         var topWebPages = webPageRepository.findAllTopWebPage(accountId);
 
-        return TopArchiveResponse.from(topMaps, topWebPages);
+        return SpecificArchiveResponse.from(topMaps, topWebPages);
+    }
+
+    public List<MapDto> getMapsOnTheTop(String name) {
+        return mapRepository.findAllTopMap(new Account.AccountId(name))
+                .stream()
+                .map(MapDto::from)
+                .toList();
+    }
+
+    public SpecificArchiveResponse getAllByCategory(String accountIdStr, Long categoryIdLong) {
+        var accountId = new Account.AccountId(accountIdStr);
+        var categoryId = new Category.CategoryId(categoryIdLong);
+
+        var maps = mapRepository.findAllByCategory(accountId, categoryId);
+        var webPages = webPageRepository.findAllByCategory(accountId, categoryId);
+
+        return SpecificArchiveResponse.from(maps, webPages);
+    }
+
+    public WebPageDto getWebPage(String accountIdStr, Long webPageIdStr) {
+        var accountId = new Account.AccountId(accountIdStr);
+        var webPageId = new WebPage.WebPageId(webPageIdStr);
+
+        var webPage = webPageRepository.findById(webPageId)
+                .orElseThrow(() -> WebPageException.notFound(accountId, webPageId));
+
+        return WebPageDto.from(webPage);
     }
 }

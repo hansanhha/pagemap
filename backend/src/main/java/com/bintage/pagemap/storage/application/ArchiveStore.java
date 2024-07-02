@@ -60,8 +60,8 @@ public class ArchiveStore {
         archiveCounter.increment(ArchiveCounter.CountType.MAP);
         archiveCounterRepository.save(archiveCounter);
 
-        if (parentMapId.value() != null) {
-            mapRepository.findById(parentMapId)
+        if (parentMapId.value() != null && parentMapId.value() > 0) {
+            mapRepository.findFetchFamilyById(parentMapId)
                     .ifPresentOrElse(parentMap -> {
                                 parentMap.addChild(savedMap);
                                 savedMap.updateParent(parentMapId);
@@ -91,8 +91,8 @@ public class ArchiveStore {
         archiveCounter.increment(ArchiveCounter.CountType.WEB_PAGE);
         archiveCounterRepository.save(archiveCounter);
 
-        if (parentMapId.value() != null) {
-            mapRepository.findById(parentMapId)
+        if (parentMapId.value() != null && parentMapId.value() > 0) {
+            mapRepository.findFetchFamilyById(parentMapId)
                     .ifPresentOrElse(parentMap -> {
                         parentMap.addWebPage(savedWebPage);
                         savedWebPage.updateParent(parentMapId);
@@ -106,9 +106,10 @@ public class ArchiveStore {
         return savedWebPage.getId().value();
     }
 
-    public void updateMapMetadata(MapUpdateRequest request) {
+    public void updateMap(MapUpdateRequest request) {
         var mapId = new Map.MapId(request.mapId());
         var accountId = new Account.AccountId(request.accountId());
+        var destMapId = new Map.MapId(request.parentMapId());
 
         var map = mapRepository.findById(mapId)
                 .orElseThrow(() -> MapException.notFound(accountId, mapId));
@@ -116,16 +117,104 @@ public class ArchiveStore {
         map.modifiableCheck(accountId);
 
         var accountCategories = categoryRepository.findAllByAccountId(accountId);
-
         var archiveMetadata = convertArchiveMetadata(request.title(), request.description(), request.categories(), request.tags(), accountCategories);
 
         map.update(archiveMetadata.title(), archiveMetadata.description(), archiveMetadata.categories(), archiveMetadata.tags().getNames());
         mapRepository.updateMetadata(map);
+
+        if (map.hasParent()) {
+            var sourceMapParentId = map.getParentId();
+
+            if (sourceMapParentId.equals(destMapId)) {
+                return;
+            }
+
+            var sourceMapParent = mapRepository.findFetchFamilyById(sourceMapParentId)
+                    .orElseThrow(() -> MapException.notFound(accountId, sourceMapParentId));
+
+            sourceMapParent.modifiableCheck(accountId);
+            sourceMapParent.removeChild(map);
+            mapRepository.updateFamily(sourceMapParent);
+        }
+
+        // sourceMap의 위치를 최상단으로 변경하는 경우
+        if (destMapId.value() == null || destMapId.value() <= 0) {
+            map.updateParentToTop();
+            mapRepository.updateFamily(map);
+            return;
+        }
+
+        var destMap = mapRepository.findFetchFamilyById(destMapId)
+                .orElseThrow(() -> MapException.notFound(accountId, destMapId));
+
+        destMap.modifiableCheck(accountId);
+
+        // sourceMap의 목적지가 자기 자식 중 하나인 경우
+        if (map.isParent(destMapId)) {
+            map.removeChild(destMap);
+        }
+
+        destMap.addChild(map);
+        map.updateParent(destMapId);
+
+        mapRepository.updateFamily(destMap);
+        mapRepository.updateFamily(map);
     }
+
+//    public void updateMapLocation(String accountIdStr, Long destMapIdLong, Long sourceMapIdLong) {
+//        var accountId = new Account.AccountId(accountIdStr);
+//        var destMapId = new Map.MapId(destMapIdLong);
+//        var sourceMapId = new Map.MapId(sourceMapIdLong);
+//
+//        var sourceMap = mapRepository.findFetchFamilyById(sourceMapId)
+//                .orElseThrow(() -> MapException.notFound(accountId, sourceMapId));
+//
+//        sourceMap.modifiableCheck(accountId);
+//
+//        // sourceMap의 부모가 있는 경우, sourceMap 부모의 자식 목록에서 sourceMap 제거
+//        if (sourceMap.hasParent()) {
+//            var sourceMapParentId = sourceMap.getParentId();
+//
+//            if (sourceMapParentId.equals(destMapId)) {
+//                return;
+//            }
+//
+//            var sourceMapParent = mapRepository.findFetchFamilyById(sourceMapParentId)
+//                    .orElseThrow(() -> MapException.notFound(accountId, sourceMapParentId));
+//
+//            sourceMapParent.modifiableCheck(accountId);
+//            sourceMapParent.removeChild(sourceMap);
+//            mapRepository.updateFamily(sourceMapParent);
+//        }
+//
+//        // sourceMap의 위치를 최상단으로 변경하는 경우
+//        if (destMapId.value() == null || destMapId.value() <= 0) {
+//            sourceMap.updateParentToTop();
+//            mapRepository.updateFamily(sourceMap);
+//            return;
+//        }
+//
+//        var destMap = mapRepository.findFetchFamilyById(destMapId)
+//                .orElseThrow(() -> MapException.notFound(accountId, destMapId));
+//
+//        destMap.modifiableCheck(accountId);
+//
+//        // sourceMap의 목적지가 자기 자식 중 하나인 경우
+//        if (sourceMap.isParent(destMapId)) {
+//            sourceMap.removeChild(destMap);
+//        }
+//
+//        destMap.addChild(sourceMap);
+//        sourceMap.updateParent(destMapId);
+//
+//        mapRepository.updateFamily(destMap);
+//        mapRepository.updateFamily(sourceMap);
+//    }
 
     public void updateWebPageMetadata(WebPageUpdateRequest request) {
         var webPageId = new WebPage.WebPageId(request.webPageId());
         var accountId = new Account.AccountId(request.accountId());
+        var destMapId = new Map.MapId(request.parentMapId());
 
         var webPage = webPageRepository.findById(webPageId)
                 .orElseThrow(() -> WebPageException.notFound(accountId, webPageId));
@@ -138,21 +227,10 @@ public class ArchiveStore {
 
         webPage.update(request.uri(), archiveMetadata.title(), archiveMetadata.description(), archiveMetadata.categories(), archiveMetadata.tags().getNames());
         webPageRepository.updateMetadata(webPage);
-    }
 
-    public void updateMapLocation(String accountIdStr, Long destMapIdLong, Long sourceMapIdLong) {
-        var accountId = new Account.AccountId(accountIdStr);
-        var destMapId = new Map.MapId(destMapIdLong);
-        var sourceMapId = new Map.MapId(sourceMapIdLong);
-
-        var sourceMap = mapRepository.findFetchFamilyById(sourceMapId)
-                .orElseThrow(() -> MapException.notFound(accountId, sourceMapId));
-
-        sourceMap.modifiableCheck(accountId);
-
-        // sourceMap의 부모가 있는 경우, sourceMap 부모의 자식 목록에서 sourceMap 제거
-        if (sourceMap.hasParent()) {
-            var sourceMapParentId = sourceMap.getParentId();
+        // sourceWebPage의 부모가 있는 경우, sourceWebPage 부모의 자식 목록에서 sourceWebPage 제거
+        if (webPage.hasParent()) {
+            var sourceMapParentId = webPage.getParentId();
 
             if (sourceMapParentId.equals(destMapId)) {
                 return;
@@ -161,33 +239,27 @@ public class ArchiveStore {
             var sourceMapParent = mapRepository.findFetchFamilyById(sourceMapParentId)
                     .orElseThrow(() -> MapException.notFound(accountId, sourceMapParentId));
 
-            sourceMapParent.modifiableCheck(accountId);
-            sourceMapParent.removeChild(sourceMap);
+            sourceMapParent.removeWebPage(webPage);
             mapRepository.updateFamily(sourceMapParent);
         }
 
-        // sourceMap의 위치를 최상단으로 변경하는 경우
+        // sourceWebPage의 위치를 최상단으로 변경하는 경우
         if (destMapId.value() == null || destMapId.value() <= 0) {
-            sourceMap.updateParentToTop();
-            mapRepository.updateFamily(sourceMap);
+            webPage.updateParentToTop();
+            webPageRepository.updateParent(webPage);
             return;
         }
 
         var destMap = mapRepository.findFetchFamilyById(destMapId)
-                .orElseThrow(() -> MapException.notFound(accountId, destMapId));
+                .orElseThrow(() -> WebPageException.notFound(accountId, webPageId));
 
         destMap.modifiableCheck(accountId);
 
-        // sourceMap의 목적지가 자기 자식 중 하나인 경우
-        if (sourceMap.isParent(destMapId)) {
-            sourceMap.removeChild(destMap);
-        }
-
-        destMap.addChild(sourceMap);
-        sourceMap.updateParent(destMapId);
+        destMap.addWebPage(webPage);
+        webPage.updateParent(destMapId);
 
         mapRepository.updateFamily(destMap);
-        mapRepository.updateFamily(sourceMap);
+        webPageRepository.updateParent(webPage);
     }
 
     public void updateWebPageLocation(String accountIdStr, Long destMapIdLong, Long sourceWebPageIdLong) {

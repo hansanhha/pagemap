@@ -1,4 +1,4 @@
-.main {
+.customer_main {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -24,10 +24,11 @@
 }
 
 .title_box > div:nth-child(2) {
-    font-size: 3rem;
+    font-size: 2.5rem;
     font-weight: 400;
     color: #333;
     margin-top: 20px;
+    text-decoration: underline;
 }
 
 .login_box {
@@ -53,16 +54,16 @@
 .kakao_login_btn > img {
     width: 60%;
     height: 60%;
-    transition: box-shadow 0.3s ease;
+    transition: box-shadow 0.5s ease;
     border-radius: 12px;
 }
 
 .kakao_login_btn > img:hover {
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
 }
 
 .kakao_login_btn > img:active {
-    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.25);
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.4);
     background-color: rgba(0, 0, 0, 0.1);
 }
 

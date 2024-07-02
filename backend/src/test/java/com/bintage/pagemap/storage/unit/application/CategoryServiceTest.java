@@ -43,7 +43,8 @@ class CategoryServiceTest {
                     new Category.CategoryId((long) i),
                     ACCOUNT_ID,
                     "category".concat(String.valueOf(i)),
-                    "red"));
+                    "red",
+                    "white"));
         }
     }
 
@@ -55,7 +56,7 @@ class CategoryServiceTest {
                 new Category.CategoryId(new Random().nextLong()),
                 ACCOUNT_ID,
                 createCategoryName,
-                "red");
+                "red", "white");
 
         given(categoryRepository.save(any(Category.class)))
                 .willReturn(saveCategory);
@@ -103,7 +104,7 @@ class CategoryServiceTest {
         assertThat(foundCategory.category().get(CategoryResponse.ID)).isNotNull();
         assertThat(foundCategory.category().get(CategoryResponse.ID)).isEqualTo(findCategory.getId().value());
         assertThat(foundCategory.category().get(CategoryResponse.NAME)).isEqualTo(findCategory.getName());
-        assertThat(foundCategory.category().get(CategoryResponse.COLOR)).isEqualTo(findCategory.getColor());
+        assertThat(foundCategory.category().get(CategoryResponse.BG_COLOR)).isEqualTo(findCategory.getBgColor());
     }
 
     @Test

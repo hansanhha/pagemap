@@ -7,7 +7,7 @@ import com.bintage.pagemap.auth.domain.account.Account;
 import com.bintage.pagemap.auth.infrastructure.security.JwtBearerAuthenticationFilter;
 import com.bintage.pagemap.storage.application.ArchiveStore;
 import com.bintage.pagemap.storage.application.ArchiveUse;
-import com.bintage.pagemap.storage.application.dto.SpecificArchiveResponse;
+import com.bintage.pagemap.storage.application.dto.CurrentMapResponse;
 import com.bintage.pagemap.storage.application.dto.MapSaveRequest;
 import com.bintage.pagemap.storage.application.dto.MapUpdateRequest;
 import com.bintage.pagemap.storage.domain.model.map.MapException;
@@ -104,7 +104,7 @@ class MapControllerTest {
                     .description("test description")
                     .build();
 
-            var archiveResponse = SpecificArchiveResponse.from(map);
+            var archiveResponse = CurrentMapResponse.from(map);
             var expectResponseBody = objectMapper.writeValueAsString(MapController.GetMapResponseBody.of(archiveResponse));
 
             given(archiveUse.getMap(anyString(), anyLong()))
@@ -148,7 +148,7 @@ class MapControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(content().json(objectMapper.writeValueAsString(MapController.UpdatedMapResponseBody.of())));
 
-            then(archiveStore).should(times(1)).updateMapMetadata(any(MapUpdateRequest.class));
+            then(archiveStore).should(times(1)).updateMap(any(MapUpdateRequest.class));
         }
 
         @Test
@@ -171,7 +171,7 @@ class MapControllerTest {
 
             willThrow(MapException.notFound(ACCOUNT_ID, new Map.MapId(new Random().nextLong())))
                     .given(archiveStore)
-                    .updateMapMetadata(any(MapUpdateRequest.class));
+                    .updateMap(any(MapUpdateRequest.class));
 
             mockMvc.perform(patch("/storage/maps/".concat(String.valueOf(mapId)))
                             .contentType(MediaType.APPLICATION_JSON)
@@ -181,7 +181,7 @@ class MapControllerTest {
                     ).andExpect(status().is4xxClientError())
                     .andDo(result -> System.out.println(result.getResponse().getContentAsString()));
 
-            then(archiveStore).should(times(1)).updateMapMetadata(any(MapUpdateRequest.class));
+            then(archiveStore).should(times(1)).updateMap(any(MapUpdateRequest.class));
         }
 
         @Test

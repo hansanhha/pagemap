@@ -146,7 +146,7 @@ class CategoryIntegrationTest {
 
         assertThat(category.getAccountId()).isEqualTo(ACCOUNT_ID);
         assertThat(category.getName()).isEqualTo(updateName);
-        assertThat(category.getColor()).isEqualTo(updateColor);
+        assertThat(category.getBgColor()).isEqualTo(updateColor);
     }
 
     @Test

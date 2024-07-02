@@ -1,6 +1,7 @@
 package com.bintage.pagemap.storage.domain.model.map;
 
 import com.bintage.pagemap.auth.domain.account.Account;
+import com.bintage.pagemap.storage.domain.model.category.Category;
 import org.jmolecules.architecture.hexagonal.SecondaryPort;
 import org.jmolecules.ddd.annotation.Repository;
 
@@ -18,6 +19,10 @@ public interface MapRepository {
     Optional<Map> findFetchFamilyById(Map.MapId mapId);
 
     Optional<Map> findById(Map.MapId mapId);
+
+    List<Map> findAllByParentId(Account.AccountId accountId, Map.MapId parentId);
+
+    List<Map> findAllByCategory(Account.AccountId accountId, Category.CategoryId categoryId);
 
     void updateMetadata(Map map);
 

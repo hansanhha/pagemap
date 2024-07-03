@@ -94,4 +94,24 @@ export class BookmarkService {
 
         return urlRegex.test(url);
     }
+
+    static async requiredAutoCreate(urls) {
+        return await fetch(`${process.env.REACT_APP_SERVER}/storage/webpages/auto`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + UserService.getToken()
+            },
+            body: JSON.stringify({
+                uris: urls
+            })
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        }).then(data => {
+            return data.webPages.map(webPage => extractBookmark(webPage));
+        }).catch(error => console.log(error));
+    }
 }

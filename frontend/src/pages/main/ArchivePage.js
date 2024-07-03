@@ -31,7 +31,7 @@ function ArchivePage() {
             e.preventDefault();
         }
 
-        const handleDrop = (e) => {
+        const handleDrop = async (e) => {
             e.preventDefault();
 
             const types = e.dataTransfer.types;
@@ -39,6 +39,7 @@ function ArchivePage() {
             console.log(e.dataTransfer.getData("text/uri-list"));
             console.log(e.dataTransfer.getData("text/title"));
 
+            // 북마크 파일 업로드 처리 필요
             if (types.includes("Files")) {
                 if (e.dataTransfer.items) {
                     [...e.dataTransfer.items].forEach((item, i) => {
@@ -57,6 +58,7 @@ function ArchivePage() {
                 return;
             }
 
+            // html 요소를 드래그앤드롭한 경우
             if (types.includes("text/html")) {
                 const html = e.dataTransfer.getData("text/html");
 
@@ -69,30 +71,58 @@ function ArchivePage() {
                 }
             }
 
+            // 사용자가 브라우저의 북마크를 드래그앤드롭한 경우 등 (북마크 폴더 자체를 인식하는 로직 필요)
             if (types.includes("text/uri-list") || types.includes("text/plain")) {
                 const url = e.dataTransfer.getData("text/plain");
                 const uriList = e.dataTransfer.getData("text/uri-list");
 
-                if (!url) {
-                    let urls = url.split('\n');
-                    handleDroppedNonTitleBookmark(urls.map(url=> BookmarkService.completeUrl(url)));
-                } else if (uriList) {
-                    handleDroppedNonTitleBookmark([BookmarkService.completeUrl(uriList)]);
+                const splitUrls = url.split("\n");
+                const splitUriList = uriList.split("\n");
+                const bookmarkUrls = splitUrls.length > splitUriList.length ? splitUrls : splitUriList;
+
+                let completeBookmarkUrls = bookmarkUrls.map(bookmarkUrl => BookmarkService.completeUrl(bookmarkUrl));
+
+                if (completeBookmarkUrls.some(completeBookmarkUrl => !BookmarkService.validateUrl(completeBookmarkUrl))) {
+                    return;
+                }
+
+                const createdBookmarks = await handleDroppedNonTitleBookmark(completeBookmarkUrls);
+                if (createdBookmarks && createdBookmarks.length > 0) {
+                    setOverviewBookmarks(prevBookmarks => [...prevBookmarks, ...createdBookmarks]);
                 }
             }
 
         }
 
+        const handlePaste = async (e) => {
+            e.preventDefault();
+
+            const text = e.clipboardData.getData("text");
+            const url = BookmarkService.completeUrl(text);
+            if (BookmarkService.validateUrl(url)) {
+                const createdBookmark = (await BookmarkService.requiredAutoCreate([url]))[0];
+                if (createdBookmark) {
+                    setOverviewBookmarks(prevBookmarks => [...prevBookmarks, createdBookmark]);
+                }
+            }
+        }
+
         const bodyElement = bodyRef.current;
 
-        bodyElement.addEventListener('dragover', handleDragOver);
-        bodyElement.addEventListener('drop', handleDrop);
+        bodyElement.addEventListener("dragover", handleDragOver);
+        bodyElement.addEventListener("drop", handleDrop);
+        bodyElement.addEventListener("paste", handlePaste);
 
         return () => {
-            bodyElement.removeEventListener('dragover', handleDragOver);
-            bodyElement.removeEventListener('drop', handleDrop);
+            bodyElement.removeEventListener("dragover", handleDragOver);
+            bodyElement.removeEventListener("drop", handleDrop);
+            bodyElement.removeEventListener("paste", handlePaste);
         };
     }, []);
+
+    async function handleDroppedNonTitleBookmark(urls) {
+        return await BookmarkService.requiredAutoCreate(urls);
+    }
 
     function handleSelectedOverviewFolder(folder) {
         if (folder.id === selectedOverviewFolder?.id) {
@@ -129,10 +159,6 @@ function ArchivePage() {
                     setOverviewBookmarks(bookmarks.slice());
                 });
         }
-    }
-
-    function handleDroppedNonTitleBookmark(urls) {
-    //     서버에서 해당 주소에 대한 정보를 가져와서 북마크 생성하도록 요청, 이후 반환받은 북마크(들)를 렌더링
     }
 
     function handleCreateBookmark(name, parentFolderId, url, categoryIds) {

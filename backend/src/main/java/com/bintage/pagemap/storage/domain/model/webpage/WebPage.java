@@ -19,6 +19,8 @@ import java.util.Set;
 public class WebPage implements AggregateRoot<WebPage, WebPage.WebPageId>{
 
     public static final Map.MapId TOP_MAP_ID = new Map.MapId((long) 0);
+    public static final int MAX_TITLE_LENGTH = 50;
+    public static final int MAX_URI_LENGTH = 255;
 
     private final WebPageId id;
     private final Account.AccountId accountId;

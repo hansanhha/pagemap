@@ -16,7 +16,9 @@ public enum StorageExceptionCode {
     MAP_MODIFY_ACCESS_PROTECTION(403, "SM03", "map modify access denied"),
 
     NOT_FOUND_WEB_PAGE(400, "SW01", "not found web page"),
-    WEB_PAGE_MODIFY_ACCESS_PROTECTION(403, "SW03", "web page modify access denied"),
+    WEB_PAGE_MODIFY_ACCESS_PROTECTION(403, "SW02", "web page modify access denied"),
+    FAILED_AUTO_SAVE(400, "SW03", "failed web save"),
+    FAILED_AUTO_SAVE_TOO_LONG_URI(400, "SW04", "failed web save"),
 
     NOT_FOUND_TRASH(400, "ST01", "not found deleted archive item"),
 

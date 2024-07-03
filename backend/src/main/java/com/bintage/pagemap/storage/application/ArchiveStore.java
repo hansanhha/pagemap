@@ -23,12 +23,17 @@ import com.bintage.pagemap.storage.util.RandomTitleGenerator;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.hexagonal.PrimaryPort;
 import org.jmolecules.event.annotation.DomainEventHandler;
+import org.jsoup.Jsoup;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+import java.io.IOException;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -104,6 +109,52 @@ public class ArchiveStore {
         }
 
         return savedWebPage.getId().value();
+    }
+
+    public List<WebPageDto> saveWebPageAutoFillContent(WebPageAutoSaveRequest request) {
+        var accountId = new Account.AccountId(request.accountId());
+        var uris = request.uris();
+        var client = HttpClient.newHttpClient();
+
+        var archiveCounter = archiveCounterRepository.findByAccountId(accountId)
+                .orElseThrow(() -> ArchiveCounterException.notFound(accountId));
+
+        var webPageDtos = uris.stream()
+                .map(uri -> {
+                    try {
+                        if (uri.toString().length() > WebPage.MAX_URI_LENGTH) {
+                            throw WebPageException.failedAutoSaveTooManyLongURI(accountId, uris);
+                        }
+
+                        var httpRequest = HttpRequest.newBuilder()
+                                .uri(uri)
+                                .GET()
+                                .build();
+
+                        var httpResponse = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+                        var doc = Jsoup.parse(httpResponse.body());
+                        var title = doc.title();
+
+                        if (title.length() > WebPage.MAX_TITLE_LENGTH) {
+                            title = title.substring(0, WebPage.MAX_TITLE_LENGTH);
+                        }
+
+                        var webPage = buildNewWebPage(accountId,
+                                new WebPageSaveRequest(accountId.value(), WebPage.TOP_MAP_ID.value(), title, uri, "", Set.of(), Set.of()),
+                                null);
+                        var savedWebPage = webPageRepository.save(webPage);
+                        archiveCounter.increment(ArchiveCounter.CountType.WEB_PAGE);
+
+                        return WebPageDto.from(savedWebPage);
+                    } catch (IOException | InterruptedException e) {
+                        throw WebPageException.failedAutoSave(accountId, uris);
+                    }
+                })
+                .toList();
+
+        archiveCounterRepository.save(archiveCounter);
+        return webPageDtos;
     }
 
     public void updateMap(MapUpdateRequest request) {
@@ -406,7 +457,7 @@ public class ArchiveStore {
             description = reqDescription;
         }
 
-        if(reqCategories != null && !reqCategories.isEmpty()) {
+        if (reqCategories != null && !reqCategories.isEmpty()) {
             registeredCategories.stream()
                     .filter(category -> reqCategories.contains(category.getId().value()))
                     .forEach(categories::add);

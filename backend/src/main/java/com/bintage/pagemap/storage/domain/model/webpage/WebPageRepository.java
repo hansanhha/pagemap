@@ -1,6 +1,7 @@
 package com.bintage.pagemap.storage.domain.model.webpage;
 
 import com.bintage.pagemap.auth.domain.account.Account;
+import com.bintage.pagemap.storage.domain.model.category.Category;
 import com.bintage.pagemap.storage.domain.model.map.Map;
 import org.jmolecules.architecture.hexagonal.PrimaryPort;
 import org.jmolecules.ddd.annotation.Repository;
@@ -16,9 +17,11 @@ public interface WebPageRepository {
 
     Optional<WebPage> findById(WebPage.WebPageId webPageId);
 
-    List<WebPage> findByParentMapId(Map.MapId id);
+    List<WebPage> findByParentMapId(Account.AccountId accountId, Map.MapId id);
 
     List<WebPage> findAllTopWebPage(Account.AccountId accountId);
+
+    List<WebPage> findAllByCategory(Account.AccountId accountId, Category.CategoryId categoryId);
 
     void updateMetadata(WebPage webPage);
 

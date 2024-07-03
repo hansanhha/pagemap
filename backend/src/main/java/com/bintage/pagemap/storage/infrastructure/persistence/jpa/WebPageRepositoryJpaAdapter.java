@@ -1,6 +1,7 @@
 package com.bintage.pagemap.storage.infrastructure.persistence.jpa;
 
 import com.bintage.pagemap.auth.domain.account.Account;
+import com.bintage.pagemap.storage.domain.model.category.Category;
 import com.bintage.pagemap.storage.domain.model.map.Map;
 import com.bintage.pagemap.storage.domain.model.webpage.WebPage;
 import com.bintage.pagemap.storage.domain.model.webpage.WebPageException;
@@ -12,9 +13,7 @@ import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @SecondaryAdapter
@@ -47,9 +46,9 @@ public class WebPageRepositoryJpaAdapter implements WebPageRepository {
     }
 
     @Override
-    public List<WebPage> findByParentMapId(Map.MapId id) {
+    public List<WebPage> findByParentMapId(Account.AccountId accountId, Map.MapId id) {
         var webPages = new LinkedList<WebPage>();
-        var webPageEntities = webPageEntityRepository.findAllByParentMap(id.value());
+        var webPageEntities = webPageEntityRepository.findAllByParentMap(accountId.value(), id.value());
 
         if (!webPageEntities.isEmpty()) {
             var accountCategories = categoryEntityRepository.findAllByAccountId(webPageEntities.getFirst().getAccountId());
@@ -66,7 +65,20 @@ public class WebPageRepositoryJpaAdapter implements WebPageRepository {
     public List<WebPage> findAllTopWebPage(Account.AccountId accountId) {
         var accountCategories = categoryEntityRepository.findAllByAccountId(accountId.value());
 
-        return webPageEntityRepository.findAllByParentMap((long) 0)
+        return webPageEntityRepository.findAllByParentMap(accountId.value(), WebPage.TOP_MAP_ID.value())
+                .stream()
+                .map(entity ->
+                        WebPageEntity.toDomainModel(entity,
+                                CategoryEntity.toMatchedDomainModels(accountCategories, entity.getCategories()))
+                )
+                .toList();
+    }
+
+    @Override
+    public List<WebPage> findAllByCategory(Account.AccountId accountId, Category.CategoryId categoryId) {
+        var accountCategories = categoryEntityRepository.findAllByAccountId(accountId.value());
+
+        return webPageEntityRepository.findAllByAccountIdAndCategoryId(accountId.value(), categoryId.value())
                 .stream()
                 .map(entity ->
                         WebPageEntity.toDomainModel(entity,

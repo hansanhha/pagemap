@@ -56,7 +56,7 @@ class CategoryControllerTest {
         void shouldCreateCategoryWhenValidRequest() throws Exception {
             Long createId = (long) 1;
 
-            given(categoryService.create(anyString(), anyString(), anyString()))
+            given(categoryService.create(anyString(), anyString(), anyString(), anyString()))
                     .willReturn(createId);
 
             var expectResponseBody = objectMapper.writeValueAsString(CategoryController
@@ -66,11 +66,11 @@ class CategoryControllerTest {
                             .contentType(MediaType.APPLICATION_JSON_VALUE)
                             .accept(MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_PROBLEM_JSON_VALUE)
                             .content(objectMapper.writeValueAsString(
-                                    CategoryCreateRestRequest.of("backend", "#000000"))))
+                                    CategoryCreateRestRequest.of("backend", "#000000", "#ffffff"))))
                     .andExpect(status().isOk())
                     .andExpect(content().json(expectResponseBody));
 
-            then(categoryService).should().create(anyString(), anyString(), anyString());
+            then(categoryService).should().create(anyString(), anyString(), anyString(), anyString());
         }
 
         @Test
@@ -79,7 +79,7 @@ class CategoryControllerTest {
                             .contentType(MediaType.APPLICATION_JSON_VALUE)
                             .accept(MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_PROBLEM_JSON_VALUE)
                             .content(objectMapper.writeValueAsString(
-                                    CategoryCreateRestRequest.of("", "#000000"))))
+                                    CategoryCreateRestRequest.of("", "#000000", "#ffffff"))))
                     .andExpect(status().isBadRequest())
                     .andDo(result -> System.out.println(result.getResponse().getContentAsString()));
 
@@ -99,7 +99,7 @@ class CategoryControllerTest {
 
             for (int i = 0; i < 5; i++) {
                 categories.add(CategoryResponse.from(Category.toCategory(new Category.CategoryId((long) 1),
-                        ACCOUNT_ID, "category".concat(String.valueOf(i)), "red")));
+                        ACCOUNT_ID, "category".concat(String.valueOf(i)), "red", "white")));
             }
 
             given(categoryService.getCategories(anyString()))
@@ -123,7 +123,7 @@ class CategoryControllerTest {
         @Test
         void shouldReadCategoryWhenValidRequest() throws Exception {
             var categoryResponse = CategoryResponse.from(
-                    Category.toCategory(new Category.CategoryId((long) 1), ACCOUNT_ID, "category", "red"));
+                    Category.toCategory(new Category.CategoryId((long) 1), ACCOUNT_ID, "category", "red", "white"));
 
             given(categoryService.getCategory(anyString(), anyLong()))
                     .willReturn(categoryResponse);

@@ -1,6 +1,8 @@
 package com.bintage.pagemap.storage.infrastructure.persistence.jpa;
 
 import com.bintage.pagemap.auth.domain.account.Account;
+import com.bintage.pagemap.storage.domain.model.category.Category;
+import com.bintage.pagemap.storage.domain.model.category.CategoryException;
 import com.bintage.pagemap.storage.domain.model.map.Map;
 import com.bintage.pagemap.storage.domain.model.map.MapException;
 import com.bintage.pagemap.storage.domain.model.map.MapRepository;
@@ -98,6 +100,32 @@ public class MapRepositoryJpaAdapter implements MapRepository {
     }
 
     @Override
+    public List<Map> findAllByParentId(Account.AccountId accountId, Map.MapId parentId) {
+        var accountCategoryEntities = categoryEntityRepository.findAllByAccountId(accountId.value());
+
+        var childrenMap = mapEntityRepository.findAllByParent(accountId.value(), parentId.value());
+
+        return childrenMap.stream()
+                .map(entity ->
+                        MapEntity.toSoleDomainModel(entity, CategoryEntity.toMatchedDomainModels(accountCategoryEntities, entity.getCategories()))
+                )
+                .toList();
+    }
+
+    @Override
+    public List<Map> findAllByCategory(Account.AccountId accountId, Category.CategoryId categoryId) {
+        var categoryEntity = categoryEntityRepository.findById(categoryId.value())
+                .orElseThrow(() -> CategoryException.notFound(accountId, categoryId));
+
+        return mapEntityRepository.findAllByAccountIdAndCategoryId(accountId.value(), categoryId.value())
+                .stream()
+                .map(entity ->
+                        MapEntity.toSoleDomainModel(entity, CategoryEntity.toMatchedDomainModels(Set.of(categoryEntity), entity.getCategories()))
+                )
+                .toList();
+    }
+
+    @Override
     public void updateMetadata(Map map) {
         var mapEntity = mapEntityRepository.findById(map.getId().value())
                 .orElseThrow(() -> MapException.notFound(map.getAccountId(), map.getId()));
@@ -128,13 +156,11 @@ public class MapRepositoryJpaAdapter implements MapRepository {
 
     @Override
     public void updateFamily(Map map) {
-        var entity = mapEntityRepository.findById(map.getId().value())
-                .orElseThrow(() -> MapException.notFound(map.getAccountId(), map.getId()));
-
-        entity.setParent(map.getParentId().value());
-        entity.setChildrenMap(map.getChildrenMap().stream()
-                .map(child -> child.getId().value()).collect(Collectors.toSet()));
-        entity.setChildrenWebPage(map.getChildrenWebPage().stream()
-                .map(child -> child.getId().value()).collect(Collectors.toSet()));
+        mapEntityRepository.findFetchFamilyById(map.getAccountId().value(), map.getId().value())
+                .ifPresentOrElse(entity -> entity.updateFamily(map),
+                        () -> {
+                            throw MapException.notFound(map.getAccountId(), map.getId());
+                        }
+                );
     }
 }

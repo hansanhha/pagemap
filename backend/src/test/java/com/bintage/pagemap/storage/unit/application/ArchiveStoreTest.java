@@ -70,7 +70,7 @@ class ArchiveStoreTest {
         var tagNames = new HashSet<String>();
         for (int i = 0; i < 5; i++) {
             tagNames.add("tag".concat(String.valueOf(i)));
-            accountCategories.add(Category.toCategory(new Category.CategoryId((long)i), ACCOUNT_ID,"category".concat(String.valueOf(i)), "red"));
+            accountCategories.add(Category.toCategory(new Category.CategoryId((long)i), ACCOUNT_ID,"category".concat(String.valueOf(i)), "red", "white"));
         }
         tags = Tags.of(tagNames);
 
@@ -421,7 +421,7 @@ class ArchiveStoreTest {
             given(categoryRepository.findAllByAccountId(any(Account.AccountId.class)))
                     .willReturn(accountCategories);
 
-            archiveStore.updateMapMetadata(new MapUpdateRequest(ACCOUNT_ID.value(), updateMap.getId().value(), updateTitle,
+            archiveStore.updateMap(new MapUpdateRequest(ACCOUNT_ID.value(), updateMap.getId().value(), updateTitle,
                     updateDescription, updateCategories, updateTags));
 
             then(mapRepository).should(times(1)).findFetchFamilyById(any(Map.MapId.class));

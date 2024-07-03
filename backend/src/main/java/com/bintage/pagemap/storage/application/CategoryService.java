@@ -39,24 +39,24 @@ public class CategoryService {
     }
 
     public Long create(String accountId, String name) {
-        return create(accountId, name, "red");
+        return create(accountId, name, "red", "white");
     }
 
-    public Long create(String accountId, String name, String color) {
-        var newCategory = Category.create(new Account.AccountId(accountId), name, color);
+    public Long create(String accountId, String name, String bgColor, String fontColor) {
+        var newCategory = Category.create(new Account.AccountId(accountId), name, bgColor, fontColor);
 
         var savedCategory = categoryRepository.save(newCategory);
         return savedCategory.getId().value();
     }
 
-    public void update(String accountIdStr, Long categoryIdLong, String updateName, String updateColor) {
+    public void update(String accountIdStr, Long categoryIdLong, String updateName, String updateBgColor, String updateFontColor) {
         var accountId = new Account.AccountId(accountIdStr);
         var categoryId = new Category.CategoryId(categoryIdLong);
 
         var category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> CategoryException.notFound(accountId, categoryId));
 
-        category.update(updateName, updateColor);
+        category.update(updateName, updateBgColor, updateFontColor);
         categoryRepository.save(category);
     }
 

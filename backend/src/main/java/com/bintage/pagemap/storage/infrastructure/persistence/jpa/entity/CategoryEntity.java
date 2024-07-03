@@ -29,13 +29,17 @@ public class CategoryEntity {
     private String name;
 
     @Setter
-    private String color;
+    private String bgColor;
+
+    @Setter
+    private String fontColor;
 
     public static CategoryEntity create(Category domainModel) {
         var entity = new CategoryEntity();
         entity.accountId = domainModel.getAccountId().value();
         entity.name = domainModel.getName();
-        entity.color = domainModel.getColor();
+        entity.bgColor = domainModel.getBgColor();
+        entity.fontColor = domainModel.getFontColor();
         return entity;
     }
 
@@ -47,14 +51,16 @@ public class CategoryEntity {
 
     public void update(Category category) {
         this.name = category.getName();
-        this.color = category.getColor();
+        this.bgColor = category.getBgColor();
+        this.fontColor = category.getFontColor();
     }
 
     public static CategoryEntity fromDomainModel(Category domainModel) {
         var entity = new CategoryEntity();
         entity.id = domainModel.getId().value();
         entity.name = domainModel.getName();
-        entity.color = domainModel.getColor();
+        entity.bgColor = domainModel.getBgColor();
+        entity.fontColor = domainModel.getFontColor();
         return entity;
     }
 
@@ -69,7 +75,7 @@ public class CategoryEntity {
     }
 
     public static Category toDomainModel(CategoryEntity entity) {
-        return Category.toCategory(new Category.CategoryId(entity.id), new Account.AccountId(entity.accountId), entity.name, entity.color);
+        return Category.toCategory(new Category.CategoryId(entity.id), new Account.AccountId(entity.accountId), entity.name, entity.bgColor, entity.fontColor);
     }
 
     public static Set<Category> toDomainModel(Set<CategoryEntity> entities) {

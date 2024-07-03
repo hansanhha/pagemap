@@ -12,6 +12,8 @@ import java.util.Set;
 @AllArgsConstructor(staticName = "of")
 public class WebPageUpdateRestRequest {
 
+    Long parentMapId;
+
     String title;
 
     String description;

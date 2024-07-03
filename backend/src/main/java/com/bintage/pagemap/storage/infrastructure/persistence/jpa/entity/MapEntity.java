@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Table(name = "map")
 @Entity
@@ -66,6 +67,14 @@ public class MapEntity {
         this.description = description;
         this.categories = categories;
         this.tags = tags;
+    }
+
+    public void updateFamily(Map map) {
+        this.parent = map.getParentId().value();
+        this.childrenMap = map.getChildrenMap().stream()
+                .map(child -> child.getId().value()).collect(Collectors.toSet());
+        this.childrenWebPage = map.getChildrenWebPage().stream()
+                .map(child -> child.getId().value()).collect(Collectors.toSet());
     }
 
     public static MapEntity create(Map domainModel) {

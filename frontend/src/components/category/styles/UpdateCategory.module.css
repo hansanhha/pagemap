@@ -1,0 +1,123 @@
+.update_modal_content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+    width: 50vw;
+    max-height: 50vh;
+    background-color: white;
+    padding: 20px 20px 30px 0;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    overflow: auto;
+}
+
+.update_category_title {
+    font-size: 25px;
+}
+
+.update_category_title_detail {
+    display: flex;
+    width: 100%;
+}
+
+.update_category_title_detail div:first-child {
+    padding-left: 9vw;
+}
+
+.update_category_title_detail div:nth-child(2) {
+    padding-left: 13vw;
+}
+
+.update_category_main {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5vh;
+}
+
+.update_category_input_container {
+    display: flex;
+    flex-direction: row;
+    gap: 3vh;
+    height: 5vh;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 5vw;
+}
+
+.original_category_container {
+    width: 45%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.update_category_container {
+    width: 45%;
+    display: flex;
+    flex-direction: row;
+    gap: 0.5vw;
+    align-items: center;
+}
+
+.update_category_input_name {
+    padding-left: 5px;
+    height: 2rem;
+    border: none;
+    border-bottom: 1px solid black;
+    outline: none;
+}
+
+.update_category_input_color {
+    width: 3.3rem;
+    height: 2.5rem;
+    border: none;
+    background-color: white;
+    outline: none;
+}
+
+.common_btn {
+    width: 4vw;
+    height: 4vh;
+}
+
+.remove_category_btn {
+    width: 4vw;
+    height: 4vh;
+}
+
+.delete_modal_content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+    width: 27vw;
+    height: 20vh;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.delete_category_title {
+    font-size: 25px;
+}
+
+.delete_category_main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center;
+    width: 100%;
+}
+
+.delete_category_choice_box {
+    display: flex;
+    flex-direction: row;
+    gap: 1.5rem;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}

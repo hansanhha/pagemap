@@ -41,6 +41,7 @@ public class SecurityConfig {
         permitApis.add(new AntPathRequestMatcher( "/oauth2/authorization/kakao"));
         permitApis.add(new AntPathRequestMatcher( "/login/oauth2/code/kakao"));
         permitApis.add(new AntPathRequestMatcher("/oauth/authorize"));
+        permitApis.add(new AntPathRequestMatcher("/pagemap/global/status"));
         permitApis.add(new AntPathRequestMatcher(oauth2AuthorizationRedirectUrl));
         privateApis.add(new AntPathRequestMatcher("/api/token/refresh"));
         permittedAddresses.add(new IpAddressMatcher("127.0.0.1"));

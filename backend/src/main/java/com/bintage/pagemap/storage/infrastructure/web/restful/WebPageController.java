@@ -18,16 +18,15 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static com.bintage.pagemap.storage.infrastructure.web.restful.ResponseMessage.MESSAGE_NAME;
-import static com.bintage.pagemap.storage.infrastructure.web.restful.ResponseMessage.SUCCESS;
+import static com.bintage.pagemap.storage.infrastructure.web.restful.dto.ResponseMessage.MESSAGE_NAME;
+import static com.bintage.pagemap.storage.infrastructure.web.restful.dto.ResponseMessage.SUCCESS;
 
 @PrimaryAdapter
 @RestController
-@RequestMapping("/storage/webpages")
+@RequestMapping("/api/storage/webpages")
 @RequiredArgsConstructor
 public class WebPageController {
 

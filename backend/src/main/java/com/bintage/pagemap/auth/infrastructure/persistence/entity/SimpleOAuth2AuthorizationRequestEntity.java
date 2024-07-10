@@ -1,24 +1,22 @@
 package com.bintage.pagemap.auth.infrastructure.persistence.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 
-import java.util.UUID;
+import static lombok.AccessLevel.PROTECTED;
 
+@Table(name = "oauth2_authorization_requests")
 @Entity
 @Getter
-public class OAuth2AuthorizationRequestEntity {
+@NoArgsConstructor(access = PROTECTED)
+public class SimpleOAuth2AuthorizationRequestEntity {
 
     @Id
     private String id;
-
-    @Setter
-    @Embedded
-    @AttributeOverride(name = "application", column = @Column(name = "user_agent_id"))
-    private UserAgentEntity userAgentEntity;
-
     private String clientId;
     private String grantType;
     private String responseType;
@@ -28,8 +26,8 @@ public class OAuth2AuthorizationRequestEntity {
     private String redirectUri;
     private String attributes;
 
-    public static OAuth2AuthorizationRequestEntity fromOAuth2AuthorizationRequest(String id, OAuth2AuthorizationRequest authorizationRequest, UUID userAgentId) {
-        OAuth2AuthorizationRequestEntity entity = new OAuth2AuthorizationRequestEntity();
+    public static SimpleOAuth2AuthorizationRequestEntity fromOAuth2AuthorizationRequest(String id, OAuth2AuthorizationRequest authorizationRequest) {
+        SimpleOAuth2AuthorizationRequestEntity entity = new SimpleOAuth2AuthorizationRequestEntity();
         entity.id = id;
         entity.clientId = authorizationRequest.getClientId();
         entity.grantType = authorizationRequest.getGrantType().getValue();
@@ -39,9 +37,6 @@ public class OAuth2AuthorizationRequestEntity {
         entity.authorizationRequestUri = authorizationRequest.getAuthorizationUri();
         entity.redirectUri = authorizationRequest.getRedirectUri();
         entity.attributes = authorizationRequest.getAttributes().get("registration_id").toString();
-        entity.userAgentEntity = new UserAgentEntity(userAgentId);
         return entity;
     }
-
-    public record UserAgentEntity(UUID userAgentId) {}
 }

@@ -1,6 +1,7 @@
 package com.bintage.pagemap.storage.application;
 
 import com.bintage.pagemap.auth.domain.account.Account;
+import com.bintage.pagemap.auth.domain.account.event.AccountSignedIn;
 import com.bintage.pagemap.storage.application.dto.*;
 import com.bintage.pagemap.storage.domain.model.tag.Tags;
 import com.bintage.pagemap.storage.domain.model.validation.ArchiveCounter;
@@ -13,6 +14,7 @@ import com.bintage.pagemap.storage.domain.model.trash.WebPageMovedToTrash;
 import com.bintage.pagemap.storage.domain.model.trash.WebPageRestored;
 import com.bintage.pagemap.storage.domain.model.validation.ArchiveCounterException;
 import com.bintage.pagemap.storage.domain.model.map.MapException;
+import com.bintage.pagemap.storage.domain.model.validation.DefaultArchiveCounter;
 import com.bintage.pagemap.storage.domain.model.webpage.WebPageException;
 import com.bintage.pagemap.storage.domain.model.map.Map;
 import com.bintage.pagemap.storage.domain.model.map.MapRepository;
@@ -471,5 +473,17 @@ public class ArchiveStore {
     }
 
     private record ArchiveMetadata(String title, String description, HashSet<Category> categories, Tags tags) {
+    }
+
+    @Async
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @TransactionalEventListener
+    @DomainEventHandler
+    public void handle(AccountSignedIn event) {
+        var accountId = event.accountId();
+        var archiveCounter = archiveCounterRepository.findByAccountId(accountId)
+                .orElseGet(() -> DefaultArchiveCounter.create(accountId));
+
+        archiveCounterRepository.save(archiveCounter);
     }
 }

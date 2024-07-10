@@ -1,7 +1,7 @@
 package com.bintage.pagemap.auth.domain.exception;
 
 import com.bintage.pagemap.auth.domain.account.Account;
-import com.bintage.pagemap.auth.domain.token.Token;
+import com.bintage.pagemap.auth.domain.token.RefreshToken;
 
 import java.net.URI;
 import java.time.Instant;
@@ -31,15 +31,15 @@ public abstract class AccountDomainModelException extends AccountException {
     }
 
     public static class ExpiredToken extends AccountDomainModelException {
-        public ExpiredToken(Account.AccountId accountId, Token.TokenId expiredTokenId) {
-            super(Item.TOKEN, accountId.value(), EMPTY_USER_AGENT_ID, expiredTokenId.value().toString(),
+        public ExpiredToken(Account.AccountId accountId, RefreshToken.RefreshTokenId expiredRefreshTokenId) {
+            super(Item.TOKEN, accountId.value(), EMPTY_USER_AGENT_ID, expiredRefreshTokenId.value().toString(),
                     AccountExceptionCode.EXPIRED_TOKEN, Instant.now(), null);
         }
     }
 
     public static class InvalidToken extends AccountDomainModelException {
-        public InvalidToken(Account.AccountId accountId, Token.TokenId invalidTokenId) {
-            super(Item.TOKEN, accountId.value(), EMPTY_USER_AGENT_ID, invalidTokenId.value().toString(),
+        public InvalidToken(Account.AccountId accountId, RefreshToken.RefreshTokenId invalidRefreshTokenId) {
+            super(Item.TOKEN, accountId.value(), EMPTY_USER_AGENT_ID, invalidRefreshTokenId.value().toString(),
                     AccountExceptionCode.INVALID_TOKEN, Instant.now(), null);
         }
     }

@@ -35,10 +35,6 @@ function ArchivePage() {
             e.preventDefault();
 
             const types = e.dataTransfer.types;
-            console.log(e.dataTransfer.getData("text/plain"));
-            console.log(e.dataTransfer.getData("text/uri-list"));
-            console.log(e.dataTransfer.getData("text/title"));
-
             // 북마크 파일 업로드 처리 필요
             if (types.includes("Files")) {
                 if (e.dataTransfer.items) {
@@ -69,6 +65,7 @@ function ArchivePage() {
                 if (a) {
                     handleCreateBookmark(a.innerText, entireCategoryId, a.href, null);
                 }
+                return;
             }
 
             // 사용자가 브라우저의 북마크를 드래그앤드롭한 경우 등 (북마크 폴더 자체를 인식하는 로직 필요)
@@ -90,6 +87,7 @@ function ArchivePage() {
                 if (createdBookmarks && createdBookmarks.length > 0) {
                     setOverviewBookmarks(prevBookmarks => [...prevBookmarks, ...createdBookmarks]);
                 }
+                return;
             }
 
         }

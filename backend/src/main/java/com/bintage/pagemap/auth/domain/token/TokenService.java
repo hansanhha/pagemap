@@ -6,7 +6,11 @@ import org.jmolecules.architecture.hexagonal.SecondaryPort;
 @SecondaryPort
 public interface TokenService {
 
-    Token generate(UserAgent.UserAgentId userAgentId, Account.AccountId accountId, String role, Token.TokenType tokenType);
+    RefreshToken generateRefreshToken(Account.AccountId accountId, String role);
 
-    Token decode(Token token) throws TokenInvalidException;
+    AccessToken generateAccessToken(Account.AccountId accountId, String role);
+
+    AccessToken decodeAccessToken(String value) throws TokenInvalidException;
+
+
 }

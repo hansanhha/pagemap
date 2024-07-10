@@ -4,18 +4,14 @@ import com.bintage.pagemap.auth.domain.account.Account;
 import com.bintage.pagemap.auth.domain.account.Accounts;
 import com.bintage.pagemap.auth.domain.exception.AccountDomainModelException;
 import com.bintage.pagemap.auth.domain.exception.AccountItemNotFoundException;
-import com.bintage.pagemap.auth.domain.token.Token;
-import com.bintage.pagemap.auth.domain.token.Tokens;
-import com.bintage.pagemap.auth.domain.token.UserAgents;
+import com.bintage.pagemap.auth.domain.token.RefreshTokenRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.hexagonal.PrimaryPort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
-import java.util.UUID;
 
 @PrimaryPort
 @Service
@@ -24,8 +20,7 @@ import java.util.UUID;
 public class AccountInfo {
 
     private final Accounts accounts;
-    private final UserAgents userAgents;
-    private final Tokens tokens;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     public AccountInfoResponse getAccountInfo(String accountIdStr) {
         var accountId = new Account.AccountId(accountIdStr);
@@ -34,30 +29,30 @@ public class AccountInfo {
         return AccountInfoResponse.of(account.getNickname());
     }
 
-    public AccountDeviceResponse getAccountDevice(String accountId, String tokenIdStr) {
-        var accountUserAgents = userAgents.findAllByAccountId(new Account.AccountId(accountId));
-        var tokenId = new Token.TokenId(UUID.fromString(tokenIdStr));
-        var token = tokens.findById(tokenId)
-                .orElseThrow(() -> AccountItemNotFoundException.ofToken(tokenId));
-
-        var accountDevices = accountUserAgents.stream()
-                .map(userAgent -> {
-                    LocalDateTime lastSignedOut = null;
-                    if (userAgent.getLastSignedOut() != null) {
-                        lastSignedOut = LocalDateTime.from(userAgent.getLastSignedOut());
-                    }
-                    return new AccountDevice(
-                            userAgent.getId().value().toString(),
-                            userAgent.getDevice().name(),
-                            userAgent.getApplication().name(),
-                            userAgent.isSignedIn(),
-                            LocalDateTime.ofInstant(userAgent.getLastSignedIn(), ZoneId.systemDefault()),
-                            lastSignedOut);
-                })
-                .toList();
-
-        return new AccountDeviceResponse(accountDevices, token.getUserAgentId().value().toString());
-    }
+//    public AccountDeviceResponse getAccountDevice(String accountId, String tokenIdStr) {
+//        var accountUserAgents = userAgents.findAllByAccountId(new Account.AccountId(accountId));
+//        var tokenId = new RefreshToken.RefreshTokenId(UUID.fromString(tokenIdStr));
+//        var token = refreshTokenRepository.findById(tokenId)
+//                .orElseThrow(() -> AccountItemNotFoundException.ofToken(tokenId));
+//
+//        var accountDevices = accountUserAgents.stream()
+//                .map(userAgent -> {
+//                    LocalDateTime lastSignedOut = null;
+//                    if (userAgent.getLastSignedOut() != null) {
+//                        lastSignedOut = LocalDateTime.from(userAgent.getLastSignedOut());
+//                    }
+//                    return new AccountDevice(
+//                            userAgent.getId().value().toString(),
+//                            userAgent.getDevice().name(),
+//                            userAgent.getApplication().name(),
+//                            userAgent.isSignedIn(),
+//                            LocalDateTime.ofInstant(userAgent.getLastSignedIn(), ZoneId.systemDefault()),
+//                            lastSignedOut);
+//                })
+//                .toList();
+//
+//        return new AccountDeviceResponse(accountDevices, token.getUserAgentId().value().toString());
+//    }
 
     public String changeNickname(String accountIdStr, String nickname) {
         var accountId = new Account.AccountId(accountIdStr);

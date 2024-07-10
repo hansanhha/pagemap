@@ -1,10 +1,7 @@
 package com.bintage.pagemap.auth.infrastructure.security;
 
 import com.bintage.pagemap.auth.domain.account.Account;
-import com.bintage.pagemap.auth.domain.token.Token;
-import com.bintage.pagemap.auth.domain.token.TokenInvalidException;
-import com.bintage.pagemap.auth.domain.token.TokenService;
-import com.bintage.pagemap.auth.domain.token.UserAgent;
+import com.bintage.pagemap.auth.domain.token.*;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import jakarta.annotation.PostConstruct;
@@ -24,6 +21,7 @@ import java.util.UUID;
 @Component
 public class SpringSecurityNimbusJwt implements TokenService {
 
+    private static final String ROLE = "role";
     private JwtEncoder jwtEncoder;
     private JwtDecoder jwtDecoder;
     private JwsHeader jwsHeader;
@@ -51,58 +49,76 @@ public class SpringSecurityNimbusJwt implements TokenService {
     }
 
     @Override
-    public Token generate(UserAgent.UserAgentId userAgentId, Account.AccountId accountId, String role, Token.TokenType tokenType) {
-        var issuedAt = Instant.now();
-        var expiredAt = calculateExpiredAt(issuedAt, tokenType);
-        var tokenId = UUID.randomUUID();
-
-        var claims = JwtClaimsSet.builder()
-                .id(tokenId.toString())
-                .issuer(issuer)
-                .issuedAt(issuedAt)
-                .expiresAt(expiredAt)
-                .claim("role", role)
-                .subject(accountId.value())
-                .build();
+    public RefreshToken generateRefreshToken(Account.AccountId accountId, String role) {
+        var claims = getClaims(TokenType.REFRESH_TOKEN, accountId, role);
         var jwtEncoderParameters = JwtEncoderParameters.from(jwsHeader, claims);
         var jwt = jwtEncoder.encode(jwtEncoderParameters);
 
-        return Token.builder()
-                .id(new Token.TokenId(tokenId))
-                .userAgentId(userAgentId)
-                .type(tokenType)
+        return RefreshToken.builder()
+                .id(new RefreshToken.RefreshTokenId(UUID.fromString(claims.getId())))
+                .accountId(accountId)
+                .type(TokenType.REFRESH_TOKEN)
                 .issuer(issuer)
-                .issuedAt(issuedAt)
-                .expiresIn(expiredAt)
-                .status(Token.TokenStatus.ACTIVE)
-                .content(new Token.TokenValue(jwt.getTokenValue()))
-                .lastModifiedAt(issuedAt)
+                .issuedAt(claims.getIssuedAt())
+                .expiresIn(claims.getExpiresAt())
+                .status(TokenStatus.ACTIVE)
+                .value(jwt.getTokenValue())
+                .lastModifiedAt(claims.getIssuedAt())
                 .build();
     }
 
     @Override
-    public Token decode(Token token) {
+    public AccessToken generateAccessToken(Account.AccountId accountId, String role) {
+        var claims = getClaims(TokenType.ACCESS_TOKEN, accountId, role);
+        var jwtEncoderParameters = JwtEncoderParameters.from(jwsHeader, claims);
+        var jwt = jwtEncoder.encode(jwtEncoderParameters);
+
+        return AccessToken.builder()
+                .value(jwt.getTokenValue())
+                .accountId(accountId)
+                .accountRole(role)
+                .issuer(issuer)
+                .issuedAt(claims.getIssuedAt())
+                .expiresIn(claims.getExpiresAt())
+                .type(TokenType.ACCESS_TOKEN)
+                .build();
+    }
+
+    @Override
+    public AccessToken decodeAccessToken(String value) throws TokenInvalidException {
         try {
-            var decoded = jwtDecoder.decode(token.getContent().value());
-            return Token.builder()
-                    .id(new Token.TokenId(UUID.fromString(decoded.getId())))
-                    .accountId(new Account.AccountId(decoded.getSubject()))
-                    .accountRole(decoded.getClaimAsString("role"))
-                    .issuer(decoded.getIssuer().toString())
-                    .userAgentId(token.getUserAgentId())
-                    .type(token.getType())
-                    .content(token.getContent())
-                    .issuedAt(decoded.getIssuedAt())
-                    .expiresIn(decoded.getExpiresAt())
-                    .status(token.getStatus())
-                    .lastModifiedAt(token.getLastModifiedAt())
+            var decodedJwt = jwtDecoder.decode(value);
+
+            return AccessToken.builder()
+                    .value(value)
+                    .accountId(new Account.AccountId(decodedJwt.getSubject()))
+                    .accountRole(decodedJwt.getClaim(ROLE))
+                    .issuer(issuer)
+                    .issuedAt(decodedJwt.getIssuedAt())
+                    .expiresIn(decodedJwt.getExpiresAt())
+                    .type(TokenType.ACCESS_TOKEN)
                     .build();
-        } catch (JwtException e) {
-            throw new TokenInvalidException(e.getMessage());
+        } catch (Exception e) {
+            throw new TokenInvalidException("Invalid access token");
         }
     }
 
-    private Instant calculateExpiredAt(Instant issuedAt, Token.TokenType type) {
+    private JwtClaimsSet getClaims(TokenType tokenType, Account.AccountId accountId, String role) {
+        var issuedAt = Instant.now();
+        var expiredAt = calculateExpiredAt(issuedAt, tokenType);
+        var tokenId = UUID.randomUUID();
+
+        return JwtClaimsSet.builder()
+                .id(tokenId.toString())
+                .issuer(issuer)
+                .issuedAt(issuedAt)
+                .expiresAt(expiredAt)
+                .claim(ROLE, role)
+                .subject(accountId.value())
+                .build();
+    }
+
+    private Instant calculateExpiredAt(Instant issuedAt, TokenType type) {
         return switch (type) {
             case ACCESS_TOKEN -> issuedAt.plus(accessTokenExpiration.toEpochMilli(), ChronoUnit.SECONDS);
             case REFRESH_TOKEN ->  issuedAt.plus(refreshTokenExpiration.toEpochMilli(), ChronoUnit.SECONDS);

@@ -28,7 +28,6 @@ import java.net.URI;
 public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
     private final AccountAuth accountAuth;
-    private final OAuth2AuthorizationRequestService oAuth2AuthorizationRequestService;
     private final RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
 
     @Value("${application.security.auth.sign-in.redirect-url}")
@@ -40,22 +39,17 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         var tokenAttribute = authenticatedUser.getTokenAttribute();
         var accountId = authenticatedUser.getName();
 
-        var userAgentId = oAuth2AuthorizationRequestService.getUserAgentIdAndRemoveAuthorizationRequest(request);
-
         accountAuth.signUpIfFirst(accountId, tokenAttribute.getOAuth2ProviderName(), tokenAttribute.getMemberIdentifier());
-        var tokens = accountAuth.signIn(accountId, userAgentId);
+        var tokens = accountAuth.signIn(accountId);
 
         var combinedRedirectUrl = combineRedirectUrl(tokens);
         redirectStrategy.sendRedirect(request, response, combinedRedirectUrl.toString());
     }
 
     private URI combineRedirectUrl(SignInResponse response) {
-        SignInResponse.TokenDto accessToken = response.getAccessToken();
-        SignInResponse.TokenDto refreshToken = response.getRefreshToken();
-
         return UriComponentsBuilder.fromUriString(redirectUrl)
-                .queryParam(accessToken.type(), accessToken.id())
-                .queryParam(refreshToken.type(), refreshToken.id())
+                .queryParam("access_token", response.getAccessToken())
+                .queryParam("refresh_token", response.getRefreshToken())
                 .queryParam("expires_in", response.getExpiresIn())
                 .queryParam("issued_at", response.getIssuedAt())
                 .build().toUri();

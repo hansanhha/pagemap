@@ -5,6 +5,7 @@ import com.bintage.pagemap.storage.application.CategoryService;
 import com.bintage.pagemap.storage.application.dto.CategoryResponse;
 import com.bintage.pagemap.storage.infrastructure.web.restful.dto.CategoryCreateRestRequest;
 import com.bintage.pagemap.storage.infrastructure.web.restful.dto.CategoryUpdateRestRequest;
+import com.bintage.pagemap.storage.infrastructure.web.restful.dto.ResponseMessage;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.hexagonal.PrimaryAdapter;
@@ -15,12 +16,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 import static com.bintage.pagemap.storage.application.dto.CategoryResponse.*;
-import static com.bintage.pagemap.storage.infrastructure.web.restful.ResponseMessage.MESSAGE_NAME;
-import static com.bintage.pagemap.storage.infrastructure.web.restful.ResponseMessage.SUCCESS;
+import static com.bintage.pagemap.storage.infrastructure.web.restful.dto.ResponseMessage.MESSAGE_NAME;
+import static com.bintage.pagemap.storage.infrastructure.web.restful.dto.ResponseMessage.SUCCESS;
 
 @PrimaryAdapter
 @RestController
-@RequestMapping("/storage/categories")
+@RequestMapping("/api/storage/categories")
 @RequiredArgsConstructor
 public class CategoryController {
 

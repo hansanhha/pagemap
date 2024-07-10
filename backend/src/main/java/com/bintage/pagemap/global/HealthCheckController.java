@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class HealthCheckController {
 
-    @GetMapping("/pagemap/global/status")
+    @GetMapping("/api/pagemap/global/status")
     public ResponseEntity<String> status() {
         return ResponseEntity.ok("good");
     }

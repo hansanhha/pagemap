@@ -21,31 +21,27 @@ import java.util.stream.Collectors;
 @PrimaryAdapter
 @Component
 @RequiredArgsConstructor
-public class JwtBearerAuthenticationFilter extends OncePerRequestFilter {
+public class SimpleJwtBearerAuthenticationFilter extends OncePerRequestFilter {
 
     private final AccountAuth accountAuth;
     private final SecurityErrorResponseSender securityErrorResponseSender;
-    private final UserAgentExtractor userAgentExtractor;
     @Setter
     private RequestInspector requestInspector;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        var tokenId = RequestInspector.findTokenByHttpHeader(request);
+        var accessToken = RequestInspector.findTokenByHttpHeader(request);
 
-        if (tokenId.isEmpty()) {
+        if (accessToken.isEmpty()) {
             securityErrorResponseSender.sendError(request, response, AccountExceptionCode.UNAUTHORIZED.getStatus(),
                     "empty token");
             return;
         }
 
-        var extracted = userAgentExtractor.extract(request);
-        var requestUserAgentInfo = new AccountAuth.RequestUserAgentInfo(extracted.type(), extracted.os(), extracted.device(), extracted.application());
-
-        var authenticateResponse = accountAuth.authenticate(tokenId.get(), requestUserAgentInfo);
+        var authenticateResponse = accountAuth.authenticate(accessToken.get());
 
         if (authenticateResponse.isSuccess()) {
-            saveAuthentication(tokenId.get(), authenticateResponse);
+            saveAuthentication(accessToken.get(), authenticateResponse);
             filterChain.doFilter(request, response);
         } else {
             securityErrorResponseSender.sendError(request, response, AccountExceptionCode.UNAUTHORIZED.getStatus(),
@@ -55,7 +51,7 @@ public class JwtBearerAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        return requestInspector.isPermitApi(request) && !requestInspector.isPrivateApi(request);
+        return requestInspector.isPermitApi(request);
     }
 
     private void saveAuthentication(String tokenId, AuthenticationResponse authenticateResponse) {
@@ -69,5 +65,4 @@ public class JwtBearerAuthenticationFilter extends OncePerRequestFilter {
         securityContext.setAuthentication(authenticatedUser);
         SecurityContextHolder.setContext(securityContext);
     }
-
 }

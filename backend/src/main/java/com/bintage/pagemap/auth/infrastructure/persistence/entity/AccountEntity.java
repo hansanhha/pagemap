@@ -10,6 +10,7 @@ import lombok.Setter;
 import java.sql.Timestamp;
 import java.time.Instant;
 
+@Table(name = "account")
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)

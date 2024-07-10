@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/account")
+@RequestMapping("/api/account")
 @RequiredArgsConstructor
 public class AccountController {
 
@@ -31,17 +31,17 @@ public class AccountController {
         return Map.of("message", "deleted account");
     }
 
-    @GetMapping("/me/devices")
-    public Map<String, Object> getUserDevice(@AuthenticationPrincipal AuthenticatedAccount account) {
-        var accountDevice = accountInfo.getAccountDevice(account.getName(), account.getTokenId());
-        return Map.of("devices", accountDevice.devices(), "currentDeviceId", accountDevice.currentDeviceId());
-    }
-
-    @DeleteMapping("/me/devices/{deviceId}")
-    public Map<String, String> signOutDevice(@AuthenticationPrincipal AuthenticatedAccount account, @PathVariable String deviceId) {
-        accountAuth.signOutForOtherDevice(deviceId);
-        return Map.of("message", "success");
-    }
+//    @GetMapping("/me/devices")
+//    public Map<String, Object> getUserDevice(@AuthenticationPrincipal AuthenticatedAccount account) {
+//        var accountDevice = accountInfo.getAccountDevice(account.getName(), account.getTokenId());
+//        return Map.of("devices", accountDevice.devices(), "currentDeviceId", accountDevice.currentDeviceId());
+//    }
+//
+//    @DeleteMapping("/me/devices/{deviceId}")
+//    public Map<String, String> signOutDevice(@AuthenticationPrincipal AuthenticatedAccount account, @PathVariable String deviceId) {
+//        accountAuth.signOutForOtherDevice(deviceId);
+//        return Map.of("message", "success");
+//    }
 
     @PutMapping("/me")
     public Map<String, String> changeNickname(@AuthenticationPrincipal AuthenticatedAccount account, @RequestBody String nickname) {

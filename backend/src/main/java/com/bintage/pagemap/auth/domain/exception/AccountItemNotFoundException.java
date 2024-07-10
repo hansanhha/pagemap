@@ -1,8 +1,7 @@
 package com.bintage.pagemap.auth.domain.exception;
 
 import com.bintage.pagemap.auth.domain.account.Account;
-import com.bintage.pagemap.auth.domain.token.Token;
-import com.bintage.pagemap.auth.domain.token.UserAgent;
+import com.bintage.pagemap.auth.domain.token.RefreshToken;
 import lombok.Getter;
 
 import java.net.URI;
@@ -19,20 +18,12 @@ public class AccountItemNotFoundException extends AccountException {
         return new AccountItemNotFoundException(Item.ACCOUNT, accountId.value(), EMPTY_USER_AGENT_ID, EMPTY_TOKEN_ID, AccountExceptionCode.NOT_FOUND_ACCOUNT);
     }
 
-    public static AccountItemNotFoundException ofUserAgent(Account.AccountId accountId, UserAgent.UserAgentId userAgentId) {
-        return new AccountItemNotFoundException(Item.USER_AGENT, accountId.value(), userAgentId.value().toString(), EMPTY_TOKEN_ID, AccountExceptionCode.NOT_FOUND_USER_AGENT);
-    }
-
     public static AccountItemNotFoundException ofUserAgent(Account.AccountId accountId) {
         return new AccountItemNotFoundException(Item.USER_AGENT, accountId.value(), EMPTY_USER_AGENT_ID, EMPTY_TOKEN_ID, AccountExceptionCode.NOT_FOUND_USER_AGENT);
     }
 
-    public static AccountItemNotFoundException ofUserAgent(UserAgent.UserAgentId userAgentId) {
-        return new AccountItemNotFoundException(Item.USER_AGENT, EMPTY_ACCOUNT_ID, userAgentId.value().toString(), EMPTY_TOKEN_ID, AccountExceptionCode.NOT_FOUND_USER_AGENT);
-    }
-
-    public static AccountItemNotFoundException ofToken(Token.TokenId tokenId) {
-        return new AccountItemNotFoundException(Item.TOKEN, EMPTY_ACCOUNT_ID, EMPTY_USER_AGENT_ID, tokenId.value().toString(), AccountExceptionCode.NOT_FOUND_TOKEN);
+    public static AccountItemNotFoundException ofToken(RefreshToken.RefreshTokenId refreshTokenId) {
+        return new AccountItemNotFoundException(Item.TOKEN, EMPTY_ACCOUNT_ID, EMPTY_USER_AGENT_ID, refreshTokenId.value().toString(), AccountExceptionCode.NOT_FOUND_TOKEN);
     }
 
     @Override

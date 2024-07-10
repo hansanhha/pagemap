@@ -1,4 +1,4 @@
-package com.bintage.pagemap.storage.infrastructure.web.restful;
+package com.bintage.pagemap.storage.infrastructure.web.restful.dto;
 
 
 import java.util.Map;

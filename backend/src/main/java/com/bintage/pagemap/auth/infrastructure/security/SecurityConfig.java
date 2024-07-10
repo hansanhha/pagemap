@@ -24,25 +24,20 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    @Value("${application.security.auth.sign-in.redirect-url}")
-    private String oauth2AuthorizationRedirectUrl;
-
     private final List<RequestMatcher> permitApis = new ArrayList<>();
     private final List<RequestMatcher> privateApis = new ArrayList<>();
     private final List<IpAddressMatcher> permittedAddresses = new ArrayList<>();
 
     private final OAuth2UserQueryService oauth2UserService;
     private final OAuth2AuthenticationSuccessHandler authenticationSuccessHandler;
-    private final OAuth2AuthorizationRequestService userAgentAuthorizationRepository;
+    private final SimpleOAuth2AuthorizationRequestRepository simpleOAuth2AuthorizationRequestRepository;
     private final OAuth2LogoutHandler logoutHandler;
-    private final JwtBearerAuthenticationFilter jwtBearerAuthenticationFilter;
+    private final SimpleJwtBearerAuthenticationFilter simpleJwtBearerAuthenticationFilter;
 
     private void requestInspectorSetup() {
-        permitApis.add(new AntPathRequestMatcher( "/oauth2/authorization/kakao"));
-        permitApis.add(new AntPathRequestMatcher( "/login/oauth2/code/kakao"));
-        permitApis.add(new AntPathRequestMatcher("/oauth/authorize"));
-        permitApis.add(new AntPathRequestMatcher("/pagemap/global/status"));
-        permitApis.add(new AntPathRequestMatcher(oauth2AuthorizationRedirectUrl));
+        permitApis.add(new AntPathRequestMatcher( "/api/oauth2/authorization/kakao"));
+        permitApis.add(new AntPathRequestMatcher( "/api/login/oauth2/code/kakao"));
+        permitApis.add(new AntPathRequestMatcher("/api/pagemap/global/status"));
         privateApis.add(new AntPathRequestMatcher("/api/token/refresh"));
         permittedAddresses.add(new IpAddressMatcher("127.0.0.1"));
     }
@@ -62,8 +57,8 @@ public class SecurityConfig {
         return request -> {
             CorsConfiguration config = new CorsConfiguration();
             config.setAllowedHeaders(Collections.singletonList("*"));
-            config.setAllowedMethods(Collections.singletonList("*"));
-            config.setAllowedOriginPatterns(List.of("*"));
+            config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+            config.setAllowedOriginPatterns(List.of("https://pagemap.net"));
             config.setAllowCredentials(true);
             return config;
         };
@@ -71,7 +66,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        jwtBearerAuthenticationFilter.setRequestInspector(requestInspector());
+        simpleJwtBearerAuthenticationFilter.setRequestInspector(requestInspector());
 
         http
                 .httpBasic(HttpBasicConfigurer::disable)
@@ -88,14 +83,18 @@ public class SecurityConfig {
                         .dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll()
                         .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtBearerAuthenticationFilter, OAuth2AuthorizationRequestRedirectFilter.class)
+                .addFilterBefore(simpleJwtBearerAuthenticationFilter, OAuth2AuthorizationRequestRedirectFilter.class)
                 .oauth2Login(loginConfigurer -> loginConfigurer
+                        .loginProcessingUrl("/api/login/oauth2/code/*")
                         .userInfoEndpoint(config -> config.userService(oauth2UserService))
                         .successHandler(authenticationSuccessHandler)
-                        .authorizationEndpoint(config -> config.authorizationRequestRepository(userAgentAuthorizationRepository))
+                        .authorizationEndpoint(config -> {
+                            config.baseUri("/api/oauth2/authorization");
+                            config.authorizationRequestRepository(simpleOAuth2AuthorizationRequestRepository);
+                        })
                 )
                 .logout(logoutconfigurer -> logoutconfigurer
-                        .logoutUrl("/account/sign-out")
+                        .logoutUrl("/api/account/sign-out")
                         .addLogoutHandler(logoutHandler)
                         .clearAuthentication(true)
                         .logoutSuccessUrl("/")

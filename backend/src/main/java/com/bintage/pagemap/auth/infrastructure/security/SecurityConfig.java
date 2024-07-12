@@ -3,9 +3,10 @@ package com.bintage.pagemap.auth.infrastructure.security;
 import com.bintage.pagemap.auth.infrastructure.external.oauth2.client.OAuth2UserQueryService;
 import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.*;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
@@ -52,8 +53,9 @@ public class SecurityConfig {
                 .build();
     }
 
+    @Profile("prod")
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource productionCorsConfigurationSource() {
         return request -> {
             CorsConfiguration config = new CorsConfiguration();
             config.setAllowedHeaders(Collections.singletonList("*"));
@@ -64,8 +66,23 @@ public class SecurityConfig {
         };
     }
 
+    @Profile("!prod")
+    @Primary
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public CorsConfigurationSource localCorsConfigurationSource() {
+        return request -> {
+            CorsConfiguration config = new CorsConfiguration();
+            config.setAllowedHeaders(Collections.singletonList("*"));
+            config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+            config.setAllowedOriginPatterns(List.of("http://localhost:3000"));
+            config.setAllowCredentials(true);
+            return config;
+        };
+    }
+
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, CorsConfigurationSource corsConfigurationSource) throws Exception {
         simpleJwtBearerAuthenticationFilter.setRequestInspector(requestInspector());
 
         http
@@ -77,7 +94,7 @@ public class SecurityConfig {
                 .anonymous(AnonymousConfigurer::disable)
                 .formLogin(FormLoginConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(corsConfigurer -> corsConfigurer.configurationSource(corsConfigurationSource()))
+                .cors(corsConfigurer -> corsConfigurer.configurationSource(corsConfigurationSource))
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(permitApis.toArray(new RequestMatcher[0])).permitAll()
                         .dispatcherTypeMatchers(DispatcherType.FORWARD).permitAll()

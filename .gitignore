@@ -52,7 +52,7 @@ frontend//coverage
 
 # production
 frontend/build
-frontend/.env
+frontend/.env*
 
 # misc
 frontend/.DS_Store

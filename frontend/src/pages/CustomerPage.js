@@ -1,4 +1,4 @@
-import KakaoLogin from "./customerpage/images/kakao_login_medium_wide.png";
+import KakaoLogin from "../assets/images/kakao_login_medium_wide.png";
 
 const CustomerPage = () => {
     const handleLogin = () => {

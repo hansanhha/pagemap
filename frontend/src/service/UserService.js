@@ -1,30 +1,7 @@
 export class UserService {
     static accessTokenKey = "accessToken";
     static refreshTokenKey = "refreshToken";
-    static issuedAtKey = "issuedAt";
-    static expiresInKey = "expiresIn";
     static nickname = "nickname";
-
-    static isLogged() {
-        const accessToken = localStorage.getItem(this.accessTokenKey);
-        const expiresIn = localStorage.getItem(this.expiresInKey);
-        const now = Date.now();
-
-        return accessToken !== null && (now < new Date(expiresIn));
-    };
-
-    static login(accessToken, refreshToken, issuedAt, expiresIn) {
-        localStorage.setItem(this.accessTokenKey, accessToken);
-        localStorage.setItem(this.refreshTokenKey, refreshToken);
-        localStorage.setItem(this.issuedAtKey, issuedAt);
-        localStorage.setItem(this.expiresInKey, expiresIn);
-    };
-
-    static getToken() {
-        if (this.isLogged()) {
-            return localStorage.getItem(this.accessTokenKey);
-        }
-    }
 
     static getNickname() {
         const nickname = localStorage.getItem(this.nickname);

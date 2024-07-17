@@ -1,15 +1,12 @@
-import RootRoute from "./routes/RootRoute";
-import {BrowserRouter as Router} from "react-router-dom";
-import {AppContext} from "./service/AppContext";
+import Router from "./routes/Router";
+import {LoginProvider} from "./hooks/useLogin";
 
 function App() {
-  return (
-      <AppContext>
-          <Router>
-            <RootRoute />
-          </Router>
-      </AppContext>
-  );
+    return (
+        <LoginProvider>
+            <Router/>
+        </LoginProvider>
+    );
 }
 
 

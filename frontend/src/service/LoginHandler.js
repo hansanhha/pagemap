@@ -1,6 +1,6 @@
-import { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useLogin } from "../hooks/useLogin";
+import {useEffect} from "react";
+import {useLocation, useNavigate} from "react-router-dom";
+import {useLogin} from "../hooks/useLogin";
 
 const LoginHandler = () => {
     const location = useLocation();

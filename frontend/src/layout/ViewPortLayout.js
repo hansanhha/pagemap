@@ -31,11 +31,11 @@ const UserSpace = styled.div`
     }
     
     @media (min-width: 768px) and (max-width: 900px) {
-        width: 80%;
+        width: 45%;
     }
 
     @media (min-width: 901px) and (max-width: 1200px) {
-        width: 70%;
+        width: 40%;
     }
 
     @media (min-width: 1201px) {

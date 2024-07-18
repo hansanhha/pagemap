@@ -1,12 +1,11 @@
 import styled from "styled-components";
-import Logo from "../Logo";
-import Link from "../Link";
+import Shortcut from "./Shortcut";
 
 const ShortcutSection = ({ shortcuts }) => {
 
     const handleScroll = (e) => {
         const delta = Math.sign(e.deltaY);
-        e.currentTarget.scrollLeft += delta * 30;
+        e.currentTarget.scrollLeft += delta;
     };
 
     return (
@@ -38,25 +37,6 @@ const StyledScrollBar = styled.div`
     &::-webkit-scrollbar {
         display: none;
     }
-`;
-
-const Shortcut = ({ shortcut }) => {
-    return (
-        <StyledShortcut>
-            <Logo img={shortcut.img} url={shortcut.url}/>
-            <Link title={shortcut.title} url={shortcut.url}/>
-        </StyledShortcut>
-    );
-}
-
-const StyledShortcut = styled.div`
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    
-    gap: 0.5vw;
-    padding: 0 0.5rem 0.5rem 0.5rem;
 `;
 
 export default ShortcutSection;

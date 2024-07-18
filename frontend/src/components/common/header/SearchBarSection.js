@@ -3,7 +3,7 @@ import styled from "styled-components";
 const SearchBarSection = () => {
     return (
         <SearchBarContainer>
-            <StyledSearchBar placeholder="안녕하세요"/>
+            <StyledSearchBar/>
         </SearchBarContainer>
     )
 }
@@ -12,9 +12,9 @@ const SearchBarContainer = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 50%;
-    height: 2.5rem;
-    border: 1px solid black;
+    width: 70%;
+    height: 2rem;
+    border: 1px solid #D9D9D9;
     border-radius: 1rem;
     background-color: white;
     padding: 0 1rem;

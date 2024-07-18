@@ -6,6 +6,7 @@ import {useLogin} from "../../hooks/useLogin";
 import {useEffect, useState} from "react";
 import ShortcutDto from "../../service/dto/ShortcutDto";
 import TitleSection from "./header/TitleSection";
+import Line from "./Line";
 
 const Header = () => {
     const {accessToken, isLoggedIn} = useLogin();
@@ -30,28 +31,30 @@ const Header = () => {
                 })
                 .catch(err => console.error("Error fetching shortcuts:", err));
         }
-    }, [isLoggedIn]);
+    }, [accessToken, isLoggedIn]);
 
     return (
-        <HeaderContainer>
-            <TopSection>
-                <MenuSection/>
-                <TitleSection />
-            </TopSection>
-            <SearchBarSection/>
-            <ShortcutSection shortcuts={shortcuts}/>
-        </HeaderContainer>
+        <>
+            <HeaderContainer>
+                <TopSection>
+                    <MenuSection/>
+                    <TitleSection/>
+                </TopSection>
+                <SearchBarSection/>
+                <ShortcutSection shortcuts={shortcuts}/>
+            </HeaderContainer>
+            <Line/>
+        </>
     )
 }
 
 const HeaderContainer = styled.header`
     width: 100%;
-    height: 30%;
     display: flex;
-    padding-top: 1rem;
+    padding-top: 0.5rem;
     flex-direction: column;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1rem;
 `
 
 const TopSection = styled.div`

@@ -1,6 +1,6 @@
 import {UserService} from "./UserService";
-import {extractFolder} from "../dto/FolderDto";
-import {extractBookmark} from "../dto/BookmarkDto";
+import {extractFolder} from "./dto/FolderDto";
+import {extractBookmark} from "./dto/BookmarkDto";
 
 export class ArchiveService {
 

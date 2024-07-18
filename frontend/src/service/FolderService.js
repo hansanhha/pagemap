@@ -1,6 +1,6 @@
 import {UserService} from "./UserService";
-import {extractFolder} from "../dto/FolderDto";
-import {extractBookmark} from "../dto/BookmarkDto";
+import {extractFolder} from "./dto/FolderDto";
+import {extractBookmark} from "./dto/BookmarkDto";
 
 export const MAX_FOLDER_TITLE_LENGTH = 50;
 

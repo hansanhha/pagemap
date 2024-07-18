@@ -1,5 +1,5 @@
 import {UserService} from "./UserService";
-import {CategoryDto} from "../dto/CategoryDto";
+import {CategoryDto} from "./dto/CategoryDto";
 
 export class CategoryService {
 

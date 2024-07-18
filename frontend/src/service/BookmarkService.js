@@ -1,5 +1,5 @@
 import {UserService} from "./UserService";
-import {extractBookmark} from "../dto/BookmarkDto";
+import {extractBookmark} from "./dto/BookmarkDto";
 
 export const MAX_BOOKMARK_TITLE_LENGTH = 50;
 export const MAX_BOOKMARK_URL_LENGTH = 100;

@@ -1,12 +1,12 @@
-import LogoUrl from "../LogoUrl";
-import StringUrl from "../StringUrl";
 import styled from "styled-components";
+import Logo from "../Logo";
+import Title from "../../archive/Title";
 
 const Shortcut = ({ shortcut }) => {
     return (
         <StyledShortcut>
-            <LogoUrl img={shortcut.img} url={shortcut.url}/>
-            <StringUrl title={shortcut.title} url={shortcut.url}/>
+            <Logo img={shortcut.img} />
+            <Title title={shortcut.title} />
         </StyledShortcut>
     );
 }

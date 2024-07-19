@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import Shortcut from "./Shortcut";
 
-const ShortcutSection = ({ shortcuts }) => {
+const ShortcutSection = ({shortcuts}) => {
 
     const handleScroll = (e) => {
         const delta = Math.sign(e.deltaY);
@@ -14,7 +14,10 @@ const ShortcutSection = ({ shortcuts }) => {
                 {
                     shortcuts && shortcuts.length > 0
                     && shortcuts.map(shortcut => (
-                    <Shortcut key={shortcut.id} shortcut={shortcut} />))
+                        <a key={shortcut.id} href={shortcut.url} target={"_blank"} rel={"noreferrer"}>
+                            <Shortcut shortcut={shortcut}/>
+                        </a>
+                    ))
                 }
             </StyledScrollBar>
         </StyledShortcutSection>

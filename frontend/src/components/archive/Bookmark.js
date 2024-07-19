@@ -1,12 +1,12 @@
-import LogoUrl from "../common/LogoUrl";
-import StringUrl from "../common/StringUrl";
 import {StyledArchive} from "./ArchiveSection";
+import Logo from "../common/Logo";
+import Title from "./Title";
 
 const Bookmark = ({bookmark}) => {
     return (
         <StyledArchive>
-            <LogoUrl img={bookmark.logo} url={bookmark.url}/>
-            <StringUrl title={bookmark.title} url={bookmark.url}/>
+            <Logo img={bookmark.logo} />
+            <Title title={bookmark.title} />
         </StyledArchive>
     );
 }

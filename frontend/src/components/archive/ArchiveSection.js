@@ -13,13 +13,16 @@ const ArchiveSection = ({folders = [], bookmarks = []}) => {
                 archives.length > 0 &&
                 archives.map(archive => {
                     return (
-                        archive.isPrototypeOf(FolderDto) ? (
-                            <Folder key={archive.id} folder={archive}/>
-                        ) : (
-                            <a href={archive.url} target={"_blank"} rel={"noreferrer"}>
-                                <Bookmark key={archive.id} bookmark={archive}/>
-                            </a>
-                        ));
+                        archive instanceof FolderDto ?
+                            (
+                                <Folder key={archive.id} folder={archive}/>
+                            )
+                            :
+                            (
+                                <a key={archive.id} href={archive.url} target={"_blank"} rel={"noreferrer"}>
+                                    <Bookmark bookmark={archive}/>
+                                </a>
+                            ));
                 })
             }
         </StyledArchiveSection>
@@ -29,9 +32,18 @@ const ArchiveSection = ({folders = [], bookmarks = []}) => {
 const StyledArchiveSection = styled.div`
     display: flex;
     width: 100%;
+    height: 90vh;
     flex-direction: column;
     gap: 0.5rem;
-    padding: 0 1rem;
+    padding: 0 1rem 2rem 1rem;
+    overflow-y: scroll;
+    -ms-overflow-y: scroll;
+    white-space: nowrap;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    &::-webkit-scrollbar {
+        display: none;
+    }
 `;
 
 export const StyledArchive = styled.div`
@@ -40,6 +52,7 @@ export const StyledArchive = styled.div`
     gap: 1rem;
     align-items: center;
     padding: 0.5rem 0;
+
     &:hover {
         background: #E9E9E9;
     }

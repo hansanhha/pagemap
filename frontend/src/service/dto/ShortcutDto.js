@@ -5,11 +5,11 @@ class ShortcutDto {
     url;
     order;
 
-    constructor(webPage) {
-        this.id = webPage.id;
+    constructor(Shortcut) {
+        this.id = Shortcut.id;
         this.logo = null;
-        this.title = webPage.title;
-        this.url = webPage.url;
+        this.title = Shortcut.title;
+        this.url = Shortcut.url;
         this.order = 0;
     }
 }

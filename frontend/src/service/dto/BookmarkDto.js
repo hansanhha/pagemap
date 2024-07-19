@@ -12,5 +12,6 @@ export default class BookmarkDto {
         this.title = Bookmark.title;
         this.url = Bookmark.url;
         this.parentFolderId = Bookmark.parentFolderId;
+        this.order = 0;
     }
 }

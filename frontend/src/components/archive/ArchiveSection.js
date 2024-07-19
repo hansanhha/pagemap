@@ -1,15 +1,14 @@
 import styled from "styled-components";
-import Folder from "./Folder";
-import Bookmark from "./Bookmark";
 import FolderDto from "../../service/dto/FolderDto";
-import Draggable from "../common/Draggable";
 import {useLogin} from "../../hooks/useLogin";
 import {useEffect, useState} from "react";
 import BookmarkDto from "../../service/dto/BookmarkDto";
+import HierarchyArchive from "./HierarchyArchive";
 
 const ArchiveSection = () => {
-    let { accessToken, isLoggedIn } = useLogin();
-    const [archives, setArchives] = useState([]);
+    let {accessToken, isLoggedIn} = useLogin();
+    const [isActive, setIsActive] = useState(true);
+    const [sortedArchives, setSortedArchives] = useState([]);
 
     useEffect(() => {
         // 임시
@@ -34,37 +33,68 @@ const ArchiveSection = () => {
                         bookmarks = data.webPages.map(webPage => new BookmarkDto(webPage));
                     }
 
-                    setArchives([...folders, ...bookmarks].sort((a, b) => a.order - b.order));
+                    setSortedArchives([...folders, ...bookmarks].sort((a, b) => a.order - b.order));
                 })
                 .catch(err => console.error("Error fetching shortcuts:", err));
         }
     }, [accessToken, isLoggedIn]);
 
-    function handleDrop() {
-        console.log("Dropped");
+    const handleHierarchyDrop = (sourceType, sourceId, targetId) => {
+        if (sourceType === "folder" && sourceId === targetId) {
+            return;
+        }
+
+        if (sourceType === "folder") {
+            fetch(process.env.REACT_APP_SERVER + `/storage/maps/${sourceId}/location`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/problem+json",
+                    "Authorization": "Bearer " + accessToken,
+                },
+                body: JSON.stringify({
+                    "targetMapId": targetId,
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    setSortedArchives(prevArchives =>
+                        [...prevArchives.filter(archive => archive.id !== Number(sourceId))]
+                    );
+                })
+                .catch(err => console.error("Error update location: ", err));
+        }
+
+        if (sourceType === "bookmark") {
+            fetch(process.env.REACT_APP_SERVER + `/storage/webpages/${sourceId}/location`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/problem+json",
+                    "Authorization": "Bearer " + accessToken,
+                },
+                body: JSON.stringify({
+                    "targetMapId": targetId,
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    setSortedArchives(prevArchives =>
+                        [...prevArchives.filter(archive => archive.id !== Number(sourceId))]
+                    );
+                })
+                .catch(err => console.error("Error update location: ", err));
+        }
+    }
+
+    const handleOrderDrop = (sourceId, targetOrder) => {
+        console.log("Dropped", sourceId);
+        console.log("targetOrder", targetOrder);
     }
 
     return (
         <StyledArchiveSection>
-            {
-                archives &&
-                archives.length > 0 &&
-                archives.map(archive => {
-                    return (
-                        archive instanceof FolderDto ?
-                            (
-                                <Folder key={archive.id} folder={archive}/>
-                            )
-                            :
-                            (
-                                <Draggable key={archive.id} handleDrop={handleDrop}>
-                                    <a href={archive.url} target={"_blank"} rel={"noreferrer"}>
-                                        <Bookmark bookmark={archive}/>
-                                    </a>
-                                </Draggable>
-                            ));
-                })
-            }
+            <HierarchyArchive archives={sortedArchives}
+                              onHierarchyDropped={handleHierarchyDrop}
+                              onOrderDropped={handleOrderDrop}/>
         </StyledArchiveSection>
     )
 }
@@ -72,19 +102,13 @@ const ArchiveSection = () => {
 const StyledArchiveSection = styled.div`
     display: flex;
     width: 100%;
-    height: 90vh;
     flex-direction: column;
-    gap: 0.5rem;
-    padding: 0 1rem 2rem 1rem;
+    gap: 0.1rem;
+    padding: 0 1rem 3rem 1rem;
     overflow-y: scroll;
     -ms-overflow-y: scroll;
-    white-space: nowrap;
-    scrollbar-width: none;
     -ms-overflow-style: none;
 
-    &::-webkit-scrollbar {
-        display: none;
-    }
     &::-webkit-scrollbar {
         display: none;
     }

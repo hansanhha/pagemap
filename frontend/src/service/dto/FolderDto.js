@@ -5,6 +5,7 @@ export default class FolderDto {
     parentFolderId;
     childrenFolder;
     childrenBookmark;
+    order;
 
     constructor(Folder) {
         this.id = Folder.id;
@@ -13,5 +14,6 @@ export default class FolderDto {
         this.parentFolderId = Folder.parentFolderId;
         this.childrenFolder = Folder.childrenFolder ? Folder.childrenFolder : [];
         this.childrenBookmark = Folder.bookmarks ? Folder.bookmarks : [];
+        this.order = 0;
     }
 }

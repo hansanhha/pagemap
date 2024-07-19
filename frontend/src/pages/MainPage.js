@@ -11,7 +11,7 @@ const MainPage = () => {
 
 const MainContainer = styled.div`
     display: flex;
-    align-items: center;
+    height: 100%;
     gap: 1rem;
     padding: 2rem;
 `

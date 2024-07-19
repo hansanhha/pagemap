@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import Shortcut from "./Shortcut";
+import Draggable from "../Draggable";
 
 const ShortcutSection = ({shortcuts}) => {
 
@@ -14,9 +15,11 @@ const ShortcutSection = ({shortcuts}) => {
                 {
                     shortcuts && shortcuts.length > 0
                     && shortcuts.map(shortcut => (
-                        <a key={shortcut.id} href={shortcut.url} target={"_blank"} rel={"noreferrer"}>
-                            <Shortcut shortcut={shortcut}/>
-                        </a>
+                        <Draggable key={shortcut.id}>
+                            <a href={shortcut.url} target={"_blank"} rel={"noreferrer"}>
+                                <Shortcut shortcut={shortcut}/>
+                            </a>
+                        </Draggable>
                     ))
                 }
             </StyledScrollBar>
@@ -37,6 +40,7 @@ const StyledScrollBar = styled.div`
     white-space: nowrap;
     scrollbar-width: none;
     -ms-overflow-style: none;
+
     &::-webkit-scrollbar {
         display: none;
     }

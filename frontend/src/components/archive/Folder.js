@@ -7,6 +7,7 @@ import {useState} from "react";
 import {useLogin} from "../../hooks/useLogin";
 import FolderDto from "../../service/dto/FolderDto";
 import BookmarkDto from "../../service/dto/BookmarkDto";
+import Draggable from "../common/Draggable";
 
 const Folder = ({folder}) => {
     let {accessToken} = useLogin();
@@ -26,29 +27,35 @@ const Folder = ({folder}) => {
             })
                 .then(response => response.json())
                 .then(data => {
-                    let folderDtos = [];
-                    let bookmarkDtos = [];
+                    let folders = [];
+                    let bookmarks = [];
 
                     if (data.childrenMap && data.childrenMap.length > 0) {
-                        folderDtos = data.childrenMap.map(childMap => new FolderDto(childMap));
+                        folders = data.childrenMap.map(childMap => new FolderDto(childMap));
                     }
 
                     if (data.childrenWebPage && data.childrenWebPage.length > 0) {
-                        bookmarkDtos = data.childrenWebPage.map(childWebPage => new BookmarkDto(childWebPage));
+                        bookmarks = data.childrenWebPage.map(childWebPage => new BookmarkDto(childWebPage));
                     }
 
-                    setChildrenArchive([...folderDtos, ...bookmarkDtos].sort((a, b) => a.order - b.order));
+                    setChildrenArchive([...folders, ...bookmarks].sort((a, b) => a.order - b.order));
                 })
                 .catch(err => console.error("Error fetching children:", err));
         }
     }
 
+    const handleDrop = () => {
+        console.log("Dropped");
+    }
+
     return (
         <StyledFolderContainer>
-            <StyledParentFolder onClick={handleClick}>
-                <Logo img={folderLogo}/>
-                <Title title={folder.title}/>
-            </StyledParentFolder>
+            <Draggable handleDrop={handleDrop}>
+                <StyledParentFolder onClick={handleClick}>
+                    <Logo img={folderLogo}/>
+                    <Title title={folder.title}/>
+                </StyledParentFolder>
+            </Draggable>
             {
                 isClicked &&
                 childrenArchive.length > 0 &&
@@ -56,17 +63,21 @@ const Folder = ({folder}) => {
                     return (
                         archive instanceof FolderDto ?
                             (
-                                <StyledChildArchive key={archive.id} >
-                                    <Folder folder={archive}/>
-                                </StyledChildArchive>
+                                <Draggable key={archive.id} handleDrop={handleDrop}>
+                                    <StyledChildArchive>
+                                        <Folder folder={archive}/>
+                                    </StyledChildArchive>
+                                </Draggable>
                             )
                             :
                             (
-                                <a key={archive.id} href={archive.url} target={"_blank"} rel={"noreferrer"}>
-                                    <StyledChildArchive>
-                                        <Bookmark bookmark={archive}/>
-                                    </StyledChildArchive>
-                                </a>
+                                <Draggable key={archive.id} handleDrop={handleDrop}>
+                                    <a href={archive.url} target={"_blank"} rel={"noreferrer"}>
+                                        <StyledChildArchive>
+                                            <Bookmark bookmark={archive}/>
+                                        </StyledChildArchive>
+                                    </a>
+                                </Draggable>
                             ));
                 })
             }

@@ -46,16 +46,4 @@ const StyledArchiveSection = styled.div`
     }
 `;
 
-export const StyledArchive = styled.div`
-    display: flex;
-    width: 100%;
-    gap: 1rem;
-    align-items: center;
-    padding: 0.5rem 0;
-
-    &:hover {
-        background: #E9E9E9;
-    }
-`;
-
 export default ArchiveSection;

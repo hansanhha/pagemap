@@ -1,10 +1,12 @@
-import styled from "styled-components";
+import styled, {keyframes} from "styled-components";
 import Shortcut from "./Shortcut";
 import {useLogin} from "../../../hooks/useLogin";
 import {useEffect, useState} from "react";
 import ShortcutDto from "../../../service/dto/ShortcutDto";
 import ShortcutSectionDropZone from "./ShortcutSectionDropZone";
 import BookmarkDto from "../../../service/dto/BookmarkDto";
+import {subscribeEvent, unsubscribeEvent} from "../../util/EventHandler";
+import {deletedShortcut} from "../../trash/Trash";
 
 const ShortcutSection = () => {
     const {accessToken, isLoggedIn} = useLogin();
@@ -30,6 +32,12 @@ const ShortcutSection = () => {
                 })
                 .catch(err => console.error("Error fetching shortcuts:", err));
         }
+
+        subscribeEvent(deletedShortcut, handleActive);
+
+        return () => {
+            unsubscribeEvent(deletedShortcut, handleActive);
+        }
     }, [isActive, accessToken, isLoggedIn]);
 
     const handleActive = () => {
@@ -43,10 +51,6 @@ const ShortcutSection = () => {
         const delta = Math.sign(e.deltaY);
         e.currentTarget.scrollLeft += delta;
     };
-
-    const handleRemoveShortcut = (source) => {
-
-    }
 
     const handleAddShortcut = (source) => {
         if (BookmarkDto.isBookmark(source)) {
@@ -79,19 +83,21 @@ const ShortcutSection = () => {
 
     return (
         <ShortcutSectionDropZone onDropped={handleAddShortcut}>
-            <StyledShortcutSection>
-                <StyledScrollBar onWheel={handleScroll}>
-                    {
-                        shortcuts.length > 0 &&
-                        shortcuts.map(shortcut => (
-                            <Shortcut key={shortcut.id}
-                                      shortcut={shortcut}
-                                      onUpdateOrder={handleUpdateOrder}
-                            />
-                        ))
-                    }
-                </StyledScrollBar>
-            </StyledShortcutSection>
+            {isActive &&
+                <StyledShortcutSection isActive={isActive}>
+                    <StyledScrollBar onWheel={handleScroll}>
+                        {
+                            shortcuts.length > 0 &&
+                            shortcuts.map(shortcut => (
+                                <Shortcut key={shortcut.id}
+                                          shortcut={shortcut}
+                                          onUpdateOrder={handleUpdateOrder}
+                                />
+                            ))
+                        }
+                    </StyledScrollBar>
+                </StyledShortcutSection>
+            }
         </ShortcutSectionDropZone>
     );
 };
@@ -100,6 +106,8 @@ const StyledShortcutSection = styled.div`
     display: flex;
     width: 100%;
     padding: 0 2rem 0 2rem;
+
+    animation: ${({isActive}) => isActive ? fadeIn : fadeOut} 0.5s;
 `;
 
 const StyledScrollBar = styled.div`
@@ -112,6 +120,24 @@ const StyledScrollBar = styled.div`
 
     &::-webkit-scrollbar {
         display: none;
+    }
+`;
+
+const fadeIn = keyframes`
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+`;
+
+const fadeOut = keyframes`
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
     }
 `;
 

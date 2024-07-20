@@ -5,6 +5,8 @@ import {useEffect, useState} from "react";
 import BookmarkDto from "../../service/dto/BookmarkDto";
 import HierarchyArchive from "./HierarchyArchive";
 import ShortcutDto from "../../service/dto/ShortcutDto";
+import Trash, {deletedArchive} from "../trash/Trash";
+import {subscribeEvent, unsubscribeEvent} from "../util/EventHandler";
 
 const ArchiveSection = () => {
     let {accessToken, isLoggedIn} = useLogin();
@@ -37,6 +39,12 @@ const ArchiveSection = () => {
                     setSortedArchives([...folders, ...bookmarks].sort((a, b) => a.order - b.order));
                 })
                 .catch(err => console.error("Error fetching shortcuts:", err));
+        }
+
+        subscribeEvent(deletedArchive, handleActive);
+
+        return () => {
+            unsubscribeEvent(deletedArchive, handleActive);
         }
     }, [accessToken, isLoggedIn, isActive]);
 
@@ -116,9 +124,12 @@ const ArchiveSection = () => {
         <StyledArchiveSection isActive={isActive}>
             {
                 isActive &&
-                <HierarchyArchive archives={sortedArchives}
-                                  onUpdateHierarchy={handleUpdateHierarchy}
-                                  onUpdateOrder={handleUpdateOrder}/>
+                <>
+                    <HierarchyArchive archives={sortedArchives}
+                                      onUpdateHierarchy={handleUpdateHierarchy}
+                                      onUpdateOrder={handleUpdateOrder}/>
+                    <Trash/>
+                </>
             }
         </StyledArchiveSection>
     )

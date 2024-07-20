@@ -6,7 +6,7 @@ import {shortcutDataTransferName} from "../common/header/ShortcutDrag";
 import BookmarkDto from "../../service/dto/BookmarkDto";
 import ShortcutDto from "../../service/dto/ShortcutDto";
 
-const archiveDataTransferName = "archive";
+const folderDataTransferName = "folder";
 const bookmarkDataTransferName = "bookmark";
 
 let sourceArchive = null;
@@ -19,8 +19,13 @@ const ArchiveDrag = ({ archive, children, onDropped }) => {
         sourceArchive = archive;
         setOrderLineSource(archive);
 
+        // ShortcutDropZone에는 Bookmark만 드래그를 허용하기 때문에 분기 처리
         if (BookmarkDto.isBookmark(archive)) {
             e.dataTransfer.setData(bookmarkDataTransferName, JSON.stringify(archive));
+        }
+
+        if (FolderDto.isFolder(archive)) {
+            e.dataTransfer.setData(folderDataTransferName, JSON.stringify(archive));
         }
     }
 
@@ -79,5 +84,5 @@ const StyledHierarchyDrag = styled.div`
     transition: background-color 0.3s ease;
 `;
 
-export {archiveDataTransferName, bookmarkDataTransferName};
+export {folderDataTransferName, bookmarkDataTransferName};
 export default ArchiveDrag;

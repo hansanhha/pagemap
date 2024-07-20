@@ -11,7 +11,6 @@ const ViewPortLayout = ({children}) => {
 }
 
 const GlobalSpace = styled.div`
-    background: white;
     width: 100vw;
     height: 100vh;
     display: flex;

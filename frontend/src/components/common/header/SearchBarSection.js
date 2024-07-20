@@ -16,14 +16,14 @@ const SearchBarContainer = styled.div`
     height: 2rem;
     border: 1px solid #D9D9D9;
     border-radius: 1rem;
-    background-color: white;
+    background-color: transparent;
     padding: 0 1rem;
 `;
 
 const StyledSearchBar = styled.input`
     width: 100%;
     border: none;
-    background-color: white;
+    background-color: transparent;
     text-align: center;
     font-size: 1rem;
     &:focus {

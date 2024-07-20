@@ -7,7 +7,7 @@ import OrderLine from "../common/OrderLine";
 const Bookmark = ({bookmark, onUpdateHierarchy, onUpdateOrder}) => {
     return (
         <>
-            <OrderLine id={bookmark.id}
+            <OrderLine archive={bookmark}
                        order={bookmark.order}
                        onDropped={onUpdateOrder}/>
             <HierarchyDrag archive={bookmark}

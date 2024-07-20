@@ -1,5 +1,3 @@
-import Folder from "../../components/archive/Folder";
-
 export default class FolderDto {
     id;
     logo;
@@ -22,7 +20,6 @@ export default class FolderDto {
     }
 
     static isFolder(archive) {
-        console.log(archive);
         return archive instanceof FolderDto;
     }
 

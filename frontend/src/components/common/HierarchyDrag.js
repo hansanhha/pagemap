@@ -1,8 +1,7 @@
 import styled from "styled-components";
 import {useState} from "react";
 import FolderDto from "../../service/dto/FolderDto";
-import BookmarkDto from "../../service/dto/BookmarkDto";
-import Folder from "../archive/Folder";
+import {setOrderLineSource} from "./OrderLine";
 
 const FOLDER = "folder";
 const BOOKMARK = "bookmark";
@@ -16,6 +15,8 @@ const HierarchyDrag = ({ archive, children, onDropped }) => {
     const dragStart = (e) => {
         e.stopPropagation();
         source = archive;
+        setOrderLineSource(archive);
+
         type = FolderDto.isFolder(archive) ? FOLDER : BOOKMARK;
     }
 

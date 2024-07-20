@@ -86,7 +86,7 @@ const ArchiveSection = () => {
         }
     }
 
-    const handleUpdateOrder = (sourceId, targetOrder) => {
+    const handleUpdateOrder = (source, target) => {
         handleActive();
     }
 

@@ -1,16 +1,26 @@
 import styled from "styled-components";
 import {useState} from "react";
+import FolderDto from "../../service/dto/FolderDto";
 
-const OrderLine = ({ id, order, onDropped }) => {
+let source = null;
+
+const setSource = (s) => {
+    source = s;
+}
+
+const OrderLine = ({ archive, onDropped }) => {
     const [isDraggingOver, setIsDraggingOver] = useState(false);
 
     const dragStart = (e) => {
         e.stopPropagation();
-        e.dataTransfer.setData("sourceId", id);
     }
 
     const dragEnter = (e) => {
         e.stopPropagation();
+        if (FolderDto.isFolder(archive) && FolderDto.isFolder(source) && archive.isDescendant(source)) {
+            return;
+        }
+
         setIsDraggingOver(true);
     }
 
@@ -21,8 +31,12 @@ const OrderLine = ({ id, order, onDropped }) => {
 
     const drop = (e) => {
         e.stopPropagation();
+        if (FolderDto.isFolder(archive) && FolderDto.isFolder(source) && archive.isDescendant(source)) {
+            return;
+        }
+
         setIsDraggingOver(false);
-        onDropped(e.dataTransfer.getData("sourceId"), e.target.id);
+        onDropped(source, archive);
     }
 
     return (
@@ -32,10 +46,8 @@ const OrderLine = ({ id, order, onDropped }) => {
             onDragEnter={dragEnter}
             onDragLeave={dragLeave}
             onDrop={drop}
-            isDraggingOver={isDraggingOver}
         >
             <StyledOrderLine
-                id={order}
                 isDraggingOver={isDraggingOver}/>
         </StyledOrderLineWrapper>
     )
@@ -53,4 +65,5 @@ const StyledOrderLine = styled.div`
     transition: background 0.3s ease;
 `;
 
+export {setSource as setOrderLineSource};
 export default OrderLine;

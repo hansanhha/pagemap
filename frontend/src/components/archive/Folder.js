@@ -52,7 +52,7 @@ const Folder = ({folder, onUpdateHierarchy, onUpdateOrder}) => {
 
     return (
         <StyledFolderContainer>
-            <OrderLine id={folder.id}
+            <OrderLine archive={folder}
                        order={folder.order}
                        onDropped={onUpdateOrder}/>
             <HierarchyDrag archive={folder} onDropped={onUpdateHierarchy}>

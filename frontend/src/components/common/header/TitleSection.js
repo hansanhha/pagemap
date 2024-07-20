@@ -1,16 +1,18 @@
 import styled from "styled-components";
 import useMediaQuery from "../../../hooks/useMediaQuery";
+import {useNavigate} from "react-router-dom";
 
 const TITLE = "Pagemap";
 
 const TitleSelection = () => {
     const {isMobile} = useMediaQuery();
+    const navigate = useNavigate();
 
     return (
         <>
             {
                 <TitleContainer>
-                    <StyledTitle isMobile={isMobile}>
+                    <StyledTitle isMobile={isMobile} onClick={() => navigate("/")}>
                         {TITLE}
                     </StyledTitle>
                 </TitleContainer>
@@ -33,6 +35,9 @@ const StyledTitle = styled.div`
     text-align: center;
     align-self: center;
 
+    &:hover {
+        cursor: pointer;
+    }
 `;
 
 export default TitleSelection;

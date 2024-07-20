@@ -1,7 +1,5 @@
 import FolderDto from "../../service/dto/FolderDto";
 import Folder from "./Folder";
-import OrderLine from "../common/OrderLine";
-import HierarchyDrag from "../common/HierarchyDrag";
 import Bookmark from "./Bookmark";
 
 const HierarchyArchive = ({archives, onUpdateHierarchy, onUpdateOrder}) => {

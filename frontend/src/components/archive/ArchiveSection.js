@@ -46,20 +46,20 @@ const ArchiveSection = () => {
         }, 10);
     }
 
-    const handleUpdateHierarchy = (sourceType, sourceId, targetId) => {
-        if (sourceType === "folder" && sourceId === targetId) {
+    const handleUpdateHierarchy = (source, target) => {
+        if (source.id === target.id || source.parentFolderId === target.id) {
             return;
         }
 
-        if (sourceType === "folder") {
-            fetch(process.env.REACT_APP_SERVER + `/storage/maps/${sourceId}/location`, {
+        if (source instanceof FolderDto) {
+            fetch(process.env.REACT_APP_SERVER + `/storage/maps/${source.id}/location`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/problem+json",
                     "Authorization": "Bearer " + accessToken,
                 },
                 body: JSON.stringify({
-                    "targetMapId": targetId,
+                    "targetMapId": target.id,
                 })
             })
                 .then(response => response.json())
@@ -67,17 +67,15 @@ const ArchiveSection = () => {
                     handleActive();
                 })
                 .catch(err => console.error("Error update location: ", err));
-        }
-
-        if (sourceType === "bookmark") {
-            fetch(process.env.REACT_APP_SERVER + `/storage/webpages/${sourceId}/location`, {
+        } else {
+            fetch(process.env.REACT_APP_SERVER + `/storage/webpages/${source.id}/location`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/problem+json",
                     "Authorization": "Bearer " + accessToken,
                 },
                 body: JSON.stringify({
-                    "targetMapId": targetId,
+                    "targetMapId": target.id,
                 })
             })
                 .then(response => response.json())

@@ -52,7 +52,7 @@ const Folder = ({folder, onUpdateHierarchy, onUpdateOrder}) => {
                        order={folder.order}
                        onDropped={onUpdateOrder}/>
             <HierarchyDrag archive={folder} onDropped={onUpdateHierarchy}>
-                <StyledParentFolder onClick={handleClick} id={folder.id}>
+                <StyledParentFolder onClick={handleClick}>
                     <Logo img={folderLogo}/>
                     <Title title={folder.title}/>
                 </StyledParentFolder>

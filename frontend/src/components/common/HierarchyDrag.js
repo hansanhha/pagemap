@@ -2,6 +2,7 @@ import styled from "styled-components";
 import {useState} from "react";
 import FolderDto from "../../service/dto/FolderDto";
 import BookmarkDto from "../../service/dto/BookmarkDto";
+import Folder from "../archive/Folder";
 
 const FOLDER = "folder";
 const BOOKMARK = "bookmark";
@@ -15,13 +16,13 @@ const HierarchyDrag = ({ archive, children, onDropped }) => {
     const dragStart = (e) => {
         e.stopPropagation();
         source = archive;
-        type = archive instanceof FolderDto ? FOLDER : BOOKMARK;
+        type = FolderDto.isFolder(archive) ? FOLDER : BOOKMARK;
     }
 
     const dragEnter = (e) => {
         e.stopPropagation();
-        if (archive instanceof FolderDto) {
-            if (source instanceof FolderDto && archive.hierarchyParentIds.includes(source.id)) {
+        if (FolderDto.isFolder(archive)) {
+            if (FolderDto.isFolder(source) && archive.isDescendant(source)) {
                 return;
             }
 
@@ -31,15 +32,15 @@ const HierarchyDrag = ({ archive, children, onDropped }) => {
 
     const dragLeave = (e) => {
         e.stopPropagation();
-        if (archive instanceof FolderDto) {
+        if (FolderDto.isFolder(archive)) {
             setIsDraggingOver(false);
         }
     }
 
     const drop = (e) => {
         e.stopPropagation();
-        if (archive instanceof FolderDto) {
-            if (source instanceof FolderDto && archive.hierarchyParentIds.includes(source.id)) {
+        if (FolderDto.isFolder(archive)) {
+            if (FolderDto.isFolder(source) && archive.isDescendant(source)) {
                 return;
             }
 

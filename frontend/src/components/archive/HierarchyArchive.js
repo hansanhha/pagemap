@@ -8,7 +8,7 @@ const HierarchyArchive = ({archives, onUpdateHierarchy, onUpdateOrder}) => {
         archives.length > 0 &&
         archives.map(archive => {
             return (
-                archive instanceof FolderDto ?
+                FolderDto.isFolder(archive) ?
                     (
                         <Folder key={archive.id}
                                 folder={archive}

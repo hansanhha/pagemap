@@ -66,7 +66,7 @@ const Folder = ({folder, onUpdateHierarchy, onUpdateOrder}) => {
                 childrenSortedArchive.length > 0 &&
                 childrenSortedArchive.map(archive => {
                     return (
-                        archive instanceof FolderDto ?
+                        FolderDto.isFolder(archive) ?
                             (
 
                                 <StyledChildArchive key={archive.id}>

@@ -20,4 +20,13 @@ export default class FolderDto {
         this.order = 0;
         this.hierarchyParentIds = [Folder.parentMapId];
     }
+
+    static isFolder(archive) {
+        console.log(archive);
+        return archive instanceof FolderDto;
+    }
+
+    isDescendant(folder) {
+        return this.hierarchyParentIds.includes(folder.id);
+    }
 }

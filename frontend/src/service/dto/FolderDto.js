@@ -1,3 +1,5 @@
+import Folder from "../../components/archive/Folder";
+
 export default class FolderDto {
     id;
     logo;
@@ -6,14 +8,16 @@ export default class FolderDto {
     childrenFolder;
     childrenBookmark;
     order;
+    hierarchyParentIds;
 
     constructor(Folder) {
         this.id = Folder.id;
         this.logo = "folder";
         this.title = Folder.title;
-        this.parentFolderId = Folder.parentFolderId;
+        this.parentFolderId = Folder.parentMapId;
         this.childrenFolder = Folder.childrenFolder ? Folder.childrenFolder : [];
         this.childrenBookmark = Folder.bookmarks ? Folder.bookmarks : [];
         this.order = 0;
+        this.hierarchyParentIds = [Folder.parentMapId];
     }
 }

@@ -6,18 +6,25 @@ import BookmarkDto from "../../service/dto/BookmarkDto";
 const FOLDER = "folder";
 const BOOKMARK = "bookmark";
 
+let source = null;
+let type = null;
+
 const HierarchyDrag = ({ archive, children, onDropped }) => {
     const [isDraggingOver, setIsDraggingOver] = useState(false);
 
     const dragStart = (e) => {
         e.stopPropagation();
-        e.dataTransfer.setData("source", JSON.stringify(archive));
-        e.dataTransfer.setData("type", archive instanceof FolderDto ? FOLDER : BOOKMARK);
+        source = archive;
+        type = archive instanceof FolderDto ? FOLDER : BOOKMARK;
     }
 
     const dragEnter = (e) => {
         e.stopPropagation();
         if (archive instanceof FolderDto) {
+            if (source instanceof FolderDto && archive.hierarchyParentIds.includes(source.id)) {
+                return;
+            }
+
             setIsDraggingOver(true);
         }
     }
@@ -32,12 +39,11 @@ const HierarchyDrag = ({ archive, children, onDropped }) => {
     const drop = (e) => {
         e.stopPropagation();
         if (archive instanceof FolderDto) {
+            if (source instanceof FolderDto && archive.hierarchyParentIds.includes(source.id)) {
+                return;
+            }
+
             setIsDraggingOver(false);
-
-            const type = e.dataTransfer.getData("type");
-            const parse = JSON.parse(e.dataTransfer.getData("source"));
-            const source = type === FOLDER ? new FolderDto(parse) : new BookmarkDto(parse);
-
             onDropped(source, archive);
         }
     }

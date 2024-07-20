@@ -28,18 +28,22 @@ const Folder = ({folder, onUpdateHierarchy, onUpdateOrder}) => {
             })
                 .then(response => response.json())
                 .then(data => {
-                    let folders = [];
-                    let bookmarks = [];
+                    let childrenFolder = [];
+                    let childrenBookmark = [];
 
                     if (data.childrenMap && data.childrenMap.length > 0) {
-                        folders = data.childrenMap.map(childMap => new FolderDto(childMap));
+                        childrenFolder = data.childrenMap.map(childMap => new FolderDto(childMap));
+                        childrenFolder.forEach(childFolder => {
+                            const hierarchyParentIds = childFolder.hierarchyParentIds;
+                            hierarchyParentIds.push(...folder.hierarchyParentIds);
+                        });
                     }
 
                     if (data.childrenWebPage && data.childrenWebPage.length > 0) {
-                        bookmarks = data.childrenWebPage.map(childWebPage => new BookmarkDto(childWebPage));
+                        childrenBookmark = data.childrenWebPage.map(childWebPage => new BookmarkDto(childWebPage));
                     }
 
-                    const sort = [...folders, ...bookmarks].sort((a, b) => a.order - b.order);
+                    const sort = [...childrenFolder, ...childrenBookmark].sort((a, b) => a.order - b.order);
                     setChildrenSortedArchive(sort);
                 })
                 .catch(err => console.error("Error fetching children:", err));

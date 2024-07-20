@@ -10,7 +10,7 @@ import BookmarkDto from "../../service/dto/BookmarkDto";
 import HierarchyDrag from "../common/HierarchyDrag";
 import OrderLine from "../common/OrderLine";
 
-const Folder = ({folder, onHierarchyDropped, onOrderDropped}) => {
+const Folder = ({folder, onUpdateHierarchy, onUpdateOrder}) => {
     let {accessToken} = useLogin();
     const [isClicked, setIsClicked] = useState(false);
     const [childrenSortedArchive, setChildrenSortedArchive] = useState([]);
@@ -46,61 +46,12 @@ const Folder = ({folder, onHierarchyDropped, onOrderDropped}) => {
         }
     }
 
-    const handleChildrenHierarchyDrop = (sourceType, sourceId, targetId) => {
-        if (sourceType === "folder" && Number(sourceId) === Number(targetId)) {
-            return;
-        }
-
-        const sourceArchive = childrenSortedArchive.find(archive => archive.id === Number(sourceId));
-
-        if (sourceArchive.parentFolderId === Number(targetId)) {
-            return;
-        }
-
-        if (sourceType === "folder") {
-            fetch(process.env.REACT_APP_SERVER + `/storage/maps/${sourceId}/location`, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/problem+json",
-                    "Authorization": "Bearer " + accessToken,
-                },
-                body: JSON.stringify({
-                    "targetMapId": targetId,
-                })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    setIsClicked(false);
-                })
-                .catch(err => console.error("Error moving folder:", err));
-        } else {
-            fetch(process.env.REACT_APP_SERVER + `/storage/webpages/${sourceId}/location`, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/problem+json",
-                    "Authorization": "Bearer " + accessToken,
-                },
-                body: JSON.stringify({
-                    "targetMapId": targetId,
-                })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    setIsClicked(false);
-                })
-                .catch(err => console.error("Error moving bookmark:", err));
-        }
-    }
-
-    const handleChildrenOrderDrop = (sourceId, targetOrder) => {
-    }
-
     return (
         <StyledFolderContainer>
             <OrderLine id={folder.id}
                        order={folder.order}
-                       onDropped={onOrderDropped}/>
-            <HierarchyDrag id={folder.id} type={"folder"} onDropped={onHierarchyDropped}>
+                       onDropped={onUpdateOrder}/>
+            <HierarchyDrag id={folder.id} type={"folder"} onDropped={onUpdateHierarchy}>
                 <StyledParentFolder onClick={handleClick} id={folder.id}>
                     <Logo img={folderLogo}/>
                     <Title title={folder.title}/>
@@ -116,8 +67,8 @@ const Folder = ({folder, onHierarchyDropped, onOrderDropped}) => {
 
                                 <StyledChildArchive key={crypto.randomUUID()}>
                                     <Folder folder={archive}
-                                            onHierarchyDropped={handleChildrenHierarchyDrop}
-                                            onOrderDropped={handleChildrenOrderDrop}/>
+                                            onUpdateHierarchy={onUpdateHierarchy}
+                                            onUpdateOrder={onUpdateOrder}/>
                                 </StyledChildArchive>
                             )
                             :
@@ -126,8 +77,8 @@ const Folder = ({folder, onHierarchyDropped, onOrderDropped}) => {
                                     <OrderLine key={crypto.randomUUID()}
                                                id={archive.id}
                                                order={archive.order}
-                                               onDropped={handleChildrenOrderDrop}/>
-                                    <HierarchyDrag key={archive.id} onDropped={handleChildrenHierarchyDrop}
+                                               onDropped={onUpdateOrder}/>
+                                    <HierarchyDrag key={archive.id} onDropped={onUpdateHierarchy}
                                                    id={archive.id}
                                                    type={"bookmark"}>
                                         <a href={archive.url} target={"_blank"} rel={"noreferrer"}>

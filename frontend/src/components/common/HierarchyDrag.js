@@ -8,7 +8,6 @@ const HierarchyDrag = ({ id, children, onDropped, type }) => {
         e.stopPropagation();
         e.dataTransfer.setData("sourceId", id);
         e.dataTransfer.setData("sourceType", type);
-        console.log("dragStart", id, type);
     }
 
     const dragEnter = (e) => {

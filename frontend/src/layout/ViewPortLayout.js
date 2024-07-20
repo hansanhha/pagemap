@@ -20,8 +20,9 @@ const GlobalSpace = styled.div`
 `;
 
 const UserSpace = styled.div`
+    display: flex;
+    flex-direction: column;
     height: 100%;
-    position: fixed;
     border-left: 1px solid black;
     border-right: 1px solid black;
 

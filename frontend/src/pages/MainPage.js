@@ -14,6 +14,13 @@ const MainContainer = styled.div`
     height: 100%;
     gap: 1rem;
     padding: 2rem;
+    overflow-y: auto;
+    -ms-overflow-y: auto;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
 `
 
 export default MainPage;

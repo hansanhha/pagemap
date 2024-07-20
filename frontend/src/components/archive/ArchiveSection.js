@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled, {keyframes} from "styled-components";
 import FolderDto from "../../service/dto/FolderDto";
 import {useLogin} from "../../hooks/useLogin";
 import {useEffect, useState} from "react";
@@ -12,7 +12,8 @@ const ArchiveSection = () => {
 
     useEffect(() => {
         // 임시
-        if (isLoggedIn) {
+        if (isLoggedIn && isActive) {
+            console.log("ArchiveSection Rendering");
             fetch(process.env.REACT_APP_SERVER + "/storage", {
                 method: "GET",
                 headers: {
@@ -37,9 +38,16 @@ const ArchiveSection = () => {
                 })
                 .catch(err => console.error("Error fetching shortcuts:", err));
         }
-    }, [accessToken, isLoggedIn]);
+    }, [accessToken, isLoggedIn, isActive]);
 
-    const handleHierarchyDrop = (sourceType, sourceId, targetId) => {
+    const handleActive = () => {
+        setIsActive(false);
+        setTimeout(() => {
+            setIsActive(true);
+        }, 10);
+    }
+
+    const handleUpdateHierarchy = (sourceType, sourceId, targetId) => {
         if (sourceType === "folder" && sourceId === targetId) {
             return;
         }
@@ -57,9 +65,7 @@ const ArchiveSection = () => {
             })
                 .then(response => response.json())
                 .then(data => {
-                    setSortedArchives(prevArchives =>
-                        [...prevArchives.filter(archive => archive.id !== Number(sourceId))]
-                    );
+                    handleActive();
                 })
                 .catch(err => console.error("Error update location: ", err));
         }
@@ -77,24 +83,24 @@ const ArchiveSection = () => {
             })
                 .then(response => response.json())
                 .then(data => {
-                    setSortedArchives(prevArchives =>
-                        [...prevArchives.filter(archive => archive.id !== Number(sourceId))]
-                    );
+                    handleActive();
                 })
                 .catch(err => console.error("Error update location: ", err));
         }
     }
 
-    const handleOrderDrop = (sourceId, targetOrder) => {
-        console.log("Dropped", sourceId);
-        console.log("targetOrder", targetOrder);
+    const handleUpdateOrder = (sourceId, targetOrder) => {
+        handleActive();
     }
 
     return (
-        <StyledArchiveSection>
-            <HierarchyArchive archives={sortedArchives}
-                              onHierarchyDropped={handleHierarchyDrop}
-                              onOrderDropped={handleOrderDrop}/>
+        <StyledArchiveSection isActive={isActive}>
+            {
+                isActive &&
+                <HierarchyArchive archives={sortedArchives}
+                                  onUpdateHierarchy={handleUpdateHierarchy}
+                                  onUpdateOrder={handleUpdateOrder}/>
+            }
         </StyledArchiveSection>
     )
 }
@@ -104,13 +110,26 @@ const StyledArchiveSection = styled.div`
     width: 100%;
     flex-direction: column;
     gap: 0.1rem;
-    padding: 0 1rem 3rem 1rem;
-    overflow-y: scroll;
-    -ms-overflow-y: scroll;
-    -ms-overflow-style: none;
+    padding: 0 1.5rem;
+    
+    animation: ${({isActive}) => isActive ? fadeIn : fadeOut} 0.2s;
+`;
 
-    &::-webkit-scrollbar {
-        display: none;
+const fadeIn = keyframes`
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+`;
+
+const fadeOut = keyframes`
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
     }
 `;
 

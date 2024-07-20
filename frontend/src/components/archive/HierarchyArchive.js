@@ -4,7 +4,7 @@ import OrderLine from "../common/OrderLine";
 import HierarchyDrag from "../common/HierarchyDrag";
 import Bookmark from "./Bookmark";
 
-const HierarchyArchive = ({archives, onHierarchyDropped, onOrderDropped}) => {
+const HierarchyArchive = ({archives, onUpdateHierarchy, onUpdateOrder}) => {
     return (
         archives &&
         archives.length > 0 &&
@@ -14,8 +14,8 @@ const HierarchyArchive = ({archives, onHierarchyDropped, onOrderDropped}) => {
                     (
                         <Folder key={archive.id}
                                 folder={archive}
-                                onHierarchyDropped={onHierarchyDropped}
-                                onOrderDropped={onOrderDropped}
+                                onUpdateHierarchy={onUpdateHierarchy}
+                                onUpdateOrder={onUpdateOrder}
                         />
                     )
                     :
@@ -24,10 +24,10 @@ const HierarchyArchive = ({archives, onHierarchyDropped, onOrderDropped}) => {
                             <OrderLine key={crypto.randomUUID()}
                                        id={archive.id}
                                        order={archive.order}
-                                       onDropped={onOrderDropped}/>
+                                       onDropped={onUpdateOrder}/>
                             <HierarchyDrag id={archive.id}
                                            key={archive.id}
-                                           onDropped={onHierarchyDropped}
+                                           onDropped={onUpdateHierarchy}
                                            type={"bookmark"}>
                                 <a href={archive.url} target={"_blank"} rel={"noreferrer"}>
                                     <Bookmark bookmark={archive}/>

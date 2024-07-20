@@ -17,7 +17,7 @@ const OrderLine = ({ archive, onDropped }) => {
 
     const dragEnter = (e) => {
         e.stopPropagation();
-        if (FolderDto.isFolder(archive) && FolderDto.isFolder(source) && archive.isDescendant(source)) {
+        if (archive.isDescendant(source)) {
             return;
         }
 
@@ -31,7 +31,7 @@ const OrderLine = ({ archive, onDropped }) => {
 
     const drop = (e) => {
         e.stopPropagation();
-        if (FolderDto.isFolder(archive) && FolderDto.isFolder(source) && archive.isDescendant(source)) {
+        if (archive.isDescendant(source)) {
             return;
         }
 

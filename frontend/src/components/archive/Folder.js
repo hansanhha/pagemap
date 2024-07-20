@@ -41,6 +41,10 @@ const Folder = ({folder, onUpdateHierarchy, onUpdateOrder}) => {
 
                     if (data.childrenWebPage && data.childrenWebPage.length > 0) {
                         childrenBookmark = data.childrenWebPage.map(childWebPage => new BookmarkDto(childWebPage));
+                        childrenBookmark.forEach(childBookmark => {
+                            const hierarchyParentIds = childBookmark.hierarchyParentIds;
+                            hierarchyParentIds.push(...folder.hierarchyParentIds);
+                        })
                     }
 
                     const sort = [...childrenFolder, ...childrenBookmark].sort((a, b) => a.order - b.order);

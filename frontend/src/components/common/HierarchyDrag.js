@@ -3,11 +3,7 @@ import {useState} from "react";
 import FolderDto from "../../service/dto/FolderDto";
 import {setOrderLineSource} from "./OrderLine";
 
-const FOLDER = "folder";
-const BOOKMARK = "bookmark";
-
 let source = null;
-let type = null;
 
 const HierarchyDrag = ({ archive, children, onDropped }) => {
     const [isDraggingOver, setIsDraggingOver] = useState(false);
@@ -16,8 +12,6 @@ const HierarchyDrag = ({ archive, children, onDropped }) => {
         e.stopPropagation();
         source = archive;
         setOrderLineSource(archive);
-
-        type = FolderDto.isFolder(archive) ? FOLDER : BOOKMARK;
     }
 
     const dragEnter = (e) => {

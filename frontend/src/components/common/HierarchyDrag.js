@@ -1,34 +1,34 @@
 import styled from "styled-components";
 import {useState} from "react";
+import FolderDto from "../../service/dto/FolderDto";
 
-const HierarchyDrag = ({ id, children, onDropped, type }) => {
+const HierarchyDrag = ({ archive, children, onDropped }) => {
     const [isDraggingOver, setIsDraggingOver] = useState(false);
 
     const dragStart = (e) => {
         e.stopPropagation();
-        e.dataTransfer.setData("sourceId", id);
-        e.dataTransfer.setData("sourceType", type);
+        e.dataTransfer.setData("archive", archive);
     }
 
     const dragEnter = (e) => {
         e.stopPropagation();
-        if (type === "folder") {
+        if (archive instanceof FolderDto) {
             setIsDraggingOver(true);
         }
     }
 
     const dragLeave = (e) => {
         e.stopPropagation();
-        if (type === "folder") {
+        if (archive instanceof FolderDto) {
             setIsDraggingOver(false);
         }
     }
 
     const drop = (e) => {
         e.stopPropagation();
-        if (type === "folder") {
+        if (archive instanceof FolderDto) {
             setIsDraggingOver(false);
-            onDropped(e.dataTransfer.getData("sourceType"), e.dataTransfer.getData("sourceId"), e.target.id);
+            onDropped(e.dataTransfer.getData("archive"), e.target.id);
         }
     }
 

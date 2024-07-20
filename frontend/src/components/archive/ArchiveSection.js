@@ -13,7 +13,6 @@ const ArchiveSection = () => {
     useEffect(() => {
         // 임시
         if (isLoggedIn && isActive) {
-            console.log("ArchiveSection Rendering");
             fetch(process.env.REACT_APP_SERVER + "/storage", {
                 method: "GET",
                 headers: {

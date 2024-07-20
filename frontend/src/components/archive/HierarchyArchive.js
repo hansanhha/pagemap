@@ -20,20 +20,11 @@ const HierarchyArchive = ({archives, onUpdateHierarchy, onUpdateOrder}) => {
                     )
                     :
                     (
-                        <>
-                            <OrderLine key={crypto.randomUUID()}
-                                       id={archive.id}
-                                       order={archive.order}
-                                       onDropped={onUpdateOrder}/>
-                            <HierarchyDrag id={archive.id}
-                                           key={archive.id}
-                                           onDropped={onUpdateHierarchy}
-                                           type={"bookmark"}>
-                                <a href={archive.url} target={"_blank"} rel={"noreferrer"}>
-                                    <Bookmark bookmark={archive}/>
-                                </a>
-                            </HierarchyDrag>
-                        </>
+                        <Bookmark key={archive.id}
+                                  bookmark={archive}
+                                  onUpdateHierarchy={onUpdateHierarchy}
+                                  onUpdateOrder={onUpdateOrder}
+                        />
                     ));
         })
     )

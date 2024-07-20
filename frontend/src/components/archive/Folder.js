@@ -51,7 +51,7 @@ const Folder = ({folder, onUpdateHierarchy, onUpdateOrder}) => {
             <OrderLine id={folder.id}
                        order={folder.order}
                        onDropped={onUpdateOrder}/>
-            <HierarchyDrag id={folder.id} type={"folder"} onDropped={onUpdateHierarchy}>
+            <HierarchyDrag archive={folder} onDropped={onUpdateHierarchy}>
                 <StyledParentFolder onClick={handleClick} id={folder.id}>
                     <Logo img={folderLogo}/>
                     <Title title={folder.title}/>
@@ -65,7 +65,7 @@ const Folder = ({folder, onUpdateHierarchy, onUpdateOrder}) => {
                         archive instanceof FolderDto ?
                             (
 
-                                <StyledChildArchive key={crypto.randomUUID()}>
+                                <StyledChildArchive key={archive.id}>
                                     <Folder folder={archive}
                                             onUpdateHierarchy={onUpdateHierarchy}
                                             onUpdateOrder={onUpdateOrder}/>
@@ -73,21 +73,11 @@ const Folder = ({folder, onUpdateHierarchy, onUpdateOrder}) => {
                             )
                             :
                             (
-                                <>
-                                    <OrderLine key={crypto.randomUUID()}
-                                               id={archive.id}
-                                               order={archive.order}
-                                               onDropped={onUpdateOrder}/>
-                                    <HierarchyDrag key={archive.id} onDropped={onUpdateHierarchy}
-                                                   id={archive.id}
-                                                   type={"bookmark"}>
-                                        <a href={archive.url} target={"_blank"} rel={"noreferrer"}>
-                                            <StyledChildArchive>
-                                                <Bookmark bookmark={archive}/>
-                                            </StyledChildArchive>
-                                        </a>
-                                    </HierarchyDrag>
-                                </>
+                                <StyledChildArchive key={archive.id}>
+                                    <Bookmark bookmark={archive}
+                                              onUpdateHierarchy={onUpdateHierarchy}
+                                              onUpdateOrder={onUpdateOrder}/>
+                                </StyledChildArchive>
                             ));
                 })
             }

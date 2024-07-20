@@ -1,13 +1,26 @@
 import Logo from "../common/Logo";
 import Title from "./Title";
 import styled from "styled-components";
+import HierarchyDrag from "../common/HierarchyDrag";
+import OrderLine from "../common/OrderLine";
 
-const Bookmark = ({bookmark}) => {
+const Bookmark = ({bookmark, onUpdateHierarchy, onUpdateOrder}) => {
     return (
-        <StyledBookmark>
-            <Logo img={bookmark.logo} />
-            <Title title={bookmark.title} />
-        </StyledBookmark>
+        <>
+            <OrderLine id={bookmark.id}
+                       order={bookmark.order}
+                       onDropped={onUpdateOrder}/>
+            <HierarchyDrag archive={bookmark}
+                           onDropped={onUpdateHierarchy}
+            >
+                <a href={bookmark.url} target={"_blank"} rel={"noreferrer"}>
+                    <StyledBookmark>
+                        <Logo img={bookmark.logo}/>
+                        <Title title={bookmark.title}/>
+                    </StyledBookmark>
+                </a>
+            </HierarchyDrag>
+        </>
     );
 }
 

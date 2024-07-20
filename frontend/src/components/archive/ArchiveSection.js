@@ -4,6 +4,7 @@ import {useLogin} from "../../hooks/useLogin";
 import {useEffect, useState} from "react";
 import BookmarkDto from "../../service/dto/BookmarkDto";
 import HierarchyArchive from "./HierarchyArchive";
+import ShortcutDto from "../../service/dto/ShortcutDto";
 
 const ArchiveSection = () => {
     let {accessToken, isLoggedIn} = useLogin();
@@ -51,7 +52,7 @@ const ArchiveSection = () => {
             return;
         }
 
-        if (source instanceof FolderDto) {
+        if (FolderDto.isFolder(source)) {
             fetch(process.env.REACT_APP_SERVER + `/storage/maps/${source.id}/location`, {
                 method: "PATCH",
                 headers: {
@@ -67,7 +68,7 @@ const ArchiveSection = () => {
                     handleActive();
                 })
                 .catch(err => console.error("Error update location: ", err));
-        } else {
+        } else if (BookmarkDto.isBookmark(source)) {
             fetch(process.env.REACT_APP_SERVER + `/storage/webpages/${source.id}/location`, {
                 method: "PATCH",
                 headers: {
@@ -76,6 +77,27 @@ const ArchiveSection = () => {
                 },
                 body: JSON.stringify({
                     "targetMapId": target.id,
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    handleActive();
+                })
+                .catch(err => console.error("Error update location: ", err));
+        } else if (ShortcutDto.isShortcut(source)) {
+            fetch(process.env.REACT_APP_SERVER + `/storage/webpages`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/problem+json",
+                    "Authorization": "Bearer " + accessToken,
+                },
+                body: JSON.stringify({
+                    parentMapId: target.id,
+                    title: source.title,
+                    uri: source.url,
+                    description: "shortcut dropzone test",
+                    categoryId: null,
+                    tags: null,
                 })
             })
                 .then(response => response.json())
@@ -108,7 +130,7 @@ const StyledArchiveSection = styled.div`
     flex-direction: column;
     gap: 0.1rem;
     padding: 0 1.5rem;
-    
+
     animation: ${({isActive}) => isActive ? fadeIn : fadeOut} 0.2s;
 `;
 

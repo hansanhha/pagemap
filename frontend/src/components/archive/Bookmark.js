@@ -1,7 +1,7 @@
 import Logo from "../common/Logo";
 import Title from "./Title";
 import styled from "styled-components";
-import HierarchyDrag from "../common/HierarchyDrag";
+import ArchiveDrag from "./ArchiveDrag";
 import OrderLine from "../common/OrderLine";
 
 const Bookmark = ({bookmark, onUpdateHierarchy, onUpdateOrder}) => {
@@ -10,8 +10,8 @@ const Bookmark = ({bookmark, onUpdateHierarchy, onUpdateOrder}) => {
             <OrderLine archive={bookmark}
                        order={bookmark.order}
                        onDropped={onUpdateOrder}/>
-            <HierarchyDrag archive={bookmark}
-                           onDropped={onUpdateHierarchy}
+            <ArchiveDrag archive={bookmark}
+                         onDropped={onUpdateHierarchy}
             >
                 <a href={bookmark.url} target={"_blank"} rel={"noreferrer"}>
                     <StyledBookmark>
@@ -19,7 +19,7 @@ const Bookmark = ({bookmark, onUpdateHierarchy, onUpdateOrder}) => {
                         <Title title={bookmark.title}/>
                     </StyledBookmark>
                 </a>
-            </HierarchyDrag>
+            </ArchiveDrag>
         </>
     );
 }

@@ -7,7 +7,7 @@ import {useState} from "react";
 import {useLogin} from "../../hooks/useLogin";
 import FolderDto from "../../service/dto/FolderDto";
 import BookmarkDto from "../../service/dto/BookmarkDto";
-import HierarchyDrag from "../common/HierarchyDrag";
+import ArchiveDrag from "./ArchiveDrag";
 import OrderLine from "../common/OrderLine";
 
 const Folder = ({folder, onUpdateHierarchy, onUpdateOrder}) => {
@@ -59,12 +59,12 @@ const Folder = ({folder, onUpdateHierarchy, onUpdateOrder}) => {
             <OrderLine archive={folder}
                        order={folder.order}
                        onDropped={onUpdateOrder}/>
-            <HierarchyDrag archive={folder} onDropped={onUpdateHierarchy}>
+            <ArchiveDrag archive={folder} onDropped={onUpdateHierarchy}>
                 <StyledParentFolder onClick={handleClick}>
                     <Logo img={folderLogo}/>
                     <Title title={folder.title}/>
                 </StyledParentFolder>
-            </HierarchyDrag>
+            </ArchiveDrag>
             {
                 isClicked &&
                 childrenSortedArchive.length > 0 &&

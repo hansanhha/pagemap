@@ -1,23 +1,33 @@
 import styled from "styled-components";
 import {useState} from "react";
 import FolderDto from "../../service/dto/FolderDto";
-import {setOrderLineSource} from "./OrderLine";
+import {setOrderLineSource} from "../common/OrderLine";
+import {shortcutDataTransferName} from "../common/header/ShortcutDrag";
+import BookmarkDto from "../../service/dto/BookmarkDto";
+import ShortcutDto from "../../service/dto/ShortcutDto";
 
-let source = null;
+const archiveDataTransferName = "archive";
+const bookmarkDataTransferName = "bookmark";
 
-const HierarchyDrag = ({ archive, children, onDropped }) => {
+let sourceArchive = null;
+
+const ArchiveDrag = ({ archive, children, onDropped }) => {
     const [isDraggingOver, setIsDraggingOver] = useState(false);
 
     const dragStart = (e) => {
         e.stopPropagation();
-        source = archive;
+        sourceArchive = archive;
         setOrderLineSource(archive);
+
+        if (BookmarkDto.isBookmark(archive)) {
+            e.dataTransfer.setData(bookmarkDataTransferName, JSON.stringify(archive));
+        }
     }
 
     const dragEnter = (e) => {
         e.stopPropagation();
         if (FolderDto.isFolder(archive)) {
-            if (FolderDto.isFolder(source) && archive.isDescendant(source)) {
+            if (FolderDto.isFolder(sourceArchive) && archive.isDescendant(sourceArchive)) {
                 return;
             }
 
@@ -35,12 +45,17 @@ const HierarchyDrag = ({ archive, children, onDropped }) => {
     const drop = (e) => {
         e.stopPropagation();
         if (FolderDto.isFolder(archive)) {
-            if (FolderDto.isFolder(source) && archive.isDescendant(source)) {
+            if (FolderDto.isFolder(sourceArchive) && archive.isDescendant(sourceArchive)) {
+                return;
+            }
+
+            if (!sourceArchive && e.dataTransfer.getData(shortcutDataTransferName)) {
+                onDropped(new ShortcutDto(JSON.parse(e.dataTransfer.getData(shortcutDataTransferName))), archive);
                 return;
             }
 
             setIsDraggingOver(false);
-            onDropped(source, archive);
+            onDropped(sourceArchive, archive);
         }
     }
 
@@ -64,4 +79,5 @@ const StyledHierarchyDrag = styled.div`
     transition: background-color 0.3s ease;
 `;
 
-export default HierarchyDrag;
+export {archiveDataTransferName, bookmarkDataTransferName};
+export default ArchiveDrag;

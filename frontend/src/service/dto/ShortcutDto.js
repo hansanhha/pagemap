@@ -12,6 +12,10 @@ class ShortcutDto {
         this.url = Shortcut.url;
         this.order = 0;
     }
+
+    static isShortcut(archive) {
+        return archive instanceof ShortcutDto;
+    }
 }
 
 export default ShortcutDto;

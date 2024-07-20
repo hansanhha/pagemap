@@ -17,7 +17,11 @@ export default class BookmarkDto {
         this.hierarchyParentIds = [Bookmark.parentMapId];
     }
 
-    isDescendant(folder) {
-        return this.hierarchyParentIds.includes(folder.id);
+    static isBookmark(bookmark) {
+        return bookmark instanceof BookmarkDto;
+    }
+
+    isDescendant(bookmark) {
+        return this.hierarchyParentIds.includes(bookmark.id);
     }
 }

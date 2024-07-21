@@ -21,6 +21,11 @@ public class TrashController {
 
     private final ArchiveTrash archiveTrash;
 
+    @GetMapping("/trash")
+    public ResponseEntity<Map<String, Object>> getTrash(@AuthenticationPrincipal AuthenticatedAccount account) {
+        return ResponseEntity.ok(archiveTrash.getDeletedArchives(account.getName()));
+    }
+
     @DeleteMapping("/maps/{id}")
     public ResponseEntity<Map<String, String>> deleteMap(@AuthenticationPrincipal AuthenticatedAccount account,
                                                          @PathVariable Long id) {

@@ -5,6 +5,7 @@ import com.bintage.pagemap.storage.application.ArchiveStore;
 import com.bintage.pagemap.storage.application.ArchiveUse;
 import com.bintage.pagemap.storage.application.dto.*;
 import com.bintage.pagemap.storage.infrastructure.web.restful.dto.MapCreateRestRequest;
+import com.bintage.pagemap.storage.infrastructure.web.restful.dto.MapUpdateLocationRestRequest;
 import com.bintage.pagemap.storage.infrastructure.web.restful.dto.MapUpdateRestRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -61,6 +62,15 @@ public class MapController {
                                                          @RequestBody MapUpdateRestRequest request) {
         archiveStore.updateMap(new MapUpdateRequest(account.getName(), id, request.getParentMapId(), request.getTitle(),
                 request.getDescription(), request.getCategories(), request.getTags()));
+
+        return ResponseEntity.ok(UpdatedMapResponseBody.of());
+    }
+
+    @PatchMapping("/{id}/location")
+    public ResponseEntity<Map<String, String>> updateMapLocation(@AuthenticationPrincipal AuthenticatedAccount account,
+                                                    @PathVariable Long id,
+                                                    @RequestBody @Valid MapUpdateLocationRestRequest request) {
+        archiveStore.updateMapLocation(account.getName(), id, request.getTargetMapId());
 
         return ResponseEntity.ok(UpdatedMapResponseBody.of());
     }

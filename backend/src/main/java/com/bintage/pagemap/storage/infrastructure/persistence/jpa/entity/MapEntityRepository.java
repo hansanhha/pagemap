@@ -19,4 +19,7 @@ public interface MapEntityRepository extends JpaRepository<MapEntity, Long> {
 
     @Query("SELECT m FROM MapEntity m LEFT JOIN FETCH m.childrenMap mm LEFT JOIN FETCH m.childrenWebPage WHERE m.accountId = :accountId AND m.id = :id")
     Optional<MapEntity> findFetchFamilyById(String accountId, Long id);
+
+    @Query("SELECT m FROM MapEntity m LEFT JOIN FETCH m.childrenMap mm LEFT JOIN FETCH m.childrenWebPage WHERE m.id = :id")
+    Optional<MapEntity> findFetchFamilyById(Long id);
 }

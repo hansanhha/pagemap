@@ -14,7 +14,7 @@ public interface TrashRepository {
 
     Trash save(Trash trash);
 
-    List<Trash> findByAccountId(Account.AccountId accountId);
+    List<Trash> findAllByAccountId(Account.AccountId accountId);
 
     Optional<Trash> findByArchiveTypeAndArchiveId(ArchiveType archiveType, long archiveId);
 

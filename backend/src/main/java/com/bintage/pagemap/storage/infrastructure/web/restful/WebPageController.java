@@ -9,6 +9,7 @@ import com.bintage.pagemap.storage.application.dto.WebPageSaveRequest;
 import com.bintage.pagemap.storage.application.dto.WebPageUpdateRequest;
 import com.bintage.pagemap.storage.infrastructure.web.restful.dto.WebPageAutoCreateRestRequest;
 import com.bintage.pagemap.storage.infrastructure.web.restful.dto.WebPageCreateRestRequest;
+import com.bintage.pagemap.storage.infrastructure.web.restful.dto.WebPageUpdateLocationRestRequest;
 import com.bintage.pagemap.storage.infrastructure.web.restful.dto.WebPageUpdateRestRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -70,14 +71,14 @@ public class WebPageController {
         return ResponseEntity.ok(UpdatedWebPageResponseBody.of());
     }
 
-//    @PatchMapping("/{sourceId}/location")
-//    public ResponseEntity<Map<String, String>> updateWebPageLocation(@AuthenticationPrincipal AuthenticatedAccount account,
-//                                                                     @PathVariable Long sourceId,
-//                                                                     @RequestParam(value = "dest-map-id", required = false) Long destMapId) {
-//        archiveStore.updateWebPageLocation(account.getName(), destMapId, sourceId);
-//
-//        return ResponseEntity.ok(UpdatedWebPageResponseBody.of());
-//    }
+    @PatchMapping("/{id}/location")
+    public ResponseEntity<Map<String, String>> updateWebPageLocation(@AuthenticationPrincipal AuthenticatedAccount account,
+                                                                     @PathVariable Long id,
+                                                                     @RequestBody WebPageUpdateLocationRestRequest request) {
+        archiveStore.updateWebPageLocation(account.getName(), id, request.getTargetMapId());
+
+        return ResponseEntity.ok(UpdatedWebPageResponseBody.of());
+    }
 
     public static class CreatedWebPageResponseBody {
         public static final String CREATED_WEB_PAGE_ID = "id";

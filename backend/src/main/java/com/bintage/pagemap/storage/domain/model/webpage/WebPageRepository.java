@@ -21,6 +21,8 @@ public interface WebPageRepository {
 
     List<WebPage> findAllTopWebPage(Account.AccountId accountId);
 
+    List<WebPage> findAllById(Account.AccountId accountId, List<WebPage.WebPageId> deletedWebPageIds);
+
     List<WebPage> findAllByCategory(Account.AccountId accountId, Category.CategoryId categoryId);
 
     void updateMetadata(WebPage webPage);

@@ -9,7 +9,7 @@ const UtilityPageLayout = ({children}) => {
 }
 
 const StyledUtilityPageLayout = styled.div`
-    padding: 3rem 2rem 2rem 3rem;
+    padding: 2rem;
     display: flex;
     flex-direction: column;
     gap: 2rem;

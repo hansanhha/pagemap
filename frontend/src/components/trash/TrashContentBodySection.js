@@ -1,11 +1,9 @@
 import styled from "styled-components";
 import TrashContentBody from "./TrashContentBody";
-import TrashContentHeader from "./TrashContentHeader";
 
-const TrashContentSection = ({deletedArchives, onRestore}) => {
+const TrashContentBodySection = ({deletedArchives, onRestore}) => {
     return (
         <StyledTrashContentSection>
-            <TrashContentHeader/>
             {
                 deletedArchives.map(archive => {
                     return (
@@ -23,7 +21,7 @@ const TrashContentSection = ({deletedArchives, onRestore}) => {
 const StyledTrashContentSection = styled.div`
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.5rem;
 `;
 
-export default TrashContentSection;
+export default TrashContentBodySection;

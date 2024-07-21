@@ -2,10 +2,12 @@ import {useEffect, useState} from "react";
 import {useLogin} from "../hooks/useLogin";
 import UtilityPageLayout from "../layout/UtilityPageLayout";
 import TrashHeaderSection from "../components/trash/TrashHeaderSection";
-import TrashContentSection from "../components/trash/TrashContentSection";
+import TrashContentBodySection from "../components/trash/TrashContentBodySection";
 import FolderDto from "../service/dto/FolderDto";
 import BookmarkDto from "../service/dto/BookmarkDto";
 import ShortcutDto from "../service/dto/ShortcutDto";
+import Scrollable from "../components/common/Scrollable";
+import TrashContentHeaderSection from "../components/trash/TrashContentHeaderSection";
 
 const TrashPage = () => {
     const {accessToken} = useLogin();
@@ -91,9 +93,12 @@ const TrashPage = () => {
     return (
         <UtilityPageLayout>
             <TrashHeaderSection onDeleteAll={handleDeleteAll}/>
-            <TrashContentSection deletedArchives={deletedArchives}
-                                 onRestore={handleRestore}
-            />
+            <TrashContentHeaderSection/>
+            <Scrollable>
+                <TrashContentBodySection deletedArchives={deletedArchives}
+                                         onRestore={handleRestore}
+                />
+            </Scrollable>
         </UtilityPageLayout>
     );
 }

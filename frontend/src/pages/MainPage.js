@@ -1,27 +1,21 @@
 import styled from "styled-components";
 import ArchiveSection from "../components/archive/ArchiveSection";
+import Scrollable from "../components/common/Scrollable";
 
 const MainPage = () => {
     return (
-        <MainContainer>
-            <ArchiveSection />
-        </MainContainer>
+        <StyledMainPage>
+            <Scrollable>
+                <ArchiveSection/>
+            </Scrollable>
+        </StyledMainPage>
     );
 }
 
-const MainContainer = styled.div`
-    display: flex;
-    height: 100%;
-    gap: 1rem;
+const StyledMainPage = styled.div`
+    flex: 1;
+    overflow: hidden;
     padding: 2rem;
-    overflow-y: auto;
-    -ms-overflow-y: auto;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-
-    &::-webkit-scrollbar {
-        display: none;
-    }
 `
 
 export default MainPage;

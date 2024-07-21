@@ -12,7 +12,8 @@ const StyledUtilityPageLayout = styled.div`
     padding: 2rem;
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1rem;
+    overflow: hidden;
 `;
 
 export default UtilityPageLayout;

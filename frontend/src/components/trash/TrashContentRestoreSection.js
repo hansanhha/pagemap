@@ -12,7 +12,7 @@ const TrashContentRestoreSection = ({children}) => {
     );
 }
 
-const StyledTrashContentRestoreSection = styled.section`
+const StyledTrashContentRestoreSection = styled.div`
     flex: 1;
     text-align: center;
 `

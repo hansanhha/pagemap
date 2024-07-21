@@ -3,6 +3,7 @@ import Title from "../../archive/Title";
 import styled from "styled-components";
 import ShortcutDrag from "./ShortcutDrag";
 import ShortcutOrderLine from "./ShortcutOrderLine";
+import HyperLink from "../HyperLink";
 
 const Shortcut = ({shortcut, onUpdateOrder}) => {
     return (
@@ -11,12 +12,12 @@ const Shortcut = ({shortcut, onUpdateOrder}) => {
                        order={shortcut.order}
                        onDropped={onUpdateOrder}/>
             <ShortcutDrag shortcut={shortcut}>
-                <a href={shortcut.url} target={"_blank"} rel={"noreferrer"}>
+                <HyperLink to={shortcut.url}>
                     <StyledShortcut>
                         <Logo img={shortcut.img}/>
                         <Title title={shortcut.title}/>
                     </StyledShortcut>
-                </a>
+                </HyperLink>
             </ShortcutDrag>
         </>
     );

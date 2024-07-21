@@ -42,7 +42,7 @@ const OrderLine = ({ archive, onDropped }) => {
     return (
         <StyledOrderLineWrapper
             onDragStart={dragStart}
-            onDragOver={(e) => e.preventDefault()}
+            onDragOver={dragEnter}
             onDragEnter={dragEnter}
             onDragLeave={dragLeave}
             onDrop={drop}

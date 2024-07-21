@@ -5,12 +5,11 @@ import TrashHeaderSection from "../components/trash/TrashHeaderSection";
 import TrashContentSection from "../components/trash/TrashContentSection";
 import FolderDto from "../service/dto/FolderDto";
 import BookmarkDto from "../service/dto/BookmarkDto";
+import ShortcutDto from "../service/dto/ShortcutDto";
 
 const TrashPage = () => {
     const {accessToken} = useLogin();
     const [deletedArchives, setDeletedArchives] = useState([]);
-    const [isRestoreClicked, setIsRestoreClicked] = useState(false);
-    const [isDeleteAllClicked, setIsDeleteAllClicked] = useState(false);
 
     useEffect(() => {
         fetch(process.env.REACT_APP_SERVER + `/storage/trash`, {
@@ -35,15 +34,58 @@ const TrashPage = () => {
 
                 setDeletedArchives([...deletedFolders, ...deletedBookmarks]);
             })
-    }, []);
+    }, [accessToken]);
+
+    const clearDeletedArchive = () => {
+        setDeletedArchives([]);
+    }
+
+    const removeDeletedArchive = (archive) => {
+        setDeletedArchives(deletedArchives.filter(deletedArchive => deletedArchive.id !== archive.id));
+    }
 
     const handleDeleteAll = () => {
-        console.log("delete all clicked");
+        if (deletedArchives.length === 0) return;
+
+        fetch(process.env.REACT_APP_SERVER + "/storage/trash", {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/problem+json",
+                "Authorization": `Bearer ${accessToken}`
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                clearDeletedArchive();
+            })
+            .catch(err => console.error("Error deleting all archives:", err));
     }
 
     const handleRestore = (archive) => {
-        console.log("restore clicked");
-        console.log(archive);
+        if (archive === null) return;
+
+        let type = null;
+        if (FolderDto.isFolder(archive)) {
+            type = "maps";
+        } else if (BookmarkDto.isBookmark(archive)) {
+            type = "webPages";
+        } else if (ShortcutDto.isShortcut(archive)) {
+            type = "shortcuts";
+        }
+
+        fetch(process.env.REACT_APP_SERVER + `/storage/trash/${type}/${archive.id}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/problem+json",
+                "Authorization": `Bearer ${accessToken}`
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                removeDeletedArchive(archive);
+            })
+            .catch(err => console.error("Error restoring archive:", err));
+        removeDeletedArchive(archive);
     }
 
     return (

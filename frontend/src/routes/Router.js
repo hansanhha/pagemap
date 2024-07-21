@@ -3,6 +3,7 @@ import Root from "./Root";
 import NotFoundPage from "../pages/util/NotFoundPage";
 import LoginHandler from "../service/LoginHandler";
 import MainPage from "../pages/MainPage";
+import TrashPage from "../pages/TrashPage";
 
 function Router() {
     const router = createBrowserRouter([
@@ -12,6 +13,7 @@ function Router() {
             errorElement: <NotFoundPage />,
             children: [
                 { index: true, element: <MainPage/> },
+                { path: "trash", element: <TrashPage/> },
             ]
         },
         { path: process.env.REACT_APP_OAUTH2_LOGIN_HANDLE_URI, element: <LoginHandler />},

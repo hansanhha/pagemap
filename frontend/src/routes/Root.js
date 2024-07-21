@@ -4,7 +4,7 @@ import CustomerPage from "../pages/CustomerPage";
 import {Outlet} from "react-router-dom";
 import ViewPortLayout from "../layout/ViewPortLayout";
 import Header from "../components/common/Header";
-import AppDropZone from "../layout/AppDropZone";
+import GlobalDropZoneLayout from "../layout/GlobalDropZoneLayout";
 
 function Root() {
     const {isLoggedIn} = useLogin();
@@ -18,7 +18,7 @@ function Root() {
     }
 
     return (
-        <AppDropZone>
+        <GlobalDropZoneLayout>
             <ViewPortLayout>
 
                 <Header/>
@@ -26,7 +26,7 @@ function Root() {
                 <Outlet/>
 
             </ViewPortLayout>
-        </AppDropZone>
+        </GlobalDropZoneLayout>
     );
 }
 

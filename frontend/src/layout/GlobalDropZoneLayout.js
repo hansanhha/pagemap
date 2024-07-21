@@ -18,7 +18,7 @@ const isValidDrag = (e) => {
         || e.dataTransfer.types.includes("text/html");
 }
 
-const AppDropZone = ({children}) => {
+const GlobalDropZoneLayout = ({children}) => {
     const location = useLocation();
     const {accessToken} = useLogin();
     const [isActive, setIsActive] = useState(true);
@@ -61,7 +61,7 @@ const AppDropZone = ({children}) => {
         setIsDraggingOver(false);
 
         if (!isValidDrag(e)) {
-            return;;
+            return;
         }
 
         if (e.dataTransfer.types.includes("Files")) {
@@ -100,7 +100,7 @@ const AppDropZone = ({children}) => {
 
     return (
         isActive &&
-        <StyledAppLayout
+        <StyledGlobalDropZoneLayout
             onDragOver={dragOver}
             onDragEnter={dragEnter}
             onDragLeave={dragLeave}
@@ -108,15 +108,15 @@ const AppDropZone = ({children}) => {
             isDraggingOver={isDraggingOver}
         >
             {children}
-        </StyledAppLayout>
+        </StyledGlobalDropZoneLayout>
     );
 }
 
-const StyledAppLayout = styled.div`
+const StyledGlobalDropZoneLayout = styled.div`
     width: 100vw;
     height: 100vh;
     filter: ${({ isDraggingOver }) => (isDraggingOver ? 'blur(2px)' : 'none')};
     transition: background-color 0.2s ease;
 `;
 
-export default AppDropZone;
+export default GlobalDropZoneLayout;

@@ -2,15 +2,15 @@ import styled from "styled-components";
 
 const ViewPortLayout = ({children}) => {
     return (
-        <GlobalSpace>
-            <UserSpace>
+        <StyledGlobalSpace>
+            <StyledUserSpace>
                 {children}
-            </UserSpace>
-        </GlobalSpace>
+            </StyledUserSpace>
+        </StyledGlobalSpace>
     )
 }
 
-const GlobalSpace = styled.div`
+const StyledGlobalSpace = styled.div`
     width: 100vw;
     height: 100vh;
     display: flex;
@@ -18,7 +18,7 @@ const GlobalSpace = styled.div`
     align-items: center;
 `;
 
-const UserSpace = styled.div`
+const StyledUserSpace = styled.div`
     display: flex;
     flex-direction: column;
     height: 100%;

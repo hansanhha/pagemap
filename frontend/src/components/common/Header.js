@@ -4,8 +4,11 @@ import ShortcutSection from "./header/ShortcutSection";
 import MenuSection from "./header/MenuSection";
 import TitleSection from "./header/TitleSection";
 import Line from "./Line";
+import {useLocation} from "react-router-dom";
 
 const Header = () => {
+    const location = useLocation();
+
     return (
         <>
             <HeaderContainer>
@@ -14,9 +17,12 @@ const Header = () => {
                     <TitleSection/>
                 </TopSection>
                 <SearchBarSection/>
-                <ShortcutSection/>
+                {
+                    location.pathname === "/" &&
+                    <ShortcutSection/>
+                }
             </HeaderContainer>
-            <Line/>
+            {location.pathname === "/" && <Line/>}
         </>
     )
 }

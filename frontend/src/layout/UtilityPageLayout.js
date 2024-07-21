@@ -1,4 +1,3 @@
-import UtilityHeader from "../components/common/UtilityHeader";
 import styled from "styled-components";
 
 const UtilityPageLayout = ({children}) => {

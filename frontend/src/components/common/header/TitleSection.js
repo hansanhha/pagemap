@@ -1,18 +1,22 @@
 import styled from "styled-components";
 import useMediaQuery from "../../../hooks/useMediaQuery";
-import {useNavigate} from "react-router-dom";
+import usePageNavigate from "../../../hooks/usePageNavigate";
 
 const TITLE = "Pagemap";
 
 const TitleSelection = () => {
     const {isMobile} = useMediaQuery();
-    const navigate = useNavigate();
+    const {goTo} = usePageNavigate();
+
+    const goToMain = () => {
+        goTo("/");
+    }
 
     return (
         <>
             {
                 <TitleContainer>
-                    <StyledTitle isMobile={isMobile} onClick={() => navigate("/")}>
+                    <StyledTitle isMobile={isMobile} onClick={goToMain}>
                         {TITLE}
                     </StyledTitle>
                 </TitleContainer>

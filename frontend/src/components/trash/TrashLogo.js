@@ -1,13 +1,13 @@
 import Logo from "../common/Logo";
 import trash from "../../assets/images/trash.png";
 import styled from "styled-components";
-import {Link, useNavigate} from "react-router-dom";
+import usePageNavigate from "../../hooks/usePageNavigate";
 
 const TrashLogo = () => {
-    const navigate = useNavigate();
+    const {goTo} = usePageNavigate();
 
     const goToTrash = () => {
-        navigate("/trash");
+        goTo("/trash");
     }
 
     return (

@@ -6,6 +6,7 @@ import MainPage from "../pages/MainPage";
 import TrashPage from "../pages/TrashPage";
 import AccountPage from "../pages/AccountPage";
 import UsagePage from "../pages/UsagePage";
+import StartSettingGuidePage from "../pages/StartSettingGuidePage";
 
 function Router() {
     const router = createBrowserRouter([
@@ -18,6 +19,7 @@ function Router() {
                 { path: "trash", element: <TrashPage/> },
                 { path: "account", element: <AccountPage/> },
                 { path: "usage", element: <UsagePage/> },
+                { path: "start-page-guide", element: <StartSettingGuidePage/> },
             ]
         },
         { path: process.env.REACT_APP_OAUTH2_LOGIN_HANDLE_URI, element: <LoginHandler />},

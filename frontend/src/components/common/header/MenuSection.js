@@ -14,7 +14,7 @@ const MenuSection = () => {
         [
             {title: "계정", pathname: "/account"},
             {title: "사용방법", pathname: "usage"},
-            {title: "시작 페이지로 하기", pathname: "/start-page"},
+            {title: "시작 페이지로 하기", pathname: "/start-page-guide"},
             {title: "Export"},
             {title: "로그아웃"}
         ];

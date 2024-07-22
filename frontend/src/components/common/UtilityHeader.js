@@ -14,7 +14,7 @@ const UtilityHeader = ({pageName}) => {
 const StyledUtilityHeader = styled.div`
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.5rem;
 `;
 
 export default UtilityHeader;

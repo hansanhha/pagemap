@@ -1,10 +1,11 @@
 import styled from "styled-components";
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import Button from "../common/Button";
 import AccountInputFormTitle from "./AccountInputFormTitle";
 import InputForm from "../common/InputForm";
 
 const DeleteAccountModal = ({onClose, onDeleteClick}) => {
+    const deleteModalRef = useRef(null);
     const [selectCauseId, setSelectCauseId] = useState(null);
     const [feedback, setFeedback] = useState("");
     const [deleteConfirmValue, setDeleteConfirmValue] = useState("");
@@ -19,11 +20,19 @@ const DeleteAccountModal = ({onClose, onDeleteClick}) => {
 
     useEffect(() => {
         document.body.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+        document.addEventListener("mousedown", closeIfOutsideClick);
 
         return () => {
             document.body.style.backgroundColor = "white";
+            document.removeEventListener("mousedown", closeIfOutsideClick);
         }
     }, []);
+
+    const closeIfOutsideClick = (e) => {
+        if (deleteModalRef.current && !deleteModalRef.current.contains(e.target)) {
+            onClose();
+        }
+    }
 
     const handleCauseSelect = (e) => {
         setSelectCauseId(e.target.value);
@@ -40,7 +49,7 @@ const DeleteAccountModal = ({onClose, onDeleteClick}) => {
     }
 
     return (
-        <StyledModalWrapper>
+        <StyledModalWrapper ref={deleteModalRef}>
             <StyledModal>
                 <StyledTitle>
                     계정 삭제

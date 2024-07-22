@@ -5,7 +5,7 @@ import {useLogin} from "../hooks/useLogin";
 import {bookmarkDataTransferName} from "../components/archive/ArchiveDrag";
 import {shortcutDataTransferName} from "../components/common/header/ShortcutDrag";
 
-const isValidDrag = (e) => {
+const isValidExternalDrag = (e) => {
 
     if (e.dataTransfer.types.includes(bookmarkDataTransferName)
     || e.dataTransfer.types.includes(shortcutDataTransferName)) {
@@ -28,7 +28,7 @@ const GlobalDropZoneLayout = ({children}) => {
         e.stopPropagation();
         e.preventDefault();
 
-        if (isValidDrag(e)) {
+        if (isValidExternalDrag(e)) {
             setIsDraggingOver(true);
         }
     }
@@ -37,7 +37,7 @@ const GlobalDropZoneLayout = ({children}) => {
         e.stopPropagation();
         e.preventDefault();
 
-        if (isValidDrag(e)) {
+        if (isValidExternalDrag(e)) {
             setIsDraggingOver(true);
         }
     }
@@ -60,7 +60,7 @@ const GlobalDropZoneLayout = ({children}) => {
         e.preventDefault();
         setIsDraggingOver(false);
 
-        if (!isValidDrag(e)) {
+        if (!isValidExternalDrag(e)) {
             return;
         }
 
@@ -119,4 +119,5 @@ const StyledGlobalDropZoneLayout = styled.div`
     transition: background-color 0.2s ease;
 `;
 
+export {isValidExternalDrag};
 export default GlobalDropZoneLayout;

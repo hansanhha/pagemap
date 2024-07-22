@@ -3,6 +3,14 @@ import {bookmarkDataTransferName} from "../../archive/ArchiveDrag";
 import {useState} from "react";
 import BookmarkDto from "../../../service/dto/BookmarkDto";
 
+const isValidDrag = (e) => {
+    return e.dataTransfer.types.includes(bookmarkDataTransferName)
+        || e.dataTransfer.types.includes("Files")
+        || e.dataTransfer.types.includes("text/plain")
+        || e.dataTransfer.types.includes("text/uri-list")
+        || e.dataTransfer.types.includes("text/html");
+}
+
 const ShortcutSectionDropZone = ({ children, onDropped }) => {
     const [isDraggingOver, setIsDraggingOver] = useState(false);
 
@@ -10,9 +18,7 @@ const ShortcutSectionDropZone = ({ children, onDropped }) => {
         e.stopPropagation();
         e.preventDefault();
 
-        // 외부 드래그 파일(북마크 바의 북마크) 추가 로직 필요
-
-        if (e.dataTransfer.types.includes(bookmarkDataTransferName)) {
+        if (isValidDrag(e)) {
             setIsDraggingOver(true);
         }
     }

@@ -30,7 +30,7 @@ const TitleContainer = styled.div`
     width: 100%;
     justify-content: center;
     align-content: center;
-    margin-right: 2rem;
+    padding-top: 0.5rem;
 `;
 
 const StyledTitle = styled.div`

@@ -11,34 +11,33 @@ const Header = () => {
 
     return (
         <>
-            <HeaderContainer>
-                <TopSection>
+            <StyledHeader>
+                <StyledTopContainer>
                     <MenuSection/>
                     <TitleSection/>
-                </TopSection>
+                </StyledTopContainer>
                 <SearchBarSection/>
                 {
                     location.pathname === "/" &&
                     <ShortcutSection/>
                 }
-            </HeaderContainer>
+            </StyledHeader>
             {location.pathname === "/" && <Line/>}
         </>
     )
 }
 
-const HeaderContainer = styled.header`
+const StyledHeader = styled.header`
     width: 100%;
     display: flex;
-    padding-top: 0.5rem;
     flex-direction: column;
     align-items: center;
     gap: 1rem;
 `
 
-const TopSection = styled.div`
-    display: flex;
+const StyledTopContainer = styled.div`
     width: 100%;
+    display: flex;
     justify-content: space-between;
     align-items: center;
 `

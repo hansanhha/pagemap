@@ -15,7 +15,7 @@ const SearchBarContainer = styled.div`
     width: 70%;
     height: 2rem;
     border: 1px solid #D9D9D9;
-    border-radius: 1rem;
+    border-radius: 6px;
     background-color: transparent;
     padding: 0 1rem;
 `;

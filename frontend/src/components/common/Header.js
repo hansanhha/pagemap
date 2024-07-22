@@ -16,7 +16,10 @@ const Header = () => {
                     <MenuSection/>
                     <TitleSection/>
                 </StyledTopContainer>
-                <SearchBarSection/>
+                {
+                    location.pathname === "/" &&
+                    <SearchBarSection/>
+                }
                 {
                     location.pathname === "/" &&
                     <ShortcutSection/>

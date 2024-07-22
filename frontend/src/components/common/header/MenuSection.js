@@ -53,12 +53,15 @@ const MenuSection = () => {
         switch (item.title) {
             case "계정":
                 goTo(item.pathname);
+                close();
                 break;
             case "사용방법":
                 goTo(item.pathname);
+                close();
                 break;
             case "시작 페이지로 하기":
                 goTo(item.pathname);
+                close();
                 break;
             case "Export":
                 break;

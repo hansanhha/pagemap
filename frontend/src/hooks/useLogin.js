@@ -4,8 +4,8 @@ import { useLocalStorage } from "./useLocalStorage";
 const LoginContext = createContext();
 
 export const LoginProvider = ({ children }) => {
-    const [accessToken, setAccessToken] = useLocalStorage("accessToken");
-    const [refreshToken, setRefreshToken] = useLocalStorage("refreshToken");
+    const [accessToken, setAccessToken, removeAccessToken] = useLocalStorage("accessToken");
+    const [refreshToken, setRefreshToken, removeRefreshToken] = useLocalStorage("refreshToken");
 
     const login = (accessToken, refreshToken) => {
         setAccessToken(accessToken);
@@ -13,8 +13,8 @@ export const LoginProvider = ({ children }) => {
     };
 
     const logout = () => {
-        setAccessToken(null);
-        setRefreshToken(null);
+        removeAccessToken();
+        removeRefreshToken();
     };
 
     const value = useMemo(

@@ -41,6 +41,10 @@ const StyledUserSpace = styled.div`
     @media (min-width: 1201px) {
         width: 35%;
     }
+    
+    @media (min-width: 2100px) {
+        width: 25%;
+    }
 `;
 
 export default ViewPortLayout;

@@ -112,8 +112,13 @@ const StyledTrash = styled.div`
     }
 
     @media (min-width: 1201px) {
-        width: ${10}%;
+        width: 10%;
         margin-left: 25vw;
+    }
+    
+    @media (min-width: 2100px) {
+        width: 8%;
+        margin-left: 20vw;
     }
 `;
 

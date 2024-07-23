@@ -54,8 +54,22 @@ public class MapRepositoryJpaAdapter implements MapRepository {
     }
 
     @Override
+    public List<Map> findAllById(Account.AccountId accountId, List<Map.MapId> deletedMapIds) {
+        var categoryEntities = categoryEntityRepository.findAllByAccountId(accountId.value());
+
+        return mapEntityRepository.findAllById(deletedMapIds.stream()
+                .map(Map.MapId::value)
+                .collect(Collectors.toList()))
+                .stream()
+                .map(entity ->
+                        MapEntity.toSoleDomainModel(entity,
+                                CategoryEntity.toMatchedDomainModels(categoryEntities, entity.getCategories()))
+                ).toList();
+    }
+
+    @Override
     public Optional<Map> findFetchFamilyById(Map.MapId mapId) {
-        var currentMapEntityOptional = mapEntityRepository.findById(mapId.value());
+        var currentMapEntityOptional = mapEntityRepository.findFetchFamilyById(mapId.value());
 
         if (currentMapEntityOptional.isEmpty()) {
             return Optional.empty();

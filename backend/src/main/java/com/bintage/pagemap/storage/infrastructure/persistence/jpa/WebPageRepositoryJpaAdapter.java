@@ -62,6 +62,20 @@ public class WebPageRepositoryJpaAdapter implements WebPageRepository {
     }
 
     @Override
+    public List<WebPage> findAllById(Account.AccountId accountId, List<WebPage.WebPageId> deletedWebPageIds) {
+        var accountCategories = categoryEntityRepository.findAllByAccountId(accountId.value());
+
+        return webPageEntityRepository.findAllById(deletedWebPageIds.stream()
+                .map(WebPage.WebPageId::value)
+                .collect(Collectors.toList()))
+                .stream()
+                .map(entity ->
+                        WebPageEntity.toDomainModel(entity,
+                                CategoryEntity.toMatchedDomainModels(accountCategories, entity.getCategories()))
+                ).toList();
+    }
+
+    @Override
     public List<WebPage> findAllTopWebPage(Account.AccountId accountId) {
         var accountCategories = categoryEntityRepository.findAllByAccountId(accountId.value());
 

@@ -16,6 +16,8 @@ public interface MapRepository {
 
     List<Map> findAllTopMap(Account.AccountId accountId);
 
+    List<Map> findAllById(Account.AccountId accountId, List<Map.MapId> deletedMapIds);
+
     Optional<Map> findFetchFamilyById(Map.MapId mapId);
 
     Optional<Map> findById(Map.MapId mapId);

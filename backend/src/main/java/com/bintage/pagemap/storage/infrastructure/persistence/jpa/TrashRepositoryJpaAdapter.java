@@ -33,7 +33,7 @@ public class TrashRepositoryJpaAdapter implements TrashRepository {
     }
 
     @Override
-    public List<Trash> findByAccountId(Account.AccountId accountId) {
+    public List<Trash> findAllByAccountId(Account.AccountId accountId) {
         return trashEntityRepository
                 .findAllByAccountId(accountId.value())
                 .stream()

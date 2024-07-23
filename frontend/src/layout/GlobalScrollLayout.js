@@ -1,7 +1,7 @@
 import React, {useEffect, useRef} from "react";
 import Scrollable from "../components/common/Scrollable";
 
-const ScrollLayout = ({children}) => {
+const GlobalScrollLayout = ({children}) => {
     const scrollableRef = useRef(null);
 
     const handleScroll = (e) => {
@@ -34,4 +34,4 @@ const ScrollLayout = ({children}) => {
     );
 }
 
-export default ScrollLayout;
+export default GlobalScrollLayout;

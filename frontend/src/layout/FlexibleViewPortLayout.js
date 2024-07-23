@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-const ViewPortLayout = ({children}) => {
+const FlexibleViewPortLayout = ({children}) => {
     return (
         <StyledGlobalSpace>
             <StyledUserSpace>
@@ -47,4 +47,4 @@ const StyledUserSpace = styled.div`
     }
 `;
 
-export default ViewPortLayout;
+export default FlexibleViewPortLayout;

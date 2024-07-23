@@ -2,36 +2,36 @@ import React from "react";
 import {useLogin} from "../hooks/useLogin";
 import CustomerPage from "../pages/CustomerPage";
 import {Outlet} from "react-router-dom";
-import ViewPortLayout from "../layout/ViewPortLayout";
+import FlexibleViewPortLayout from "../layout/FlexibleViewPortLayout";
 import Header from "../components/common/Header";
 import GlobalDropZoneLayout from "../layout/GlobalDropZoneLayout";
 import Scrollable from "../components/common/Scrollable";
-import ScrollLayout from "../layout/ScrollLayout";
+import GlobalScrollLayout from "../layout/GlobalScrollLayout";
 
 function Root() {
     const {isLoggedIn} = useLogin();
 
     if (!isLoggedIn) {
         return (
-            <ViewPortLayout>
+            <FlexibleViewPortLayout>
                 <CustomerPage/>
-            </ViewPortLayout>
+            </FlexibleViewPortLayout>
         );
     }
 
     return (
         <GlobalDropZoneLayout>
-            <ViewPortLayout>
+            <FlexibleViewPortLayout>
 
                 <Header/>
 
-                <ScrollLayout>
+                <GlobalScrollLayout>
                     <Scrollable>
                         <Outlet/>
                     </Scrollable>
-                </ScrollLayout>
+                </GlobalScrollLayout>
 
-            </ViewPortLayout>
+            </FlexibleViewPortLayout>
         </GlobalDropZoneLayout>
     );
 }

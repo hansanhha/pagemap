@@ -1,15 +1,72 @@
 import styled, {keyframes} from "styled-components";
 import Shortcut from "../../archive/Shortcut";
 import {useLogin} from "../../../hooks/useLogin";
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import ShortcutDto from "../../../service/dto/ShortcutDto";
 import ShortcutSectionDropZone from "./ShortcutSectionDropZone";
 import BookmarkDto from "../../../service/dto/BookmarkDto";
 import {subscribeEvent, unsubscribeEvent} from "../../util/EventHandler";
 import {deletedShortcut} from "../../trash/Trash";
 
+const useScrollbarDrag = () => {
+    const scrollbarRef = useRef(null);
+    const [scrollbarX, setScrollbarX] = useState(0);
+    const [scrollbarTotalX, setScrollbarTotalX] = useState(0);
+    const [isDragging, setIsDragging] = useState(false);
+
+    const throttle = (handler) => {
+        let timer;
+        if (!timer) {
+            timer = setTimeout(() => {
+                timer = null;
+                handler();
+            }, 100);
+        }
+    }
+
+    const handleDragStart = (e) => {
+        setIsDragging(true);
+
+        throttle(() => {
+            e.stopPropagation();
+            e.preventDefault();
+
+            const x = e.clientX;
+            setScrollbarX(x);
+            
+            if (scrollbarRef.current && scrollbarRef.current.scrollLeft) {
+                setScrollbarTotalX(x + scrollbarRef.current.scrollLeft);
+            }
+        });
+    }
+
+    const handleDragMove = (e) => {
+        if (!isDragging) return;
+
+        throttle(() => {
+            e.stopPropagation();
+            e.preventDefault();
+
+            const scrollLeft = scrollbarTotalX - e.clientX;
+
+            if (scrollbarRef.current && scrollbarRef.current.scrollLeft) {
+                scrollbarRef.current.scrollLeft = scrollLeft;
+            }
+        });
+    }
+
+    const handleDragEnd = (e) => {
+        if (!isDragging || !scrollbarRef.current) return;
+        setIsDragging(false);
+    }
+
+    return {scrollbarRef, handleDragStart, handleDragMove, handleDragEnd};
+}
+
+
 const ShortcutSection = () => {
     const {accessToken, isLoggedIn} = useLogin();
+    const {scrollbarRef, handleDragStart, handleDragMove, handleDragEnd} = useScrollbarDrag();
     const [isActive, setIsActive] = useState(true);
     const [shortcuts, setShortcuts] = useState([]);
 
@@ -47,11 +104,6 @@ const ShortcutSection = () => {
         }, 10);
     }
 
-    const handleScroll = (e) => {
-        const delta = Math.sign(e.deltaY);
-        e.currentTarget.scrollLeft += delta;
-    };
-
     const handleAddShortcut = (source) => {
         if (BookmarkDto.isBookmark(source)) {
             fetch(process.env.REACT_APP_SERVER + `/storage/webpages`, {
@@ -85,7 +137,12 @@ const ShortcutSection = () => {
         <ShortcutSectionDropZone onDropped={handleAddShortcut}>
             {isActive &&
                 <StyledShortcutSection isActive={isActive}>
-                    <StyledScrollBar onWheel={handleScroll}>
+                    <StyledScrollBar ref={scrollbarRef}
+                                     onMouseDown={handleDragStart}
+                                     onMouseMove={handleDragMove}
+                                     onMouseUp={handleDragEnd}
+                                     onMouseLeave={handleDragEnd}
+                    >
                         {
                             shortcuts.length > 0 &&
                             shortcuts.map(shortcut => (

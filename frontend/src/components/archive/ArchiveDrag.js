@@ -65,7 +65,7 @@ const ArchiveDrag = ({ archive, children, onDropped }) => {
     }
 
     return (
-        <StyledHierarchyDrag
+        <StyledArchiveDrag
             onDragStart={dragStart}
             onDragOver={(e) => e.preventDefault()}
             onDragEnter={dragEnter}
@@ -75,11 +75,11 @@ const ArchiveDrag = ({ archive, children, onDropped }) => {
             draggable={true}
         >
             {children}
-        </StyledHierarchyDrag>
+        </StyledArchiveDrag>
     );
 }
 
-const StyledHierarchyDrag = styled.div`
+const StyledArchiveDrag = styled.div`
     background-color: ${({ isDraggingOver }) => (isDraggingOver ? '#E9E9E9' : 'transparent')};
     transition: background-color 0.3s ease;
 `;

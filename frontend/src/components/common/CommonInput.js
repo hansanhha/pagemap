@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-const InputForm = ({ placeholder, value, readOnly, onUpdateValue }) => {
+const CommonInput = ({ placeholder, value, readOnly, onUpdateValue }) => {
     const handleChange = (e) => {
         onUpdateValue(e.target.value);
     }
@@ -24,4 +24,4 @@ const StyledInputForm = styled.input`
     box-sizing: border-box;
 `;
 
-export default InputForm;
+export default CommonInput;

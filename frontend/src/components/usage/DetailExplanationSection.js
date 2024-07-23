@@ -95,7 +95,7 @@ const DetailExplanationSection = () => {
                         폴더, 북마크, 바로가기의 이름을 수정할 수 있습니다
                     </StyledMessage>
                     <StyledMessage>
-                        마우스 오른쪽 클릭 또는 두 손가락 터치(터치 패드)를 하여 툴팁을 열고 '이름 변경' 버튼을 눌러 변경할 수 있습니다
+                        마우스 오른쪽 클릭 또는 두 손가락 터치(터치 패드)를 하여 메뉴를 열고 '이름 변경' 버튼을 눌러 변경할 수 있습니다
                     </StyledMessage>
                     <StyledExampleOpenBtn>
                         이름 변경 예시 보기

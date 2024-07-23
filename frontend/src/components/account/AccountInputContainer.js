@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import InputForm from "../common/InputForm";
+import CommonInput from "../common/CommonInput";
 import AccountReadOnlyInputForm from "./AccountReadOnlyInputForm";
 import AccountInputFormTitle from "./AccountInputFormTitle";
 
@@ -13,7 +13,7 @@ const AccountInputContainer = ({title, value, readOnly, isValidUpdateNickname, o
                 readOnly ?
                     <AccountReadOnlyInputForm value={value}/>
                     :
-                    <InputForm value={value} readOnly={false} onUpdateValue={onUpdateValue}/>
+                    <CommonInput value={value} readOnly={false} onUpdateValue={onUpdateValue}/>
             }
             {
                 title=== "닉네임" && !readOnly && !isValidUpdateNickname &&

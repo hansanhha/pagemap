@@ -33,7 +33,7 @@ const useScrollbarDrag = () => {
 
             const x = e.clientX;
             setScrollbarX(x);
-            
+
             if (scrollbarRef.current && scrollbarRef.current.scrollLeft) {
                 setScrollbarTotalX(x + scrollbarRef.current.scrollLeft);
             }

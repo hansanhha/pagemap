@@ -2,7 +2,7 @@ import styled from "styled-components";
 import {useEffect, useRef, useState} from "react";
 import Button from "../common/Button";
 import AccountInputFormTitle from "./AccountInputFormTitle";
-import InputForm from "../common/InputForm";
+import CommonInput from "../common/CommonInput";
 
 const DeleteAccountModal = ({onClose, onDeleteClick}) => {
     const deleteModalRef = useRef(null);
@@ -86,10 +86,10 @@ const DeleteAccountModal = ({onClose, onDeleteClick}) => {
                             deleteConfirmPhrase
                         }
                     </StyledGoodbyeTitle>
-                    <InputForm value={deleteConfirmValue}
-                               placeholder={"goodbye"}
-                               readOnly={false}
-                               onUpdateValue={setDeleteConfirmValue}/>
+                    <CommonInput value={deleteConfirmValue}
+                                 placeholder={"goodbye"}
+                                 readOnly={false}
+                                 onUpdateValue={setDeleteConfirmValue}/>
                 </StyledModalItemContainer>
                 <StyledBtnContainer>
                     <Button value={"돌아가기"} onClick={onClose}/>

@@ -4,8 +4,12 @@ import styled from "styled-components";
 import ArchiveDrag from "./ArchiveDrag";
 import OrderLine from "../common/OrderLine";
 import HyperLink from "../common/HyperLink";
+import ArchiveContextMenu from "./ArchiveContextMenu";
+import {useState} from "react";
 
 const Bookmark = ({bookmark, onUpdateHierarchy, onUpdateOrder}) => {
+    const [title, setTitle] = useState(bookmark.title);
+
     return (
         <>
             <OrderLine archive={bookmark}
@@ -14,12 +18,14 @@ const Bookmark = ({bookmark, onUpdateHierarchy, onUpdateOrder}) => {
             <ArchiveDrag archive={bookmark}
                          onDropped={onUpdateHierarchy}
             >
-                <HyperLink to={bookmark.url}>
-                    <StyledBookmark>
-                        <Logo img={bookmark.logo}/>
-                        <Title title={bookmark.title}/>
-                    </StyledBookmark>
-                </HyperLink>
+                <ArchiveContextMenu archive={bookmark} setTitle={setTitle}>
+                    <HyperLink to={bookmark.url}>
+                        <StyledBookmark>
+                            <Logo img={bookmark.logo}/>
+                            <Title title={title}/>
+                        </StyledBookmark>
+                    </HyperLink>
+                </ArchiveContextMenu>
             </ArchiveDrag>
         </>
     );

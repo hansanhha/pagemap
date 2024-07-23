@@ -9,9 +9,11 @@ import FolderDto from "../../service/dto/FolderDto";
 import BookmarkDto from "../../service/dto/BookmarkDto";
 import ArchiveDrag from "./ArchiveDrag";
 import OrderLine from "../common/OrderLine";
+import ArchiveContextMenu from "./ArchiveContextMenu";
 
 const Folder = ({folder, onUpdateHierarchy, onUpdateOrder}) => {
     let {accessToken} = useLogin();
+    const [title, setTitle] = useState(folder.title);
     const [isClicked, setIsClicked] = useState(false);
     const [childrenSortedArchive, setChildrenSortedArchive] = useState([]);
 
@@ -60,10 +62,12 @@ const Folder = ({folder, onUpdateHierarchy, onUpdateOrder}) => {
                        order={folder.order}
                        onDropped={onUpdateOrder}/>
             <ArchiveDrag archive={folder} onDropped={onUpdateHierarchy}>
-                <StyledParentFolder onClick={handleClick}>
-                    <Logo img={folderLogo}/>
-                    <Title title={folder.title}/>
-                </StyledParentFolder>
+                <ArchiveContextMenu archive={folder} setTitle={setTitle}>
+                    <StyledParentFolder onClick={handleClick}>
+                        <Logo img={folderLogo}/>
+                        <Title title={title}/>
+                    </StyledParentFolder>
+                </ArchiveContextMenu>
             </ArchiveDrag>
             {
                 isClicked &&

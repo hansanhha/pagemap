@@ -4,20 +4,26 @@ import HyperLink from "../common/HyperLink";
 import Logo from "../common/Logo";
 import Title from "./Title";
 import ShortcutDrag from "./ShortcutDrag";
+import ArchiveContextMenu from "./ArchiveContextMenu";
+import {useState} from "react";
 
 const Shortcut = ({shortcut, onUpdateOrder}) => {
+    const [title, setTitle] = useState(shortcut.title);
+
     return (
         <>
             <ShortcutOrderLine archive={shortcut}
-                       order={shortcut.order}
-                       onDropped={onUpdateOrder}/>
+                               order={shortcut.order}
+                               onDropped={onUpdateOrder}/>
             <ShortcutDrag shortcut={shortcut}>
-                <HyperLink to={shortcut.url}>
-                    <StyledShortcut>
-                        <Logo img={shortcut.img}/>
-                        <Title title={shortcut.title}/>
-                    </StyledShortcut>
-                </HyperLink>
+                <ArchiveContextMenu archive={shortcut} setTitle={setTitle}>
+                    <HyperLink to={shortcut.url}>
+                        <StyledShortcut>
+                            <Logo img={shortcut.img}/>
+                            <Title title={title}/>
+                        </StyledShortcut>
+                    </HyperLink>
+                </ArchiveContextMenu>
             </ShortcutDrag>
         </>
     );

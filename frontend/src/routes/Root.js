@@ -7,6 +7,7 @@ import Header from "../components/common/Header";
 import GlobalDropZoneLayout from "../layout/GlobalDropZoneLayout";
 import Scrollable from "../components/common/Scrollable";
 import GlobalScrollLayout from "../layout/GlobalScrollLayout";
+import {ArchiveMenuContextProvider} from "../hooks/useArchiveMenuContext";
 
 function Root() {
     const {isLoggedIn} = useLogin();
@@ -23,13 +24,15 @@ function Root() {
         <GlobalDropZoneLayout>
             <FlexibleViewPortLayout>
 
-                <Header/>
+                <ArchiveMenuContextProvider>
+                    <Header/>
 
-                <GlobalScrollLayout>
-                    <Scrollable>
-                        <Outlet/>
-                    </Scrollable>
-                </GlobalScrollLayout>
+                    <GlobalScrollLayout>
+                        <Scrollable>
+                            <Outlet/>
+                        </Scrollable>
+                    </GlobalScrollLayout>
+                </ArchiveMenuContextProvider>
 
             </FlexibleViewPortLayout>
         </GlobalDropZoneLayout>

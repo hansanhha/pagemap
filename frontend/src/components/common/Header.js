@@ -12,10 +12,10 @@ const Header = () => {
     return (
         <>
             <StyledHeader>
-                <StyledTopContainer>
+                <StyledDefaultHeaderContainer>
                     <MenuSection/>
                     <TitleSection/>
-                </StyledTopContainer>
+                </StyledDefaultHeaderContainer>
                 {
                     location.pathname === "/" &&
                     <SearchBarSection/>
@@ -36,9 +36,10 @@ const StyledHeader = styled.header`
     flex-direction: column;
     align-items: center;
     gap: 1rem;
+    padding-bottom: 1rem;
 `
 
-const StyledTopContainer = styled.div`
+const StyledDefaultHeaderContainer = styled.div`
     width: 100%;
     display: flex;
     justify-content: space-between;

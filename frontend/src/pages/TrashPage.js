@@ -6,7 +6,6 @@ import TrashContentBodySection from "../components/trash/TrashContentBodySection
 import FolderDto from "../service/dto/FolderDto";
 import BookmarkDto from "../service/dto/BookmarkDto";
 import ShortcutDto from "../service/dto/ShortcutDto";
-import Scrollable from "../components/common/Scrollable";
 import TrashContentHeaderSection from "../components/trash/TrashContentHeaderSection";
 
 const TrashPage = () => {
@@ -94,11 +93,9 @@ const TrashPage = () => {
         <UtilityPageLayout>
             <TrashHeaderSection onDeleteAll={handleDeleteAll}/>
             <TrashContentHeaderSection/>
-            <Scrollable>
-                <TrashContentBodySection deletedArchives={deletedArchives}
-                                         onRestore={handleRestore}
-                />
-            </Scrollable>
+            <TrashContentBodySection deletedArchives={deletedArchives}
+                                     onRestore={handleRestore}
+            />
         </UtilityPageLayout>
     );
 }

@@ -1,13 +1,10 @@
 import styled from "styled-components";
 import ArchiveSection from "../components/archive/ArchiveSection";
-import Scrollable from "../components/common/Scrollable";
 
 const MainPage = () => {
     return (
         <StyledMainPage>
-            <Scrollable>
-                <ArchiveSection/>
-            </Scrollable>
+            <ArchiveSection/>
         </StyledMainPage>
     );
 }

@@ -15,14 +15,14 @@ const StartSettingGuidePage = () => {
 
             <UtilityHeader pageName={"시작 페이지로 하기"}/>
             <StyledStartPageContainer>
-                <Scrollable>
+                {/*<Scrollable>*/}
                     <IntroductionSection/>
                     <ChromeSection />
                     <ArcSection />
                     <EdgeSection />
                     <SafariSection />
                     <FirefoxSection/>
-                </Scrollable>
+                {/*</Scrollable>*/}
             </StyledStartPageContainer>
         </UtilityPageLayout>
     );

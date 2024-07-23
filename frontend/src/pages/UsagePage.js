@@ -3,7 +3,6 @@ import UtilityHeader from "../components/common/UtilityHeader";
 import DetailExplanationSection from "../components/usage/DetailExplanationSection";
 import IntroductionSection from "../components/usage/IntroductionSection";
 import styled from "styled-components";
-import Scrollable from "../components/common/Scrollable";
 
 
 const UsagePage = () => {
@@ -11,10 +10,8 @@ const UsagePage = () => {
         <UtilityPageLayout>
             <UtilityHeader pageName={"사용방법"}/>
             <StyledUsagePageContainer>
-                <Scrollable>
-                    <IntroductionSection/>
-                    <DetailExplanationSection/>
-                </Scrollable>
+                <IntroductionSection/>
+                <DetailExplanationSection/>
             </StyledUsagePageContainer>
         </UtilityPageLayout>
     );

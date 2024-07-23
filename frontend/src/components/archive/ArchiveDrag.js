@@ -2,9 +2,9 @@ import styled from "styled-components";
 import {useState} from "react";
 import FolderDto from "../../service/dto/FolderDto";
 import {setOrderLineSource} from "../common/OrderLine";
-import {shortcutDataTransferName} from "../common/header/ShortcutDrag";
 import BookmarkDto from "../../service/dto/BookmarkDto";
 import ShortcutDto from "../../service/dto/ShortcutDto";
+import {shortcutDataTransferName} from "./ShortcutDrag";
 
 const folderDataTransferName = "folder";
 const bookmarkDataTransferName = "bookmark";

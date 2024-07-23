@@ -3,7 +3,7 @@ import {useLocation} from "react-router-dom";
 import {useState} from "react";
 import {useLogin} from "../hooks/useLogin";
 import {bookmarkDataTransferName} from "../components/archive/ArchiveDrag";
-import {shortcutDataTransferName} from "../components/common/header/ShortcutDrag";
+import {shortcutDataTransferName} from "../components/archive/ShortcutDrag";
 
 const isValidExternalDrag = (e) => {
 

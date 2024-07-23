@@ -1,5 +1,5 @@
 import styled, {keyframes} from "styled-components";
-import Shortcut from "./Shortcut";
+import Shortcut from "../../archive/Shortcut";
 import {useLogin} from "../../../hooks/useLogin";
 import {useEffect, useState} from "react";
 import ShortcutDto from "../../../service/dto/ShortcutDto";

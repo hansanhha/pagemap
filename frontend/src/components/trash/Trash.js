@@ -1,10 +1,10 @@
 import TrashLogo from "./TrashLogo";
 import styled from "styled-components";
 import {useState} from "react";
-import {shortcutDataTransferName} from "../common/header/ShortcutDrag";
 import {bookmarkDataTransferName, folderDataTransferName} from "../archive/ArchiveDrag";
 import {useLogin} from "../../hooks/useLogin";
 import {publishEvent} from "../util/EventHandler";
+import {shortcutDataTransferName} from "../archive/ShortcutDrag";
 
 const isValidDataTransfer = (e) => {
     return e.dataTransfer.types.includes(shortcutDataTransferName)

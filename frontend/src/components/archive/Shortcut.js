@@ -1,9 +1,9 @@
-import Logo from "../Logo";
-import Title from "../../archive/Title";
 import styled from "styled-components";
+import ShortcutOrderLine from "../common/header/ShortcutOrderLine";
+import HyperLink from "../common/HyperLink";
+import Logo from "../common/Logo";
+import Title from "./Title";
 import ShortcutDrag from "./ShortcutDrag";
-import ShortcutOrderLine from "./ShortcutOrderLine";
-import HyperLink from "../HyperLink";
 
 const Shortcut = ({shortcut, onUpdateOrder}) => {
     return (

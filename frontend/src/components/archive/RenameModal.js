@@ -99,7 +99,7 @@ const RenameModal = ({id, archiveType, originalTitle, onRename, onClose}) => {
                 {
                     updateTitle &&
                     <StyledGuideMessage>
-                        {originalTitle + "에서 " + updateTitle + "로 변경합니다"}
+                        {originalTitle + "에서 " + updateTitle + "(으)로 변경합니다"}
                     </StyledGuideMessage>
                 }
                 <CommonInput placeholder={originalTitle}

@@ -1,6 +1,6 @@
 import React from "react";
 import {useLogin} from "../hooks/useLogin";
-import CustomerPage from "../pages/CustomerPage";
+import AnonymousPage from "../pages/AnonymousPage";
 import {Outlet} from "react-router-dom";
 import FlexibleViewPortLayout from "../layout/FlexibleViewPortLayout";
 import Header from "../components/common/Header";
@@ -15,7 +15,11 @@ function Root() {
     if (!isLoggedIn) {
         return (
             <FlexibleViewPortLayout>
-                <CustomerPage/>
+                <GlobalScrollLayout>
+                    <Scrollable>
+                        <AnonymousPage/>
+                    </Scrollable>
+                </GlobalScrollLayout>
             </FlexibleViewPortLayout>
         );
     }

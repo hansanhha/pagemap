@@ -10,6 +10,7 @@ const folderDataTransferName = "folder";
 const bookmarkDataTransferName = "bookmark";
 
 let sourceArchive = null;
+let draggingBookmarkId = null;
 
 const ArchiveDrag = ({ archive, children, onDropped }) => {
     const [isDraggingOver, setIsDraggingOver] = useState(false);
@@ -22,6 +23,8 @@ const ArchiveDrag = ({ archive, children, onDropped }) => {
         // ShortcutDropZone에는 Bookmark만 드래그를 허용하기 때문에 분기 처리
         if (BookmarkDto.isBookmark(archive)) {
             e.dataTransfer.setData(bookmarkDataTransferName, JSON.stringify(archive));
+            // FolderCreatable.js - bookmark 식별 용도
+            draggingBookmarkId = archive.id;
         }
 
         if (FolderDto.isFolder(archive)) {
@@ -84,5 +87,5 @@ const StyledArchiveDrag = styled.div`
     transition: background-color 0.3s ease;
 `;
 
-export {folderDataTransferName, bookmarkDataTransferName};
+export {draggingBookmarkId, folderDataTransferName, bookmarkDataTransferName};
 export default ArchiveDrag;

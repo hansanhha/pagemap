@@ -120,6 +120,37 @@ const ArchiveSection = () => {
         handleActive();
     }
 
+    const handleCreateFolder = (bookmark1, bookmark2) => {
+        fetch(process.env.REACT_APP_SERVER + "/storage/maps", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/problem+json",
+                "Authorization": `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({
+                title: "New Folder",
+                bookmarks: [bookmark1, bookmark2],
+            })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.createdFolder) {
+                    const folderDto = new FolderDto(data.createdFolder);
+
+                    const extractedChildrenArchive = sortedArchives.filter(archive => {
+                        return (archive.id !== bookmark1.id && BookmarkDto.isBookmark(archive))
+                            && (archive.id !== bookmark2.id && BookmarkDto.isBookmark(archive));
+                    });
+
+                    const newSortedChildrenArchive = extractedChildrenArchive.sort((a, b) => a.order - b.order);
+                    newSortedChildrenArchive.push(folderDto);
+
+                    sortedArchives(newSortedChildrenArchive);
+                }
+            })
+            .catch(err => console.error("Error fetching create folder:", err));
+    }
+
     return (
         <StyledArchiveSection isActive={isActive}>
             {
@@ -127,7 +158,9 @@ const ArchiveSection = () => {
                 <>
                     <HierarchyArchive archives={sortedArchives}
                                       onUpdateHierarchy={handleUpdateHierarchy}
-                                      onUpdateOrder={handleUpdateOrder}/>
+                                      onUpdateOrder={handleUpdateOrder}
+                                      onCreateFolder={handleCreateFolder}
+                    />
                     <Trash/>
                 </>
             }

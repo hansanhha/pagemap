@@ -6,8 +6,9 @@ import OrderLine from "../common/OrderLine";
 import HyperLink from "../common/HyperLink";
 import ArchiveContextMenu from "./ArchiveContextMenu";
 import {useState} from "react";
+import FolderCreatable from "./FolderCreatable";
 
-const Bookmark = ({bookmark, onUpdateHierarchy, onUpdateOrder}) => {
+const Bookmark = ({bookmark, onUpdateHierarchy, onUpdateOrder, onCreateFolder}) => {
     const [title, setTitle] = useState(bookmark.title);
 
     return (
@@ -15,18 +16,22 @@ const Bookmark = ({bookmark, onUpdateHierarchy, onUpdateOrder}) => {
             <OrderLine archive={bookmark}
                        order={bookmark.order}
                        onDropped={onUpdateOrder}/>
-            <ArchiveDrag archive={bookmark}
-                         onDropped={onUpdateHierarchy}
+            <FolderCreatable bookmark={bookmark}
+                             onDropped={onCreateFolder}
             >
-                <ArchiveContextMenu archive={bookmark} setTitle={setTitle}>
-                    <HyperLink to={bookmark.url}>
-                        <StyledBookmark>
-                            <Logo img={bookmark.logo}/>
-                            <Title title={title}/>
-                        </StyledBookmark>
-                    </HyperLink>
-                </ArchiveContextMenu>
-            </ArchiveDrag>
+                <ArchiveDrag archive={bookmark}
+                             onDropped={onUpdateHierarchy}
+                >
+                    <ArchiveContextMenu archive={bookmark} setTitle={setTitle}>
+                        <HyperLink to={bookmark.url}>
+                            <StyledBookmark>
+                                <Logo img={bookmark.logo}/>
+                                <Title title={title}/>
+                            </StyledBookmark>
+                        </HyperLink>
+                    </ArchiveContextMenu>
+                </ArchiveDrag>
+            </FolderCreatable>
         </>
     );
 }

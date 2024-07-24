@@ -7,6 +7,9 @@ import java.time.Instant;
 @SecondaryPort
 public interface SignEventPublisher {
 
+    void signedUp(Account.AccountId accountId,
+                  Instant signedAt);
+
     void signedIn(Account.AccountId accountId,
                   Instant signedAt);
 

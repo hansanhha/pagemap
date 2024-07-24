@@ -56,17 +56,22 @@ public class AccountAuth {
         Account.AccountId accountId = new Account.AccountId(accountIdStr);
         Instant now = Instant.now();
         accountRepository.findById(accountId).ifPresentOrElse(
-                account -> {},
-                () -> accountRepository.save(Account.builder()
-                        .id(new Account.AccountId(accountIdStr))
-                        .oAuth2MemberIdentifier(new Account.OAuth2MemberIdentifier(oauth2MemberNumber))
-                        .oAuth2Provider(Account.OAuth2Provider.valueOf(oauth2Provider.toUpperCase()))
-                        .role(Account.Role.USER)
-                        .nickname(UUID.randomUUID().toString())
-                        .lastNicknameModifiedAt(now)
-                        .createdAt(now)
-                        .lastModifiedAt(now)
-                        .build()));
+                account -> {
+                },
+                () -> {
+                    accountRepository.save(Account.builder()
+                            .id(new Account.AccountId(accountIdStr))
+                            .oAuth2MemberIdentifier(new Account.OAuth2MemberIdentifier(oauth2MemberNumber))
+                            .oAuth2Provider(Account.OAuth2Provider.valueOf(oauth2Provider.toUpperCase()))
+                            .role(Account.Role.USER)
+                            .nickname(UUID.randomUUID().toString())
+                            .lastNicknameModifiedAt(now)
+                            .createdAt(now)
+                            .lastModifiedAt(now)
+                            .build());
+                    signEventPublisher.signedUp(accountId, now);
+                }
+        );
     }
 
     public AuthenticationResponse authenticate(String token) {

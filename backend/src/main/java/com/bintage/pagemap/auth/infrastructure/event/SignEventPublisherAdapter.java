@@ -5,6 +5,7 @@ import com.bintage.pagemap.auth.domain.account.SignEventPublisher;
 import com.bintage.pagemap.auth.domain.account.event.AccountDeleted;
 import com.bintage.pagemap.auth.domain.account.event.AccountSignedIn;
 import com.bintage.pagemap.auth.domain.account.event.AccountSignedOut;
+import com.bintage.pagemap.auth.domain.account.event.AccountSignedUp;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
 import org.springframework.context.ApplicationEventPublisher;
@@ -18,6 +19,11 @@ import java.time.Instant;
 public class SignEventPublisherAdapter implements SignEventPublisher {
 
     private final ApplicationEventPublisher springEventPublisher;
+
+    @Override
+    public void signedUp(Account.AccountId accountId, Instant signedAt) {
+        springEventPublisher.publishEvent(new AccountSignedUp(accountId, signedAt));
+    }
 
     @Override
     public void signedIn(Account.AccountId accountId, Instant signedAt) {

@@ -23,7 +23,7 @@ public class KakaoOAuth2Service implements OAuth2Service {
 
     @Override
     public void signOut(Account.AccountId id, Account.OAuth2Provider oAuth2Provider, Account.OAuth2MemberIdentifier oAuth2MemberIdentifier) {
-        var oAuth2AuthorizedClient = getoAuth2AuthorizedClient(id);
+        var oAuth2AuthorizedClient = getOAuth2AuthorizedClient(id);
 
         var result = RestClient.builder()
                 .baseUrl("https://kapi.kakao.com/v1/user/logout")
@@ -49,7 +49,7 @@ public class KakaoOAuth2Service implements OAuth2Service {
 
     @Override
     public void unlinkForAccount(Account.AccountId id, Account.OAuth2Provider oAuth2Provider, Account.OAuth2MemberIdentifier oAuth2MemberIdentifier) {
-        var oAuth2AuthorizedClient = getoAuth2AuthorizedClient(id);
+        var oAuth2AuthorizedClient = getOAuth2AuthorizedClient(id);
 
         var result = RestClient.builder()
                 .baseUrl("https://kapi.kakao.com/v1/user/unlink")
@@ -73,7 +73,7 @@ public class KakaoOAuth2Service implements OAuth2Service {
         Assert.isTrue(result.success(), () -> result.errorCode().concat(":").concat(result.errorMessage()));
     }
 
-    private OAuth2AuthorizedClient getoAuth2AuthorizedClient(Account.AccountId accountId) {
+    private OAuth2AuthorizedClient getOAuth2AuthorizedClient(Account.AccountId accountId) {
         return oAuth2AuthorizedClientService.loadAuthorizedClient(OAuth2Provider.KAKAO.getName(), accountId.value());
     }
 

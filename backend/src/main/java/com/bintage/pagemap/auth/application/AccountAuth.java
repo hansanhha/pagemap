@@ -1,5 +1,6 @@
 package com.bintage.pagemap.auth.application;
 
+import com.bintage.pagemap.auth.application.dto.DeleteAccountDto;
 import com.bintage.pagemap.auth.domain.account.*;
 import com.bintage.pagemap.auth.domain.token.AccessToken;
 import com.bintage.pagemap.auth.domain.token.RefreshTokenRepository;
@@ -24,6 +25,7 @@ public class AccountAuth {
     private final OAuth2Service oAuth2Service;
     private final SignEventPublisher signEventPublisher;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final QuitUserFeedbackRepository quitUserFeedbackRepository;
     private final TokenService tokenService;
 
     public SignInResponse signIn(String accountIdStr) {
@@ -85,14 +87,17 @@ public class AccountAuth {
         return AuthenticationResponse.valid(accessToken.getAccountId().value(), Set.of(accessToken.getAccountRole()));
     }
 
-    public void deleteAccount(String accountIdStr) {
-        var accountId = new Account.AccountId(accountIdStr);
+    public void deleteAccount(DeleteAccountDto dto) {
+        var accountId = new Account.AccountId(dto.accountIdStr());
         var account = accountRepository.findById(accountId)
                 .orElseThrow(() -> AccountException.notFound(accountId));
 
         oAuth2Service.unlinkForAccount(account.getId(), account.getOAuth2Provider(), account.getOAuth2MemberIdentifier());
         refreshTokenRepository.deleteAllByAccountId(accountId);
         accountRepository.delete(account);
+
+        var quitUserFeedback = QuitUserFeedback.to(dto.cause(), dto.feedback());
+        quitUserFeedback.ifPresent(quitUserFeedbackRepository::save);
 
         signEventPublisher.deletedAccount(accountId, Instant.now());
     }

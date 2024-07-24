@@ -28,7 +28,7 @@ public class ArchiveCounterException extends StorageException {
 
     @Override
     public String getProblemDetailTitle() {
-        return getStorageExceptionCode().getTitle();
+        return getStorageExceptionCode().getMessage();
     }
 
     @Override
@@ -44,6 +44,6 @@ public class ArchiveCounterException extends StorageException {
 
     @Override
     public URI getProblemDetailInstance() {
-        return URI.create("/accounts".concat(getAccountId().value()));
+        return URI.create("/api/account/".concat(getAccountId().value()));
     }
 }

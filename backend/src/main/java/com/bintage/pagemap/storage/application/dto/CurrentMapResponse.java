@@ -1,24 +1,24 @@
 package com.bintage.pagemap.storage.application.dto;
 
-import com.bintage.pagemap.storage.domain.model.map.Map;
+import com.bintage.pagemap.storage.domain.model.folder.Folder;
 
 import java.util.List;
 
-public record CurrentMapResponse(MapDto currentMap,
-                                 List<MapDto> childrenMap,
-                                 List<WebPageDto> childrenWebPage) {
+public record CurrentMapResponse(FolderDto currentMap,
+                                 List<FolderDto> childrenMap,
+                                 List<BookmarkDto> childrenWebPage) {
 
-    public static CurrentMapResponse from(Map cuurentMap) {
-        var crruentMapDto = MapDto.from(cuurentMap);
+    public static CurrentMapResponse from(Folder cuurentFolder) {
+        var crruentMapDto = FolderDto.from(cuurentFolder);
 
-        var childrenMapDto = cuurentMap.getChildrenMap()
+        var childrenMapDto = cuurentFolder.getChildrenFolder()
                 .stream()
-                .map(MapDto::from)
+                .map(FolderDto::from)
                 .toList();
 
-        var webPageDtos = cuurentMap.getChildrenWebPage()
+        var webPageDtos = cuurentFolder.getChildrenBookmark()
                 .stream()
-                .map(WebPageDto::from)
+                .map(BookmarkDto::from)
                 .toList();
 
         return new CurrentMapResponse(crruentMapDto, childrenMapDto, webPageDtos);

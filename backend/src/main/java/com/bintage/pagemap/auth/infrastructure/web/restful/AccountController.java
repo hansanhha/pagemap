@@ -1,8 +1,11 @@
 package com.bintage.pagemap.auth.infrastructure.web.restful;
 
-import com.bintage.pagemap.auth.application.AccountInfo;
 import com.bintage.pagemap.auth.application.AccountAuth;
+import com.bintage.pagemap.auth.application.AccountInfo;
+import com.bintage.pagemap.auth.application.dto.DeleteAccountDto;
 import com.bintage.pagemap.auth.infrastructure.security.AuthenticatedAccount;
+import com.bintage.pagemap.auth.infrastructure.web.restful.dto.DeleteAccountRestRequest;
+import com.bintage.pagemap.storage.infrastructure.web.restful.dto.NicknameUpdateRestRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -18,34 +21,23 @@ public class AccountController {
     private final AccountAuth accountAuth;
 
     @GetMapping("/me")
-    public Map<String, String> getUser(@AuthenticationPrincipal AuthenticatedAccount authenticatedAccount) {
+    public Map<String, Object> getUser(@AuthenticationPrincipal AuthenticatedAccount authenticatedAccount) {
         var response = accountInfo.getAccountInfo(authenticatedAccount.getName());
         return Map.of("nickname", response.nickname(),
-                "email", authenticatedAccount.getName(),
-                "permission", authenticatedAccount.getAuthorities().toString());
+                "isUpdatableNickname", response.isUpdatableNickname(),
+                "mapCount", response.mapCount(),
+                "webPageCount", response.webPageCount());
     }
 
     @DeleteMapping("/me")
-    public Map<String, String> signOut(@AuthenticationPrincipal AuthenticatedAccount account) {
-        accountAuth.deleteAccount(account.getName());
+    public Map<String, String> signOut(@AuthenticationPrincipal AuthenticatedAccount account, @RequestBody DeleteAccountRestRequest request) {
+        accountAuth.deleteAccount(DeleteAccountDto.of(account.getName(), request.getCause(), request.getFeedback()));
         return Map.of("message", "deleted account");
     }
 
-//    @GetMapping("/me/devices")
-//    public Map<String, Object> getUserDevice(@AuthenticationPrincipal AuthenticatedAccount account) {
-//        var accountDevice = accountInfo.getAccountDevice(account.getName(), account.getTokenId());
-//        return Map.of("devices", accountDevice.devices(), "currentDeviceId", accountDevice.currentDeviceId());
-//    }
-//
-//    @DeleteMapping("/me/devices/{deviceId}")
-//    public Map<String, String> signOutDevice(@AuthenticationPrincipal AuthenticatedAccount account, @PathVariable String deviceId) {
-//        accountAuth.signOutForOtherDevice(deviceId);
-//        return Map.of("message", "success");
-//    }
-
     @PutMapping("/me")
-    public Map<String, String> changeNickname(@AuthenticationPrincipal AuthenticatedAccount account, @RequestBody String nickname) {
-        var changedNickname = accountInfo.changeNickname(account.getName(), nickname);
+    public Map<String, String> changeNickname(@AuthenticationPrincipal AuthenticatedAccount account, @RequestBody NicknameUpdateRestRequest request) {
+        var changedNickname = accountInfo.changeNickname(account.getName(), request.getNickname());
         return Map.of("message", "success", "changedNickname", changedNickname);
     }
 }

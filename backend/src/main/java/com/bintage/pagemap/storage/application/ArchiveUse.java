@@ -1,92 +1,78 @@
 package com.bintage.pagemap.storage.application;
 
 import com.bintage.pagemap.auth.domain.account.Account;
-import com.bintage.pagemap.storage.application.dto.CurrentMapResponse;
-import com.bintage.pagemap.storage.application.dto.MapDto;
-import com.bintage.pagemap.storage.application.dto.SpecificArchiveResponse;
-import com.bintage.pagemap.storage.application.dto.WebPageDto;
-import com.bintage.pagemap.storage.domain.model.category.Category;
-import com.bintage.pagemap.storage.domain.model.map.MapException;
-import com.bintage.pagemap.storage.domain.model.map.Map;
-import com.bintage.pagemap.storage.domain.model.map.MapRepository;
-import com.bintage.pagemap.storage.domain.model.webpage.WebPage;
-import com.bintage.pagemap.storage.domain.model.webpage.WebPageException;
-import com.bintage.pagemap.storage.domain.model.webpage.WebPageRepository;
+import com.bintage.pagemap.storage.application.dto.*;
+import com.bintage.pagemap.storage.domain.model.bookmark.Bookmark;
+import com.bintage.pagemap.storage.domain.model.bookmark.BookmarkException;
+import com.bintage.pagemap.storage.domain.model.bookmark.BookmarkRepository;
+import com.bintage.pagemap.storage.domain.model.folder.Folder;
+import com.bintage.pagemap.storage.domain.model.folder.FolderException;
+import com.bintage.pagemap.storage.domain.model.folder.FolderRepository;
+import com.bintage.pagemap.storage.domain.model.validation.ArchiveCounter;
+import com.bintage.pagemap.storage.domain.model.validation.ArchiveCounterException;
+import com.bintage.pagemap.storage.domain.model.validation.ArchiveCounterRepository;
+import com.bintage.pagemap.storage.domain.model.validation.DefaultArchiveCounter;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.hexagonal.PrimaryPort;
+import org.springframework.modulith.NamedInterface;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.Optional;
 
+@NamedInterface("readOnly")
 @PrimaryPort
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class ArchiveUse {
 
-    private final MapRepository mapRepository;
-    private final WebPageRepository webPageRepository;
+    private final ArchiveCounterRepository archiveCounterRepository;
+    private final FolderRepository folderRepository;
+    private final BookmarkRepository bookmarkRepository;
 
     public void visitWebPage(long webPageIdLong) {
-        webPageRepository.findById(new WebPage.WebPageId(webPageIdLong))
-                .ifPresent(WebPage::visit);
+        bookmarkRepository.findById(new Bookmark.BookmarkId(webPageIdLong))
+                .ifPresent(Bookmark::visit);
     }
 
     public CurrentMapResponse getMap(String accountIdStr, long mapIdLong) {
         var accountId = new Account.AccountId(accountIdStr);
 
-        var mapId = new Map.MapId(mapIdLong);
-        var map = mapRepository.findFetchFamilyById(mapId)
-                .orElseThrow(() -> MapException.notFound(accountId, mapId));
+        var mapId = new Folder.FolderId(mapIdLong);
+        var map = folderRepository.findFamilyById(accountId, mapId)
+                .orElseThrow(() -> FolderException.notFound(accountId, mapId));
 
         return CurrentMapResponse.from(map);
     }
 
-    public List<MapDto> getChildrenMap(String accountIdStr, long mapIdLong) {
-        var accountId = new Account.AccountId(accountIdStr);
-        var mapId = new Map.MapId(mapIdLong);
-
-        return mapRepository.findAllByParentId(accountId, mapId)
-                .stream()
-                .map(MapDto::from)
-                .toList();
-    }
-
-    public SpecificArchiveResponse getAllOnTheTop(String accountIdStr) {
+    public SpecificArchiveResponse getAllOnTheTopLevel(String accountIdStr) {
         var accountId = new Account.AccountId(accountIdStr);
 
-        var topMaps = mapRepository.findAllTopMap(accountId);
-        var topWebPages = webPageRepository.findAllTopWebPage(accountId);
+        var topFolders = folderRepository.findAllByParentId(accountId, Folder.TOP_LEVEL);
+        var topBookmarks = bookmarkRepository.findByParentFolderId(accountId, Bookmark.TOP_LEVEL);
 
-        return SpecificArchiveResponse.from(topMaps, topWebPages);
+        return SpecificArchiveResponse.from(topFolders, topBookmarks);
     }
 
-    public List<MapDto> getMapsOnTheTop(String name) {
-        return mapRepository.findAllTopMap(new Account.AccountId(name))
-                .stream()
-                .map(MapDto::from)
-                .toList();
-    }
-
-    public SpecificArchiveResponse getAllByCategory(String accountIdStr, Long categoryIdLong) {
+    public BookmarkDto getWebPage(String accountIdStr, Long webPageIdStr) {
         var accountId = new Account.AccountId(accountIdStr);
-        var categoryId = new Category.CategoryId(categoryIdLong);
+        var webPageId = new Bookmark.BookmarkId(webPageIdStr);
 
-        var maps = mapRepository.findAllByCategory(accountId, categoryId);
-        var webPages = webPageRepository.findAllByCategory(accountId, categoryId);
+        var webPage = bookmarkRepository.findById(webPageId)
+                .orElseThrow(() -> BookmarkException.notFound(accountId, webPageId));
 
-        return SpecificArchiveResponse.from(maps, webPages);
+        return BookmarkDto.from(webPage);
     }
 
-    public WebPageDto getWebPage(String accountIdStr, Long webPageIdStr) {
+    public ArchiveCountDto getArchiveCount(String accountIdStr) {
         var accountId = new Account.AccountId(accountIdStr);
-        var webPageId = new WebPage.WebPageId(webPageIdStr);
+        var archiveCounter = archiveCounterRepository.findByAccountId(accountId)
+                .or(() -> Optional.of(archiveCounterRepository.save(DefaultArchiveCounter.create(accountId))))
+                .orElseThrow(() -> ArchiveCounterException.notFound(accountId));
 
-        var webPage = webPageRepository.findById(webPageId)
-                .orElseThrow(() -> WebPageException.notFound(accountId, webPageId));
-
-        return WebPageDto.from(webPage);
+        return ArchiveCountDto.of(accountId,
+                archiveCounter.getCurrentCount(ArchiveCounter.CountType.FOLDER),
+                archiveCounter.getCurrentCount(ArchiveCounter.CountType.BOOKMARK));
     }
 }

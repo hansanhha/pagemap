@@ -1,6 +1,6 @@
 package com.bintage.pagemap.auth.infrastructure.security;
 
-import com.bintage.pagemap.auth.infrastructure.external.oauth2.client.OAuth2UserQueryService;
+import com.bintage.pagemap.auth.infrastructure.security.oauth2.client.SimpleOAuth2UserService;
 import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -29,7 +29,7 @@ public class SecurityConfig {
     private final List<RequestMatcher> privateApis = new ArrayList<>();
     private final List<IpAddressMatcher> permittedAddresses = new ArrayList<>();
 
-    private final OAuth2UserQueryService oauth2UserService;
+    private final SimpleOAuth2UserService oauth2UserServiceSimple;
     private final OAuth2AuthenticationSuccessHandler authenticationSuccessHandler;
     private final SimpleOAuth2AuthorizationRequestRepository simpleOAuth2AuthorizationRequestRepository;
     private final OAuth2LogoutHandler logoutHandler;
@@ -40,7 +40,6 @@ public class SecurityConfig {
         permitApis.add(new AntPathRequestMatcher( "/api/login/oauth2/code/kakao"));
         permitApis.add(new AntPathRequestMatcher("/api/pagemap/global/status"));
         privateApis.add(new AntPathRequestMatcher("/api/token/refresh"));
-        permittedAddresses.add(new IpAddressMatcher("127.0.0.1"));
     }
 
     @Bean
@@ -103,7 +102,7 @@ public class SecurityConfig {
                 .addFilterBefore(simpleJwtBearerAuthenticationFilter, OAuth2AuthorizationRequestRedirectFilter.class)
                 .oauth2Login(loginConfigurer -> loginConfigurer
                         .loginProcessingUrl("/api/login/oauth2/code/*")
-                        .userInfoEndpoint(config -> config.userService(oauth2UserService))
+                        .userInfoEndpoint(config -> config.userService(oauth2UserServiceSimple))
                         .successHandler(authenticationSuccessHandler)
                         .authorizationEndpoint(config -> {
                             config.baseUri("/api/oauth2/authorization");

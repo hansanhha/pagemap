@@ -17,20 +17,24 @@ public abstract class ArchiveCounter implements AggregateRoot<ArchiveCounter, Ar
     protected int storedWebPageCount;
 
     public void increment(CountType type) {
-        switch (type) {
-            case MAP -> {
+        increment(type, 1);
+    }
+
+    public void increment(CountType countType, int size) {
+        switch (countType) {
+            case FOLDER -> {
                 int maximumMapCount = getMaximumMapCount();
-                if (storedMapCount + 1 > maximumMapCount) {
-                    throw ArchiveCounterException.exceedStoreCount(CountType.MAP, accountId, maximumMapCount);
+                if (storedMapCount + size > maximumMapCount) {
+                    throw ArchiveCounterException.exceedStoreCount(CountType.FOLDER, accountId, maximumMapCount);
                 }
-                storedMapCount++;
+                storedMapCount += size;
             }
-            case WEB_PAGE -> {
+            case BOOKMARK -> {
                 int maximumWebPageCount = getMaximumWebPageCount();
-                if (storedWebPageCount + 1 > maximumWebPageCount) {
-                    throw ArchiveCounterException.exceedStoreCount(CountType.WEB_PAGE, accountId, maximumWebPageCount);
+                if (storedWebPageCount + size > maximumWebPageCount) {
+                    throw ArchiveCounterException.exceedStoreCount(CountType.BOOKMARK, accountId, maximumWebPageCount);
                 }
-                storedWebPageCount++;
+                storedWebPageCount += size;
             }
             default -> {}
         }
@@ -38,13 +42,13 @@ public abstract class ArchiveCounter implements AggregateRoot<ArchiveCounter, Ar
 
     public void decrement(CountType type) {
         switch (type) {
-            case MAP -> {
+            case FOLDER -> {
                 if (storedMapCount - 1 < 0) {
                     storedMapCount = 0;
                 }
                 storedMapCount--;
             }
-            case WEB_PAGE -> {
+            case BOOKMARK -> {
                 if (storedWebPageCount - 1 < 0) {
                     storedMapCount = 0;
                 }
@@ -56,15 +60,15 @@ public abstract class ArchiveCounter implements AggregateRoot<ArchiveCounter, Ar
 
     public int getCurrentCount(CountType type) {
         return switch (type) {
-            case MAP -> storedMapCount;
-            case WEB_PAGE -> storedWebPageCount;
+            case FOLDER -> storedMapCount;
+            case BOOKMARK -> storedWebPageCount;
         };
     }
 
     public int getMaximumCount(CountType type) {
         return switch (type) {
-            case MAP -> getMaximumMapCount();
-            case WEB_PAGE -> getMaximumWebPageCount();
+            case FOLDER -> getMaximumMapCount();
+            case BOOKMARK -> getMaximumWebPageCount();
         };
     }
 
@@ -74,7 +78,7 @@ public abstract class ArchiveCounter implements AggregateRoot<ArchiveCounter, Ar
     public record ArchiveCounterId(Long value) implements Identifier {}
 
     public enum CountType {
-        MAP,
-        WEB_PAGE
+        FOLDER,
+        BOOKMARK
     }
 }

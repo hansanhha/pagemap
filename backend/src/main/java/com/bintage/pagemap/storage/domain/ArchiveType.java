@@ -7,9 +7,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ArchiveType {
     TRASH("trash"),
-    CATEGORY("category"),
-    MAP("map"),
-    WEB_PAGE("webpage"),
+    FOLDER("folder"),
+    BOOKMARK("bookmark"),
     EXPORT("export"),
     IMPORT("import"),
     ARCHIVE_COUNTER("archive counter"),

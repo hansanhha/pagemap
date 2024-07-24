@@ -1,17 +1,17 @@
 package com.bintage.pagemap.auth.application;
 
 import com.bintage.pagemap.auth.domain.account.Account;
-import com.bintage.pagemap.auth.domain.account.Accounts;
-import com.bintage.pagemap.auth.domain.exception.AccountDomainModelException;
-import com.bintage.pagemap.auth.domain.exception.AccountItemNotFoundException;
+import com.bintage.pagemap.auth.domain.account.AccountException;
+import com.bintage.pagemap.auth.domain.account.AccountRepository;
 import com.bintage.pagemap.auth.domain.token.RefreshTokenRepository;
+import com.bintage.pagemap.storage.application.ArchiveUse;
+import com.bintage.pagemap.storage.application.dto.ArchiveCountDto;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.hexagonal.PrimaryPort;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import java.time.Instant;
 
 @PrimaryPort
 @Service
@@ -19,62 +19,38 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AccountInfo {
 
-    private final Accounts accounts;
-    private final RefreshTokenRepository refreshTokenRepository;
+    private final AccountRepository accountRepository;
+    private final ArchiveUse archiveUse;
 
     public AccountInfoResponse getAccountInfo(String accountIdStr) {
         var accountId = new Account.AccountId(accountIdStr);
-        Account account = accounts.findById(accountId)
-                .orElseThrow(() -> AccountItemNotFoundException.ofAccount(accountId));
-        return AccountInfoResponse.of(account.getNickname());
-    }
+        var account = accountRepository.findById(accountId).orElseThrow(() -> AccountException.notFound(accountId));
 
-//    public AccountDeviceResponse getAccountDevice(String accountId, String tokenIdStr) {
-//        var accountUserAgents = userAgents.findAllByAccountId(new Account.AccountId(accountId));
-//        var tokenId = new RefreshToken.RefreshTokenId(UUID.fromString(tokenIdStr));
-//        var token = refreshTokenRepository.findById(tokenId)
-//                .orElseThrow(() -> AccountItemNotFoundException.ofToken(tokenId));
-//
-//        var accountDevices = accountUserAgents.stream()
-//                .map(userAgent -> {
-//                    LocalDateTime lastSignedOut = null;
-//                    if (userAgent.getLastSignedOut() != null) {
-//                        lastSignedOut = LocalDateTime.from(userAgent.getLastSignedOut());
-//                    }
-//                    return new AccountDevice(
-//                            userAgent.getId().value().toString(),
-//                            userAgent.getDevice().name(),
-//                            userAgent.getApplication().name(),
-//                            userAgent.isSignedIn(),
-//                            LocalDateTime.ofInstant(userAgent.getLastSignedIn(), ZoneId.systemDefault()),
-//                            lastSignedOut);
-//                })
-//                .toList();
-//
-//        return new AccountDeviceResponse(accountDevices, token.getUserAgentId().value().toString());
-//    }
+        var now = Instant.now();
+
+        var isUpdatableNickname = now.isAfter(
+                account.getLastNicknameModifiedAt().plusSeconds(Account.NICKNAME_UPDATE_CONSTRAINT_INTERVAL));
+
+        var archiveCount = archiveUse.getArchiveCount(accountIdStr);
+
+        return AccountInfoResponse.of(account.getNickname(), isUpdatableNickname, archiveCount.mapCount(), archiveCount.webPageCount());
+    }
 
     public String changeNickname(String accountIdStr, String nickname) {
         var accountId = new Account.AccountId(accountIdStr);
-        Account account = accounts.findById(accountId)
-                .orElseThrow(() -> AccountItemNotFoundException.ofAccount(accountId));
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> AccountException.notFound(accountId));
 
-        accounts.findByNickname(nickname).ifPresent(a -> {
-            throw new AccountDomainModelException.DuplicatedAccountNickname(accountId, nickname);
-        });
+        accountRepository.findByNickname(nickname).ifPresent(a -> {throw AccountException.duplicatedNickname(accountId, nickname);});
 
         account.updateNickname(nickname);
-        accounts.update(account);
+        accountRepository.update(account);
         return account.getNickname();
     }
 
-    public record AccountDeviceResponse(List<AccountDevice> devices, String currentDeviceId) { }
-
-    public record AccountDevice(String id, String name, String application, boolean active, LocalDateTime lastSignedDate, LocalDateTime lastSignOutDate) {}
-
-    public record AccountInfoResponse(String nickname) {
-        public static AccountInfoResponse of(String nickname) {
-            return new AccountInfoResponse(nickname);
+    public record AccountInfoResponse(String nickname, boolean isUpdatableNickname, int mapCount, int webPageCount) {
+        public static AccountInfoResponse of(String nickname, boolean isUpdatableNickname, int mapCount, int webPageCount) {
+            return new AccountInfoResponse(nickname, isUpdatableNickname, mapCount, webPageCount);
         }
     }
 }

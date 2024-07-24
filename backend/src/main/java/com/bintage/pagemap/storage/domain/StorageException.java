@@ -28,7 +28,7 @@ public abstract class StorageException extends RuntimeException {
 
     protected StorageException(Account.AccountId accountId, ArchiveType archiveType, Long archiveId, Instant occurAt, StorageExceptionCode storageExceptionCode, Map<String, Object> properties) {
         super("raised StorageException [accountId : ".concat(accountId.value())
-                .concat("] [detail: ").concat(storageExceptionCode.getDetailCode()).concat(", ").concat(storageExceptionCode.getTitle())
+                .concat("] [detail: ").concat(storageExceptionCode.getDetailCode()).concat(", ").concat(storageExceptionCode.getMessage())
                 .concat("] [archiveType: ").concat(archiveType.getName())
                 .concat( "] [archiveId: ").concat(String.valueOf(archiveId))
                 .concat("] [time:").concat(occurAt.toString()).concat("]"));

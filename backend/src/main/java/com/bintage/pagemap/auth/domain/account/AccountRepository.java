@@ -7,7 +7,7 @@ import java.util.Optional;
 
 @Repository
 @SecondaryPort
-public interface Accounts {
+public interface AccountRepository {
 
     Optional<Account> findById(Account.AccountId id);
 

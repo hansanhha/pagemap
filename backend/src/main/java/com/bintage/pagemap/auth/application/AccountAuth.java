@@ -20,7 +20,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AccountAuth {
 
-    private final Accounts accounts;
+    private final AccountRepository accountRepository;
     private final OAuth2Service oAuth2Service;
     private final SignEventPublisher signEventPublisher;
     private final RefreshTokenRepository refreshTokenRepository;
@@ -28,7 +28,7 @@ public class AccountAuth {
 
     public SignInResponse signIn(String accountIdStr) {
         var accountId = new Account.AccountId(accountIdStr);
-        var account = accounts.findById(accountId).orElseThrow(() -> AccountException.notFound(accountId));
+        var account = accountRepository.findById(accountId).orElseThrow(() -> AccountException.notFound(accountId));
 
         var accessToken = tokenService.generateAccessToken(accountId, account.getRole().name());
         var refreshToken = tokenService.generateRefreshToken(accountId, account.getRole().name());
@@ -45,7 +45,7 @@ public class AccountAuth {
         var accessToken = tokenService.decodeAccessToken(accessTokenValue);
         Account.AccountId accountId = accessToken.getAccountId();
 
-        Account account = accounts.findById(accountId).orElseThrow(() -> AccountException.notFound(accountId));
+        Account account = accountRepository.findById(accountId).orElseThrow(() -> AccountException.notFound(accountId));
         oAuth2Service.signOut(account.getId(), account.getOAuth2Provider(), account.getOAuth2MemberIdentifier());
         refreshTokenRepository.deleteAllByAccountId(accountId);
 
@@ -55,9 +55,9 @@ public class AccountAuth {
     public void signUpIfFirst(String accountIdStr, String oauth2Provider, String oauth2MemberNumber) {
         Account.AccountId accountId = new Account.AccountId(accountIdStr);
         Instant now = Instant.now();
-        accounts.findById(accountId).ifPresentOrElse(
+        accountRepository.findById(accountId).ifPresentOrElse(
                 account -> {},
-                () -> accounts.save(Account.builder()
+                () -> accountRepository.save(Account.builder()
                         .id(new Account.AccountId(accountIdStr))
                         .oAuth2MemberIdentifier(new Account.OAuth2MemberIdentifier(oauth2MemberNumber))
                         .oAuth2Provider(Account.OAuth2Provider.valueOf(oauth2Provider.toUpperCase()))
@@ -82,12 +82,12 @@ public class AccountAuth {
 
     public void deleteAccount(String accountIdStr) {
         var accountId = new Account.AccountId(accountIdStr);
-        var account = accounts.findById(accountId)
+        var account = accountRepository.findById(accountId)
                 .orElseThrow(() -> AccountException.notFound(accountId));
 
         oAuth2Service.unlinkForAccount(account.getId(), account.getOAuth2Provider(), account.getOAuth2MemberIdentifier());
         refreshTokenRepository.deleteAllByAccountId(accountId);
-        accounts.delete(account);
+        accountRepository.delete(account);
 
         signEventPublisher.deletedAccount(accountId, Instant.now());
     }

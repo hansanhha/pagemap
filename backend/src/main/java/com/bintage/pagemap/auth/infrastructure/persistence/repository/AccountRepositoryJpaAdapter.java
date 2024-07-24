@@ -1,7 +1,7 @@
 package com.bintage.pagemap.auth.infrastructure.persistence.repository;
 
 import com.bintage.pagemap.auth.domain.account.Account;
-import com.bintage.pagemap.auth.domain.account.Accounts;
+import com.bintage.pagemap.auth.domain.account.AccountRepository;
 import com.bintage.pagemap.auth.infrastructure.persistence.entity.AccountEntity;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,7 @@ import java.util.Optional;
 @Component
 @Transactional
 @RequiredArgsConstructor
-public class AccountsJpaAdapter implements Accounts {
+public class AccountRepositoryJpaAdapter implements AccountRepository {
 
     private final AccountEntityRepository accountEntityRepository;
 

@@ -1,4 +1,4 @@
-package com.bintage.pagemap.auth.infrastructure.external.oauth2.client;
+package com.bintage.pagemap.auth.infrastructure.security.oauth2.client;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

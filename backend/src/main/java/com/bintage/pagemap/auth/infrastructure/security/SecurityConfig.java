@@ -1,6 +1,6 @@
 package com.bintage.pagemap.auth.infrastructure.security;
 
-import com.bintage.pagemap.auth.infrastructure.external.oauth2.client.SimpleOAuth2UserService;
+import com.bintage.pagemap.auth.infrastructure.security.oauth2.client.SimpleOAuth2UserService;
 import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;

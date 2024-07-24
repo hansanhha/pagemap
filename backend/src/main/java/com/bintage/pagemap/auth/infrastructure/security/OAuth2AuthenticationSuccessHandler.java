@@ -2,7 +2,7 @@ package com.bintage.pagemap.auth.infrastructure.security;
 
 import com.bintage.pagemap.auth.application.AccountAuth;
 import com.bintage.pagemap.auth.application.SignInResponse;
-import com.bintage.pagemap.auth.infrastructure.external.oauth2.client.OAuth2AuthenticatedUser;
+import com.bintage.pagemap.auth.infrastructure.security.oauth2.client.OAuth2AuthenticatedUser;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

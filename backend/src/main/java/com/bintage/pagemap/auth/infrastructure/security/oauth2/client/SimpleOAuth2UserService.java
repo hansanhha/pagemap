@@ -1,6 +1,6 @@
-package com.bintage.pagemap.auth.infrastructure.external.oauth2.client;
+package com.bintage.pagemap.auth.infrastructure.security.oauth2.client;
 
-import com.bintage.pagemap.auth.infrastructure.external.oauth2.client.kakao.KaKaoOAuth2TokenAttributes;
+import com.bintage.pagemap.auth.infrastructure.security.oauth2.client.kakao.KaKaoOAuth2TokenAttributes;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;

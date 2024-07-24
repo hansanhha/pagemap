@@ -1,8 +1,8 @@
-package com.bintage.pagemap.auth.infrastructure.external.oauth2.client.kakao;
+package com.bintage.pagemap.auth.infrastructure.security.oauth2.client.kakao;
 
 import com.bintage.pagemap.auth.domain.account.Account;
 import com.bintage.pagemap.auth.domain.account.OAuth2Service;
-import com.bintage.pagemap.auth.infrastructure.external.oauth2.client.OAuth2Provider;
+import com.bintage.pagemap.auth.infrastructure.security.oauth2.client.OAuth2Provider;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
 import org.springframework.http.MediaType;

@@ -1,4 +1,4 @@
-package com.bintage.pagemap.auth.infrastructure.external.oauth2.client;
+package com.bintage.pagemap.auth.infrastructure.security.oauth2.client;
 
 import java.util.Collection;
 import java.util.Map;

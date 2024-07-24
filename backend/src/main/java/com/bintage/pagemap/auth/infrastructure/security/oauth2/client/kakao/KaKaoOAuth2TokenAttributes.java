@@ -1,7 +1,7 @@
-package com.bintage.pagemap.auth.infrastructure.external.oauth2.client.kakao;
+package com.bintage.pagemap.auth.infrastructure.security.oauth2.client.kakao;
 
-import com.bintage.pagemap.auth.infrastructure.external.oauth2.client.OAuth2Provider;
-import com.bintage.pagemap.auth.infrastructure.external.oauth2.client.OAuth2TokenAttributes;
+import com.bintage.pagemap.auth.infrastructure.security.oauth2.client.OAuth2Provider;
+import com.bintage.pagemap.auth.infrastructure.security.oauth2.client.OAuth2TokenAttributes;
 import lombok.Getter;
 import org.springframework.util.Assert;
 

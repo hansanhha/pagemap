@@ -8,11 +8,9 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
 
 @Component
-public class OAuth2UserQueryService extends DefaultOAuth2UserService {
+public class SimpleOAuth2UserService extends DefaultOAuth2UserService {
 
     private static final String KAKAO = "kakao";
-    private static final String NAVER = "naver";
-    private static final String GOOGLE = "google";
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {

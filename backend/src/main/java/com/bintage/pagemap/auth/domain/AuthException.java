@@ -22,7 +22,7 @@ public abstract class AuthException extends RuntimeException {
 
     public AuthException(Account.AccountId accountId, AuthExceptionCode authExceptionCode, Map<String, Object> properties, Instant occurAt) {
         super("raised AuthException [accountId : ".concat(accountId.value())
-                .concat("] [detail: ").concat(authExceptionCode.getDetailCode()).concat(", ").concat(authExceptionCode.getTitle())
+                .concat("] [detail: ").concat(authExceptionCode.getDetailCode()).concat(", ").concat(authExceptionCode.getMessage())
                 .concat("] [time:").concat(occurAt.toString()).concat("]")
                 .concat(properties == null ? "" : "[properties: "
                         .concat(properties.entrySet().stream()

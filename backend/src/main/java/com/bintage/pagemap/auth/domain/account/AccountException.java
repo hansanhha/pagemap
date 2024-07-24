@@ -27,7 +27,7 @@ public class AccountException extends AuthException {
 
     @Override
     public String getProblemDetailTitle() {
-        return authExceptionCode.getTitle();
+        return authExceptionCode.getMessage();
     }
 
     @Override

@@ -28,7 +28,7 @@ public class TokenException extends AuthException {
 
     @Override
     public String getProblemDetailTitle() {
-        return authExceptionCode.getTitle();
+        return authExceptionCode.getMessage();
     }
 
     @Override

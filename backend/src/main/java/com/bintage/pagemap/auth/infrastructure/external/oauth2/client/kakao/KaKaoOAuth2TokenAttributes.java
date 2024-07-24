@@ -1,5 +1,6 @@
 package com.bintage.pagemap.auth.infrastructure.external.oauth2.client.kakao;
 
+import com.bintage.pagemap.auth.infrastructure.external.oauth2.client.OAuth2Provider;
 import com.bintage.pagemap.auth.infrastructure.external.oauth2.client.OAuth2TokenAttributes;
 import lombok.Getter;
 import org.springframework.util.Assert;
@@ -11,7 +12,7 @@ import java.util.Set;
 @Getter
 public class KaKaoOAuth2TokenAttributes implements OAuth2TokenAttributes {
 
-    private static final String KAKAO = "kakao";
+    private final OAuth2Provider provider = OAuth2Provider.KAKAO;
     private final Map<String, Object> attributes;
     private final Map<String, Object> kakaoAccountAttributes;
 
@@ -29,7 +30,7 @@ public class KaKaoOAuth2TokenAttributes implements OAuth2TokenAttributes {
 
     @Override
     public String getOAuth2ProviderName() {
-        return KAKAO;
+        return provider.getName();
     }
 
     @Override

@@ -34,7 +34,7 @@ public class SimpleJwtBearerAuthenticationFilter extends OncePerRequestFilter {
 
         if (accessToken.isEmpty()) {
             securityErrorResponseSender.sendError(request, response, AuthExceptionCode.UNAUTHORIZED.getStatus(),
-                    "empty token");
+                    AuthExceptionCode.UNAUTHORIZED.getMessage());
             return;
         }
 

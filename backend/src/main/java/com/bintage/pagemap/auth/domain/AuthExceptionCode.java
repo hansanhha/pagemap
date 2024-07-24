@@ -19,5 +19,5 @@ public enum AuthExceptionCode {
 
     private final int status;
     private final String detailCode;
-    private final String title;
+    private final String message;
 }

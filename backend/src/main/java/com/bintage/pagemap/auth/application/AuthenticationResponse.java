@@ -28,9 +28,7 @@ public class AuthenticationResponse {
     @RequiredArgsConstructor
     public enum FailureCause {
         INVALID("Invalid Token"),
-        EXPIRED("Expired Token"),
-        DIFFERENT_USER_AGENT("Different User Agent"),
-        TEMPERED("Tempered Token"),;
+        EXPIRED("Expired Token");
 
         private final String message;
     }

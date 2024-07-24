@@ -2,6 +2,7 @@ package com.bintage.pagemap.auth.infrastructure.external.oauth2.client.kakao;
 
 import com.bintage.pagemap.auth.domain.account.Account;
 import com.bintage.pagemap.auth.domain.account.OAuth2Service;
+import com.bintage.pagemap.auth.infrastructure.external.oauth2.client.OAuth2Provider;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
 import org.springframework.http.MediaType;
@@ -18,7 +19,6 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class KakaoOAuth2Service implements OAuth2Service {
 
-    private static final String KAKAO_REGISTRATION_ID = "kakao";
     private final OAuth2AuthorizedClientService oAuth2AuthorizedClientService;
 
     @Override
@@ -74,7 +74,7 @@ public class KakaoOAuth2Service implements OAuth2Service {
     }
 
     private OAuth2AuthorizedClient getoAuth2AuthorizedClient(Account.AccountId accountId) {
-        return oAuth2AuthorizedClientService.loadAuthorizedClient(KAKAO_REGISTRATION_ID, accountId.value());
+        return oAuth2AuthorizedClientService.loadAuthorizedClient(OAuth2Provider.KAKAO.getName(), accountId.value());
     }
 
     private record KakaoSuccessReceive(String id) {}

@@ -27,7 +27,7 @@ public class OAuth2LogoutHandler implements LogoutHandler {
                         () -> {
                             try {
                                 securityErrorResponseSender.sendError(request, response,
-                                        AuthExceptionCode.UNAUTHORIZED.getStatus(), "Invalid token");
+                                        AuthExceptionCode.UNAUTHORIZED.getStatus(), AuthExceptionCode.UNAUTHORIZED.getMessage());
                             } catch (IOException e) {
                                 throw new RuntimeException(e);
                             }

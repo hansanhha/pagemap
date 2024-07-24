@@ -22,15 +22,16 @@ const TrashPage = () => {
         })
             .then(res => res.json())
             .then(data => {
+                console.log(data);
                 let deletedFolders = [];
                 let deletedBookmarks = [];
 
-                if (data.deletedMaps && data.deletedMaps.length > 0) {
-                    deletedFolders = data.deletedMaps.map(map => new FolderDto(map));
+                if (data.folders && data.folders.length > 0) {
+                    deletedFolders = data.folders.map(folder => new FolderDto(folder));
                 }
 
-                if (data.deletedWebPages && data.deletedWebPages.length > 0) {
-                    deletedBookmarks = data.deletedWebPages.map(webPage => new BookmarkDto(webPage));
+                if (data.bookmarks && data.bookmarks.length > 0) {
+                    deletedBookmarks = data.bookmarks.map(bookmark => new BookmarkDto(bookmark));
                 }
 
                 setDeletedArchives([...deletedFolders, ...deletedBookmarks]);
@@ -67,14 +68,14 @@ const TrashPage = () => {
 
         let type = null;
         if (FolderDto.isFolder(archive)) {
-            type = "maps";
+            type = "folders";
         } else if (BookmarkDto.isBookmark(archive)) {
-            type = "webPages";
+            type = "bookmarks";
         } else if (ShortcutDto.isShortcut(archive)) {
             type = "shortcuts";
         }
 
-        fetch(process.env.REACT_APP_SERVER + `/storage/trash/${type}/${archive.id}`, {
+        fetch(process.env.REACT_APP_SERVER + `/storage/${type}/${archive.id}/restore`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/problem+json",

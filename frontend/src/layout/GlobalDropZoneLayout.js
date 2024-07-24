@@ -78,14 +78,15 @@ const GlobalDropZoneLayout = ({children}) => {
         }
 
         if (e.dataTransfer.types.includes("text/plain")) {
-            fetch(process.env.REACT_APP_SERVER + "/storage/webpages/auto", {
+            fetch(process.env.REACT_APP_SERVER + "/storage/bookmarks/auto", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/problem+json",
                     "Authorization": "Bearer " + accessToken,
                 },
                 body: JSON.stringify({
-                    uris: [e.dataTransfer.getData("text/plain")],
+                    parentFolderId: 0,
+                    uri: e.dataTransfer.getData("text/plain"),
                 })
             })
                 .then(response => response.json())

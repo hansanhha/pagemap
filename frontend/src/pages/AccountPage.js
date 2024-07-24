@@ -10,27 +10,14 @@ import {useLogin} from "../hooks/useLogin";
 import DeleteAccountModal from "../components/account/DeleteAccountModal";
 
 const AccountPage = () => {
-    const {accessToken} = useLogin();
+    const {accessToken, logout} = useLogin();
+    const [isUpdatable, setIsUpdatable] = useState(false);
+    const [nickname, setNickname] = useState("");
     const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
     const [archiveCount, setArchiveCount] = useState({bookmark: null, folder: null});
 
-    const handleDeleteAccount = (cause, feedback) => {
-        fetch(`${process.env.REACT_APP_SERVER}/account/me`, {
-            method: "DELETE",
-            headers: {
-                "Content-Type": "application/problem+json",
-                "Authorization": `Bearer ${accessToken}`
-            }
-        })
-            .then(res => res.json())
-            .then(data => {
-                deleteAccountModalClose();
-            })
-            .catch(err => console.log("failure fetching delete account: ", err));
-    }
-
     useEffect(() => {
-        fetch(`${process.env.REACT_APP_SERVER}/archive/count`, {
+        fetch(`${process.env.REACT_APP_SERVER}/account/me`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/problem+json",
@@ -39,10 +26,48 @@ const AccountPage = () => {
         })
             .then(res => res.json())
             .then(data => {
-                setArchiveCount({bookmark: data.bookmark, folder: data.folder});
+                if (data.isUpdatableNickname) {
+                    setIsUpdatable(data.isUpdatableNickname);
+                }
+
+                if (data.nickname) {
+                    setNickname(data.nickname);
+                }
+                if (data.mapCount && data.webPageCount) {
+                    setArchiveCount({bookmark: data.webPageCount, folder: data.mapCount});
+                }
             })
             .catch(err => console.log("failure fetching archive count: ", err));
     }, [accessToken]);
+
+    const handleDeleteAccount = (cause, feedback) => {
+        fetch(`${process.env.REACT_APP_SERVER}/account/me`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/problem+json",
+                "Authorization": `Bearer ${accessToken}`
+            },
+            body: JSON.stringify({
+                cause: cause,
+                feedback: feedback
+            })
+        })
+            .then(res => res.json())
+            .then(data => {
+                deleteAccountModalClose();
+                logout();
+            })
+            .catch(err => console.log("failure fetching delete account: ", err));
+
+    }
+
+    const handleUpdatable = () => {
+        setIsUpdatable(false);
+    }
+
+    const handleUpdateNickname = (updateNickname) => {
+        setNickname(updateNickname);
+    }
 
     const deleteAccountModalOpen = () => {
         setIsDeleteAccountModalOpen(true);
@@ -57,9 +82,10 @@ const AccountPage = () => {
             <UtilityHeader pageName={"계정"}/>
             <StyledAccountPageWrapper>
                 <StyledAccountPageContainer>
-                    <NicknameSection/>
+                    <NicknameSection isUpdatable={isUpdatable} onUpdatable={handleUpdatable}
+                                     nickname={nickname} onUpdateNickname={handleUpdateNickname}/>
                     <BookmarkSection count={archiveCount.bookmark}/>
-                    <FolderSection coonut={archiveCount.folder}/>
+                    <FolderSection count={archiveCount.folder}/>
                 </StyledAccountPageContainer>
                 <AccountUtilSection onDeleteAccountModal={deleteAccountModalOpen}/>
             </StyledAccountPageWrapper>

@@ -1,33 +1,17 @@
-import {useLogin} from "../../hooks/useLogin";
 import styled from "styled-components";
 import AccountInputContainer from "./AccountInputContainer";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import Button from "../common/Button";
+import {useLogin} from "../../hooks/useLogin";
 
 const isValidNickname = (nickname) => {
     const nicknameRegExp = /^[a-zA-Z0-9ㄱ-ㅎ가-힣]{1,20}$/;
     return nicknameRegExp.test(nickname);
 }
 
-const NicknameSection = () => {
+const NicknameSection = ({isUpdatable, onIsUpdatable, nickname, onUpdateNickname}) => {
     const {accessToken} = useLogin();
-    const [nickname, setNickname] = useState(null);
-    const [isUpdatable, setIsUpdatable] = useState(true);
     const [isValidUpdateNickname, setIsValidUpdateNickname] = useState(true);
-
-    useEffect(() => {
-        fetch(`${process.env.REACT_APP_SERVER}/account/me`, {
-            headers: {
-                "Content-Type": "application/problem+json",
-                "Authorization": `Bearer ${accessToken}`
-            }
-        })
-            .then(res => res.json())
-            .then(data => {
-                setNickname(data.nickname);
-            })
-            .catch(err => console.log("failure fetching nickname: ", err));
-    }, [accessToken]);
 
     const handleUpdateNickname = () => {
         if (!isValidNickname(nickname)) {
@@ -47,20 +31,20 @@ const NicknameSection = () => {
         })
             .then(res => res.json())
             .then(data => {
-                setIsUpdatable(!isUpdatable);
                 setIsValidUpdateNickname(true);
+                onUpdateNickname(nickname);
+                onIsUpdatable();
             })
             .catch(err => console.log("failure fetching update nickname: ", err));
     }
 
     const handleUpdateForm = (nickname) => {
-        setNickname(nickname);
+        onUpdateNickname(nickname);
     }
 
     return (
         <StyledNicknameSection>
             {
-            nickname &&
             <AccountInputContainer title={"닉네임"}
                                    value={nickname}
                                    readOnly={!isUpdatable}

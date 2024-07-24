@@ -8,7 +8,7 @@ import ArchiveContextMenu from "./ArchiveContextMenu";
 import {useState} from "react";
 
 const Shortcut = ({shortcut, onUpdateOrder}) => {
-    const [title, setTitle] = useState(shortcut.title);
+    const [name, setName] = useState(shortcut.name);
 
     return (
         <>
@@ -16,11 +16,11 @@ const Shortcut = ({shortcut, onUpdateOrder}) => {
                                order={shortcut.order}
                                onDropped={onUpdateOrder}/>
             <ShortcutDrag shortcut={shortcut}>
-                <ArchiveContextMenu archive={shortcut} setTitle={setTitle}>
-                    <HyperLink to={shortcut.url}>
+                <ArchiveContextMenu archive={shortcut} setTitle={setName}>
+                    <HyperLink to={shortcut.uri}>
                         <StyledShortcut>
                             <Logo img={shortcut.img}/>
-                            <Title title={title}/>
+                            <Title title={name}/>
                         </StyledShortcut>
                     </HyperLink>
                 </ArchiveContextMenu>

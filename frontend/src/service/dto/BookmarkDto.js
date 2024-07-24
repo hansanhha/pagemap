@@ -1,20 +1,20 @@
 export default class BookmarkDto {
     id;
     logo;
-    title;
-    url;
+    name;
+    uri;
     parentFolderId;
     order;
-    hierarchyParentIds;
+    hierarchyParentFolderIds;
 
     constructor(Bookmark) {
         this.id = Bookmark.id;
         this.logo = null;
-        this.title = Bookmark.title;
-        this.url = Bookmark.url;
-        this.parentFolderId = Bookmark.parentMapId;
+        this.name = Bookmark.name;
+        this.uri = Bookmark.uri;
+        this.parentFolderId = Bookmark.parentFolderId;
         this.order = 0;
-        this.hierarchyParentIds = [Bookmark.parentMapId];
+        this.hierarchyParentFolderIds = [Bookmark.parentFolderId];
     }
 
     static isBookmark(bookmark) {
@@ -22,6 +22,6 @@ export default class BookmarkDto {
     }
 
     isDescendant(bookmark) {
-        return this.hierarchyParentIds.includes(bookmark.id);
+        return this.hierarchyParentFolderIds.includes(bookmark.id);
     }
 }

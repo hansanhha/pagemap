@@ -42,19 +42,19 @@ const Trash = () => {
         let deletedType = null;
 
         if (isValidDataTransfer(e)) {
-            if (e.dataTransfer.types.includes(shortcutDataTransferName)) {
-                trashApi += '/webpages/' + JSON.parse(e.dataTransfer.getData(shortcutDataTransferName)).id;
-                deletedType = deletedShortcut;
+            if (e.dataTransfer.types.includes(folderDataTransferName)) {
+                trashApi += '/folders/' + JSON.parse(e.dataTransfer.getData(folderDataTransferName)).id;
+                deletedType = deletedArchive;
             }
 
             if (e.dataTransfer.types.includes(bookmarkDataTransferName)) {
-                trashApi += '/webpages/' + JSON.parse(e.dataTransfer.getData(bookmarkDataTransferName)).id;
+                trashApi += '/bookmarks/' + JSON.parse(e.dataTransfer.getData(bookmarkDataTransferName)).id;
                 deletedType = deletedArchive;
             }
 
-            if (e.dataTransfer.types.includes(folderDataTransferName)) {
-                trashApi += '/maps/' + JSON.parse(e.dataTransfer.getData(folderDataTransferName)).id;
-                deletedType = deletedArchive;
+            if (e.dataTransfer.types.includes(shortcutDataTransferName)) {
+                trashApi += '/shortcuts/' + JSON.parse(e.dataTransfer.getData(shortcutDataTransferName)).id;
+                deletedType = deletedShortcut;
             }
 
             fetch(trashApi, {

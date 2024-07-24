@@ -14,7 +14,7 @@ import java.time.Instant;
 @Builder
 public class Account{
 
-    private static final long NICKNAME_MODIFY_INTERVAL = 30 * 24 * 60 * 60;
+    public static final long NICKNAME_UPDATE_CONSTRAINT_INTERVAL = 60 * 60 * 24 * 7;
 
     private final AccountId id;
     private String nickname;
@@ -42,7 +42,7 @@ public class Account{
         Instant now = Instant.now();
 
         if (lastNicknameModifiedAt != null) {
-            Instant allowedUpdateNicknameDate = lastNicknameModifiedAt.plusSeconds(NICKNAME_MODIFY_INTERVAL);
+            Instant allowedUpdateNicknameDate = lastNicknameModifiedAt.plusSeconds(NICKNAME_UPDATE_CONSTRAINT_INTERVAL);
             if (now.isBefore(allowedUpdateNicknameDate)) {
                 throw AccountException.cantUpdateNickname(id, allowedUpdateNicknameDate);
             }

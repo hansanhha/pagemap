@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.hexagonal.PrimaryPort;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+
 @PrimaryPort
 @Service
 @Transactional
@@ -22,10 +24,16 @@ public class AccountInfo {
 
     public AccountInfoResponse getAccountInfo(String accountIdStr) {
         var accountId = new Account.AccountId(accountIdStr);
-        Account account = accountRepository.findById(accountId).orElseThrow(() -> AccountException.notFound(accountId));
+        var account = accountRepository.findById(accountId).orElseThrow(() -> AccountException.notFound(accountId));
+
+        var now = Instant.now();
+
+        var isUpdatableNickname = now.isAfter(
+                account.getLastNicknameModifiedAt().plusSeconds(Account.NICKNAME_UPDATE_CONSTRAINT_INTERVAL));
+
         var archiveCount = archiveUse.getArchiveCount(accountIdStr);
 
-        return AccountInfoResponse.of(account.getNickname(), archiveCount.mapCount(), archiveCount.webPageCount());
+        return AccountInfoResponse.of(account.getNickname(), isUpdatableNickname, archiveCount.mapCount(), archiveCount.webPageCount());
     }
 
     public String changeNickname(String accountIdStr, String nickname) {
@@ -40,9 +48,9 @@ public class AccountInfo {
         return account.getNickname();
     }
 
-    public record AccountInfoResponse(String nickname, int mapCount, int webPageCount) {
-        public static AccountInfoResponse of(String nickname, int mapCount, int webPageCount) {
-            return new AccountInfoResponse(nickname, mapCount, webPageCount);
+    public record AccountInfoResponse(String nickname, boolean isUpdatableNickname, int mapCount, int webPageCount) {
+        public static AccountInfoResponse of(String nickname, boolean isUpdatableNickname, int mapCount, int webPageCount) {
+            return new AccountInfoResponse(nickname, isUpdatableNickname, mapCount, webPageCount);
         }
     }
 }

@@ -3,6 +3,7 @@ package com.bintage.pagemap.auth.infrastructure.web.restful;
 import com.bintage.pagemap.auth.application.AccountAuth;
 import com.bintage.pagemap.auth.application.AccountInfo;
 import com.bintage.pagemap.auth.infrastructure.security.AuthenticatedAccount;
+import com.bintage.pagemap.storage.infrastructure.web.restful.dto.NicknameUpdateRestRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,7 @@ public class AccountController {
     public Map<String, Object> getUser(@AuthenticationPrincipal AuthenticatedAccount authenticatedAccount) {
         var response = accountInfo.getAccountInfo(authenticatedAccount.getName());
         return Map.of("nickname", response.nickname(),
+                "isUpdatableNickname", response.isUpdatableNickname(),
                 "mapCount", response.mapCount(),
                 "webPageCount", response.webPageCount());
     }
@@ -32,8 +34,8 @@ public class AccountController {
     }
 
     @PutMapping("/me")
-    public Map<String, String> changeNickname(@AuthenticationPrincipal AuthenticatedAccount account, @RequestBody String nickname) {
-        var changedNickname = accountInfo.changeNickname(account.getName(), nickname);
+    public Map<String, String> changeNickname(@AuthenticationPrincipal AuthenticatedAccount account, @RequestBody NicknameUpdateRestRequest request) {
+        var changedNickname = accountInfo.changeNickname(account.getName(), request.getNickname());
         return Map.of("message", "success", "changedNickname", changedNickname);
     }
 }

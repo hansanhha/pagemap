@@ -1,19 +1,17 @@
 package com.bintage.pagemap.storage.infrastructure.web.restful.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Set;
+import org.hibernate.validator.constraints.Length;
 
 @Getter
 @Setter
 @AllArgsConstructor(staticName = "of")
-public class MapUpdateRestRequest {
+public class UpdateBookmarkNicknameRequest {
 
-    Long parentMapId;
-    String title;
-    String description;
-    Set<Long> categories;
-    Set<String> tags;
+    @NotBlank
+    @Length(max = 255)
+    String name;
 }

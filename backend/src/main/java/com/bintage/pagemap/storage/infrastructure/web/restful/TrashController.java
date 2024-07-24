@@ -23,39 +23,13 @@ public class TrashController {
 
     @GetMapping("/trash")
     public ResponseEntity<Map<String, Object>> getTrash(@AuthenticationPrincipal AuthenticatedAccount account) {
-        return ResponseEntity.ok(archiveTrash.getDeletedArchives(account.getName()));
+        return ResponseEntity.ok(archiveTrash.getDeleteScheduledArchives(account.getName()));
     }
 
-    @DeleteMapping("/maps/{id}")
-    public ResponseEntity<Map<String, String>> deleteMap(@AuthenticationPrincipal AuthenticatedAccount account,
-                                                         @PathVariable Long id) {
-        archiveTrash.deleteMap(account.getName(), id);
-
+    @DeleteMapping("/trash")
+    public ResponseEntity<Map<String, String>> emptyTrash(@AuthenticationPrincipal AuthenticatedAccount account) {
+        archiveTrash.empty(account.getName());
         return ResponseEntity.ok(DeletedArchiveResponseBody.of());
-    }
-
-    @DeleteMapping("/webpages/{id}")
-    public ResponseEntity<Map<String, String>> deleteWebPage(@AuthenticationPrincipal AuthenticatedAccount account,
-                                                             @PathVariable Long id) {
-        archiveTrash.deleteWebPage(account.getName(), id);
-
-        return ResponseEntity.ok(DeletedArchiveResponseBody.of());
-    }
-
-    @PostMapping("/trash/maps/{id}")
-    public ResponseEntity<Map<String, String>> restoreMap(@AuthenticationPrincipal AuthenticatedAccount account,
-                                                          @PathVariable Long id) {
-        archiveTrash.restoreMap(account.getName(), id);
-
-        return ResponseEntity.ok(RestoredArchiveResponseBody.of());
-    }
-
-    @PostMapping("/trash/webpages/{id}")
-    public ResponseEntity<Map<String, String>> restoreWebPage(@AuthenticationPrincipal AuthenticatedAccount account,
-                                                              @PathVariable Long id) {
-        archiveTrash.restoreWebPage(account.getName(), id);
-
-        return ResponseEntity.ok(RestoredArchiveResponseBody.of());
     }
 
     public static class DeletedArchiveResponseBody {

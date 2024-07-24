@@ -2,7 +2,7 @@ package com.bintage.pagemap.auth.infrastructure.security;
 
 import com.bintage.pagemap.auth.application.AccountAuth;
 import com.bintage.pagemap.auth.application.AuthenticationResponse;
-import com.bintage.pagemap.auth.domain.exception.AccountExceptionCode;
+import com.bintage.pagemap.auth.domain.AuthExceptionCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,7 +33,7 @@ public class SimpleJwtBearerAuthenticationFilter extends OncePerRequestFilter {
         var accessToken = RequestInspector.findTokenByHttpHeader(request);
 
         if (accessToken.isEmpty()) {
-            securityErrorResponseSender.sendError(request, response, AccountExceptionCode.UNAUTHORIZED.getStatus(),
+            securityErrorResponseSender.sendError(request, response, AuthExceptionCode.UNAUTHORIZED.getStatus(),
                     "empty token");
             return;
         }
@@ -44,7 +44,7 @@ public class SimpleJwtBearerAuthenticationFilter extends OncePerRequestFilter {
             saveAuthentication(accessToken.get(), authenticateResponse);
             filterChain.doFilter(request, response);
         } else {
-            securityErrorResponseSender.sendError(request, response, AccountExceptionCode.UNAUTHORIZED.getStatus(),
+            securityErrorResponseSender.sendError(request, response, AuthExceptionCode.UNAUTHORIZED.getStatus(),
                     authenticateResponse.getFailureCause().getMessage());
         }
     }

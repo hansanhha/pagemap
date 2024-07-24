@@ -10,7 +10,7 @@ public interface TokenService {
 
     AccessToken generateAccessToken(Account.AccountId accountId, String role);
 
-    AccessToken decodeAccessToken(String value) throws TokenInvalidException;
+    AccessToken decodeAccessToken(String value) throws TokenException;
 
 
 }

@@ -50,8 +50,6 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         return UriComponentsBuilder.fromUriString(redirectUrl)
                 .queryParam("access_token", response.getAccessToken())
                 .queryParam("refresh_token", response.getRefreshToken())
-                .queryParam("expires_in", response.getExpiresIn())
-                .queryParam("issued_at", response.getIssuedAt())
                 .build().toUri();
     }
 }

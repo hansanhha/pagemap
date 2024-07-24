@@ -12,11 +12,9 @@ public class SignInResponse {
 
     private final String accessToken;
     private final String refreshToken;
-    private final Instant issuedAt;
-    private final Instant expiresIn;
 
-    public static SignInResponse of(String accessToken, String refreshToken, Instant issuedAt, Instant expiresIn) {
-        return new SignInResponse(accessToken, refreshToken, issuedAt, expiresIn);
+    public static SignInResponse of(String accessToken, String refreshToken) {
+        return new SignInResponse(accessToken, refreshToken);
     }
 
     public record TokenDto(String id, String type) {}

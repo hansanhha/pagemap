@@ -1,6 +1,5 @@
 package com.bintage.pagemap.auth.domain.account;
 
-import com.bintage.pagemap.auth.domain.exception.AccountDomainModelException;
 import lombok.Builder;
 import lombok.Getter;
 import org.jmolecules.ddd.annotation.AggregateRoot;
@@ -42,12 +41,10 @@ public class Account{
     public void updateNickname(String updateNickname) {
         Instant now = Instant.now();
 
-
-
         if (lastNicknameModifiedAt != null) {
             Instant allowedUpdateNicknameDate = lastNicknameModifiedAt.plusSeconds(NICKNAME_MODIFY_INTERVAL);
             if (now.isBefore(allowedUpdateNicknameDate)) {
-                throw new AccountDomainModelException.IsNotUpdatablePeriodAccountNickname(id, allowedUpdateNicknameDate);
+                throw AccountException.cantUpdateNickname(id, allowedUpdateNicknameDate);
             }
         }
 

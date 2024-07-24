@@ -1,11 +1,10 @@
 package com.bintage.pagemap.auth.application;
 
-import com.bintage.pagemap.auth.domain.account.Account;
-import com.bintage.pagemap.auth.domain.account.Accounts;
-import com.bintage.pagemap.auth.domain.account.OAuth2Service;
-import com.bintage.pagemap.auth.domain.account.SignEventPublisher;
-import com.bintage.pagemap.auth.domain.exception.AccountItemNotFoundException;
-import com.bintage.pagemap.auth.domain.token.*;
+import com.bintage.pagemap.auth.domain.account.*;
+import com.bintage.pagemap.auth.domain.token.AccessToken;
+import com.bintage.pagemap.auth.domain.token.RefreshTokenRepository;
+import com.bintage.pagemap.auth.domain.token.TokenException;
+import com.bintage.pagemap.auth.domain.token.TokenService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.hexagonal.PrimaryPort;
@@ -27,32 +26,9 @@ public class AccountAuth {
     private final RefreshTokenRepository refreshTokenRepository;
     private final TokenService tokenService;
 
-//    public String saveUserAgent(String type, String os, String device, String application) {
-//        Assert.notNull(type, "type must not be empty");
-//        Assert.notNull(os, "os must not be empty");
-//        Assert.notNull(device, "device must not be empty");
-//        Assert.notNull(application, "application must not be empty");
-//
-//        var userAgentId = UUID.randomUUID();
-//        var userAgent = UserAgent.builder()
-//                .id(new UserAgent.UserAgentId(userAgentId))
-//                .accountId(null)
-//                .lastSignedIn(null)
-//                .lastSignedOut(null)
-//                .lastModifiedAt(null)
-//                .type(UserAgent.Type.valueOf(type.toUpperCase()))
-//                .os(UserAgent.OS.valueOf(os.toUpperCase()))
-//                .device(UserAgent.Device.valueOf(device.toUpperCase()))
-//                .application(UserAgent.Application.valueOf(application.toUpperCase()))
-//                .build();
-//
-//        userAgents.save(userAgent);
-//        return userAgentId.toString();
-//    }
-
     public SignInResponse signIn(String accountIdStr) {
         var accountId = new Account.AccountId(accountIdStr);
-        var account = accounts.findById(accountId).orElseThrow(() -> AccountItemNotFoundException.ofAccount(accountId));
+        var account = accounts.findById(accountId).orElseThrow(() -> AccountException.notFound(accountId));
 
         var accessToken = tokenService.generateAccessToken(accountId, account.getRole().name());
         var refreshToken = tokenService.generateRefreshToken(accountId, account.getRole().name());
@@ -62,30 +38,19 @@ public class AccountAuth {
                 accountId,
                 accessToken.getIssuedAt());
 
-        return SignInResponse.of(accessToken.getValue(), refreshToken.getValue(), accessToken.getIssuedAt(), accessToken.getExpiresIn());
+        return SignInResponse.of(accessToken.getValue(), refreshToken.getValue());
     }
 
     public void signOut(String accessTokenValue) {
         var accessToken = tokenService.decodeAccessToken(accessTokenValue);
         Account.AccountId accountId = accessToken.getAccountId();
 
-        Account account = accounts.findById(accountId).orElseThrow(() -> AccountItemNotFoundException.ofAccount(accountId));
+        Account account = accounts.findById(accountId).orElseThrow(() -> AccountException.notFound(accountId));
         oAuth2Service.signOut(account.getId(), account.getOAuth2Provider(), account.getOAuth2MemberIdentifier());
         refreshTokenRepository.deleteAllByAccountId(accountId);
 
         signEventPublisher.signedOut(accountId);
     }
-
-//    public void signOutForOtherDevice(String otherUserAgentIdStr) {
-//        var userAgentId = new UserAgent.UserAgentId(UUID.fromString(otherUserAgentIdStr));
-//        var otherUserAgent = userAgents.findTokensById(userAgentId)
-//                .orElseThrow(() -> AccountItemNotFoundException.ofUserAgent(userAgentId));
-//
-//        otherUserAgent.signOut();
-//        userAgents.markAsSignedOut(otherUserAgent);
-//
-//        signEventPublisher.signedOut(otherUserAgent.getId(), otherUserAgent.getAccountId());
-//    }
 
     public void signUpIfFirst(String accountIdStr, String oauth2Provider, String oauth2MemberNumber) {
         Account.AccountId accountId = new Account.AccountId(accountIdStr);
@@ -115,38 +80,10 @@ public class AccountAuth {
         return AuthenticationResponse.valid(accessToken.getAccountId().value(), Set.of(accessToken.getAccountRole()));
     }
 
-//    public AuthenticationResponse authenticate(String tokenIdStr, RequestUserAgentInfo requestUserAgent) {
-//        var tokenId = new RefreshToken.RefreshTokenId(UUID.fromString(tokenIdStr));
-//        RefreshToken savedRefreshToken = refreshTokenRepository.findById(tokenId)
-//                .orElseThrow(() -> AccountItemNotFoundException.ofToken(tokenId ));
-//
-//        RefreshToken decodedRefreshToken;
-//        try {
-//            decodedRefreshToken = tokenService.decodeAccessToken(savedRefreshToken);
-//        } catch (TokenException e) {
-//            return AuthenticationResponse.inValid(AuthenticationResponse.FailureCause.INVALID);
-//        }
-//
-//        var userAgentIdInToken = decodedRefreshToken.getUserAgentId();
-//        var userAgent = userAgents.findById(userAgentIdInToken)
-//                .orElseThrow(() -> AccountItemNotFoundException.ofUserAgent(decodedRefreshToken.getAccountId(), userAgentIdInToken));
-//
-//        var requestType = UserAgent.Type.valueOf(requestUserAgent.type().toUpperCase());
-//        var requestOS = UserAgent.OS.valueOf(requestUserAgent.os().toUpperCase());
-//        var requestDevice = UserAgent.Device.valueOf(requestUserAgent.device().toUpperCase());
-//        var requestApplication = UserAgent.Application.valueOf(requestUserAgent.application().toUpperCase());
-//
-//        if (userAgent.isSame(requestType, requestOS, requestDevice, requestApplication)) {
-//            return AuthenticationResponse.valid(decodedRefreshToken.getAccountId().value(), Set.of(decodedRefreshToken.getAccountRole()));
-//        }
-//
-//        return AuthenticationResponse.inValid(AuthenticationResponse.FailureCause.DIFFERENT_USER_AGENT);
-//    }
-
     public void deleteAccount(String accountIdStr) {
         var accountId = new Account.AccountId(accountIdStr);
         var account = accounts.findById(accountId)
-                .orElseThrow(() -> AccountItemNotFoundException.ofAccount(accountId));
+                .orElseThrow(() -> AccountException.notFound(accountId));
 
         oAuth2Service.unlinkForAccount(account.getId(), account.getOAuth2Provider(), account.getOAuth2MemberIdentifier());
         refreshTokenRepository.deleteAllByAccountId(accountId);
@@ -154,7 +91,5 @@ public class AccountAuth {
 
         signEventPublisher.deletedAccount(accountId, Instant.now());
     }
-
-//    public record RequestUserAgentInfo(String type, String os, String device, String application) {}
 
 }

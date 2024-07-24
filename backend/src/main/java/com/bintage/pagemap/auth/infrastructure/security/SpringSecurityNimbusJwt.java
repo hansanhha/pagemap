@@ -85,7 +85,7 @@ public class SpringSecurityNimbusJwt implements TokenService {
     }
 
     @Override
-    public AccessToken decodeAccessToken(String value) throws TokenInvalidException {
+    public AccessToken decodeAccessToken(String value) throws TokenException {
         try {
             var decodedJwt = jwtDecoder.decode(value);
 
@@ -99,7 +99,7 @@ public class SpringSecurityNimbusJwt implements TokenService {
                     .type(TokenType.ACCESS_TOKEN)
                     .build();
         } catch (Exception e) {
-            throw new TokenInvalidException("Invalid access token");
+            throw TokenException.invalid(value);
         }
     }
 

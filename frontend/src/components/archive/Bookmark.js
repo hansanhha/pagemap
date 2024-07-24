@@ -9,7 +9,7 @@ import {useState} from "react";
 import FolderCreatable from "./FolderCreatable";
 
 const Bookmark = ({bookmark, onUpdateHierarchy, onUpdateOrder, onCreateFolder}) => {
-    const [title, setTitle] = useState(bookmark.title);
+    const [name, setName] = useState(bookmark.name);
 
     return (
         <>
@@ -22,11 +22,11 @@ const Bookmark = ({bookmark, onUpdateHierarchy, onUpdateOrder, onCreateFolder}) 
                 <ArchiveDrag archive={bookmark}
                              onDropped={onUpdateHierarchy}
                 >
-                    <ArchiveContextMenu archive={bookmark} setTitle={setTitle}>
-                        <HyperLink to={bookmark.url}>
+                    <ArchiveContextMenu archive={bookmark} setTitle={setName}>
+                        <HyperLink to={bookmark.uri}>
                             <StyledBookmark>
                                 <Logo img={bookmark.logo}/>
-                                <Title title={title}/>
+                                <Title title={name}/>
                             </StyledBookmark>
                         </HyperLink>
                     </ArchiveContextMenu>

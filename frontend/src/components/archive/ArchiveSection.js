@@ -9,13 +9,12 @@ import Trash, {deletedArchive} from "../trash/Trash";
 import {subscribeEvent, unsubscribeEvent} from "../util/EventHandler";
 
 const ArchiveSection = () => {
-    let {accessToken, isLoggedIn} = useLogin();
+    let {accessToken} = useLogin();
     const [isActive, setIsActive] = useState(true);
     const [sortedArchives, setSortedArchives] = useState([]);
 
     useEffect(() => {
-        // 임시
-        if (isLoggedIn && isActive) {
+        if (isActive) {
             fetch(process.env.REACT_APP_SERVER + "/storage", {
                 method: "GET",
                 headers: {
@@ -25,15 +24,17 @@ const ArchiveSection = () => {
             })
                 .then(response => response.json())
                 .then(data => {
+                    console.log(data);
+
                     let folders = [];
                     let bookmarks = [];
 
-                    if (data.maps && data.maps.length > 0) {
-                        folders = data.maps.map(map => new FolderDto(map));
+                    if (data.folders && data.folders.length > 0) {
+                        folders = data.folders.map(folder => new FolderDto(folder));
                     }
 
-                    if (data.webPages && data.webPages.length > 0) {
-                        bookmarks = data.webPages.map(webPage => new BookmarkDto(webPage));
+                    if (data.bookmarks && data.bookmarks.length > 0) {
+                        bookmarks = data.bookmarks.map(bookmark => new BookmarkDto(bookmark));
                     }
 
                     setSortedArchives([...folders, ...bookmarks].sort((a, b) => a.order - b.order));
@@ -46,7 +47,7 @@ const ArchiveSection = () => {
         return () => {
             unsubscribeEvent(deletedArchive, handleActive);
         }
-    }, [accessToken, isLoggedIn, isActive]);
+    }, [accessToken, isActive]);
 
     const handleActive = () => {
         setIsActive(false);
@@ -61,14 +62,14 @@ const ArchiveSection = () => {
         }
 
         if (FolderDto.isFolder(source)) {
-            fetch(process.env.REACT_APP_SERVER + `/storage/maps/${source.id}/location`, {
+            fetch(process.env.REACT_APP_SERVER + `/storage/folders/${source.id}/location`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/problem+json",
-                    "Authorization": "Bearer " + accessToken,
+                    "Authorization": `Bearer ${accessToken}`,
                 },
                 body: JSON.stringify({
-                    "targetMapId": target.id,
+                    targetFolderId: target.id,
                 })
             })
                 .then(response => response.json())
@@ -77,14 +78,14 @@ const ArchiveSection = () => {
                 })
                 .catch(err => console.error("Error update location: ", err));
         } else if (BookmarkDto.isBookmark(source)) {
-            fetch(process.env.REACT_APP_SERVER + `/storage/webpages/${source.id}/location`, {
+            fetch(process.env.REACT_APP_SERVER + `/storage/bookmarks/${source.id}/location`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/problem+json",
                     "Authorization": "Bearer " + accessToken,
                 },
                 body: JSON.stringify({
-                    "targetMapId": target.id,
+                    targetFolderId: target.id,
                 })
             })
                 .then(response => response.json())
@@ -93,19 +94,16 @@ const ArchiveSection = () => {
                 })
                 .catch(err => console.error("Error update location: ", err));
         } else if (ShortcutDto.isShortcut(source)) {
-            fetch(process.env.REACT_APP_SERVER + `/storage/webpages`, {
+            fetch(process.env.REACT_APP_SERVER + `/storage/bookmarks`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/problem+json",
-                    "Authorization": "Bearer " + accessToken,
+                    "Authorization": `Bearer ${accessToken}`,
                 },
                 body: JSON.stringify({
-                    parentMapId: target.id,
-                    title: source.title,
+                    targetFolderId: target.id,
+                    name: source.title,
                     uri: source.url,
-                    description: "shortcut dropzone test",
-                    categoryId: null,
-                    tags: null,
                 })
             })
                 .then(response => response.json())
@@ -121,31 +119,21 @@ const ArchiveSection = () => {
     }
 
     const handleCreateFolder = (bookmark1, bookmark2) => {
-        fetch(process.env.REACT_APP_SERVER + "/storage/maps", {
+        fetch(process.env.REACT_APP_SERVER + "/storage/folders", {
             method: "POST",
             headers: {
                 "Content-Type": "application/problem+json",
                 "Authorization": `Bearer ${accessToken}`,
             },
             body: JSON.stringify({
-                title: "New Folder",
-                bookmarks: [bookmark1, bookmark2],
+                parentFolderId: 0,
+                bookmarkIds: [bookmark1.id, bookmark2.id]
             })
         })
             .then(res => res.json())
             .then(data => {
                 if (data.createdFolder) {
-                    const folderDto = new FolderDto(data.createdFolder);
-
-                    const extractedChildrenArchive = sortedArchives.filter(archive => {
-                        return (archive.id !== bookmark1.id && BookmarkDto.isBookmark(archive))
-                            && (archive.id !== bookmark2.id && BookmarkDto.isBookmark(archive));
-                    });
-
-                    const newSortedChildrenArchive = extractedChildrenArchive.sort((a, b) => a.order - b.order);
-                    newSortedChildrenArchive.push(folderDto);
-
-                    sortedArchives(newSortedChildrenArchive);
+                    handleActive();
                 }
             })
             .catch(err => console.error("Error fetching create folder:", err));

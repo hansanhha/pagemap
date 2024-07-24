@@ -13,7 +13,7 @@ import ArchiveContextMenu from "./ArchiveContextMenu";
 
 const Folder = ({folder, onUpdateHierarchy, onUpdateOrder}) => {
     let {accessToken} = useLogin();
-    const [title, setTitle] = useState(folder.title);
+    const [name, setName] = useState(folder.name);
     const [isClicked, setIsClicked] = useState(false);
     const [childrenSortedArchive, setChildrenSortedArchive] = useState([]);
 
@@ -21,7 +21,7 @@ const Folder = ({folder, onUpdateHierarchy, onUpdateOrder}) => {
         setIsClicked(!isClicked);
 
         if (!isClicked) {
-            fetch(process.env.REACT_APP_SERVER + `/storage/maps/${folder.id}`, {
+            fetch(process.env.REACT_APP_SERVER + `/storage/folders/${folder.id}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/problem+json",
@@ -33,18 +33,18 @@ const Folder = ({folder, onUpdateHierarchy, onUpdateOrder}) => {
                     let childrenFolder = [];
                     let childrenBookmark = [];
 
-                    if (data.childrenMap && data.childrenMap.length > 0) {
-                        childrenFolder = data.childrenMap.map(childMap => new FolderDto(childMap));
+                    if (data.childrenFolder && data.childrenFolder.length > 0) {
+                        childrenFolder = data.childrenFolder.map(folder => new FolderDto(folder));
                         childrenFolder.forEach(childFolder => {
                             const hierarchyParentIds = childFolder.hierarchyParentIds;
                             hierarchyParentIds.push(...folder.hierarchyParentIds);
                         });
                     }
 
-                    if (data.childrenWebPage && data.childrenWebPage.length > 0) {
-                        childrenBookmark = data.childrenWebPage.map(childWebPage => new BookmarkDto(childWebPage));
+                    if (data.childrenBookmark && data.childrenBookmark.length > 0) {
+                        childrenBookmark = data.childrenBookmark.map(bookmark => new BookmarkDto(bookmark));
                         childrenBookmark.forEach(childBookmark => {
-                            const hierarchyParentIds = childBookmark.hierarchyParentIds;
+                            const hierarchyParentIds = childBookmark.hierarchyParentFolderIds;
                             hierarchyParentIds.push(...folder.hierarchyParentIds);
                         })
                     }
@@ -57,7 +57,7 @@ const Folder = ({folder, onUpdateHierarchy, onUpdateOrder}) => {
     }
 
     const handleCreateHierarchyFolder = (bookmark1, bookmark2) => {
-        fetch(process.env.REACT_APP_SERVER + "/storage/maps", {
+        fetch(process.env.REACT_APP_SERVER + "/storage/folders", {
             method: "POST",
             headers: {
                 "Content-Type": "application/problem+json",
@@ -93,10 +93,10 @@ const Folder = ({folder, onUpdateHierarchy, onUpdateOrder}) => {
                        order={folder.order}
                        onDropped={onUpdateOrder}/>
             <ArchiveDrag archive={folder} onDropped={onUpdateHierarchy}>
-                <ArchiveContextMenu archive={folder} setTitle={setTitle}>
+                <ArchiveContextMenu archive={folder} setTitle={setName}>
                     <StyledParentFolder onClick={handleClick}>
                         <Logo img={folderLogo}/>
-                        <Title title={title}/>
+                        <Title title={name}/>
                     </StyledParentFolder>
                 </ArchiveContextMenu>
             </ArchiveDrag>

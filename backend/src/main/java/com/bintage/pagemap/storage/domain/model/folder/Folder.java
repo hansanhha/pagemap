@@ -11,6 +11,7 @@ import org.jmolecules.ddd.types.Identifier;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.stream.Stream;
 
 @Builder
 @Getter
@@ -21,10 +22,13 @@ public class Folder implements AggregateRoot<Folder, Folder.FolderId> {
 
     private final Account.AccountId accountId;
     private final FolderId id;
-    @Builder.Default private FolderId parentId = TOP_LEVEL;
+    @Builder.Default private FolderId parentFolderId = TOP_LEVEL;
     private List<Folder> childrenFolder;
     private List<Bookmark> childrenBookmark;
     private String name;
+    private int order;
+    @Builder.Default private Instant createdAt = Instant.now();
+    @Builder.Default private Instant lastModifiedAt = Instant.now();
     @Builder.Default private Delete deleted = Delete.notScheduled();
 
     public void rename(String name) {
@@ -41,12 +45,24 @@ public class Folder implements AggregateRoot<Folder, Folder.FolderId> {
         }
     }
 
-    public void parent(FolderId parentId) {
-        this.parentId = parentId;
+    public void parent(Folder parent) {
+        this.parentFolderId = parent.getId();
     }
 
     public void goToTopLevel() {
-        this.parentId = TOP_LEVEL;
+        this.parentFolderId = TOP_LEVEL;
+    }
+
+    public void order(int order) {
+        this.order = order;
+    }
+
+    public void decreaseOrder() {
+        this.order--;
+    }
+
+    public void increaseOrder() {
+        this.order++;
     }
 
     public boolean isParent(Folder folder) {
@@ -58,7 +74,7 @@ public class Folder implements AggregateRoot<Folder, Folder.FolderId> {
     }
 
     public boolean hasParent() {
-        return parentId != null && parentId.value() != null && parentId.value() > TOP_LEVEL.value();
+        return parentFolderId != null && parentFolderId.value() != null && parentFolderId.value() > TOP_LEVEL.value();
     }
 
     public void modifiableCheck(Account.AccountId accountId) {
@@ -67,12 +83,16 @@ public class Folder implements AggregateRoot<Folder, Folder.FolderId> {
         }
     }
 
-    public void addFolder(Folder child) {
-        if (childrenFolder.contains(child)) {
-            throw FolderException.alreadyContainChild(accountId, getId(), ArchiveType.FOLDER, child.getId().value());
+    public void addFolder(Folder folder) {
+        if (childrenFolder.contains(folder)) {
+            throw FolderException.alreadyContainChild(accountId, getId(), ArchiveType.FOLDER, folder.getId().value());
         }
 
-        childrenFolder.add(child);
+        var order = childrenFolder.size() + childrenBookmark.size() + 1;
+        folder.order(order);
+        folder.parent(this);
+
+        childrenFolder.add(folder);
     }
 
     public void addFolder(List<Folder> folders) {
@@ -84,6 +104,9 @@ public class Folder implements AggregateRoot<Folder, Folder.FolderId> {
             throw FolderException.notContainChild(accountId, getId(), ArchiveType.FOLDER, child.getId().value());
         }
 
+        childrenBookmark.stream().filter(b -> b.getOrder() > child.getOrder()).forEach(Bookmark::decreaseOrder);
+        childrenFolder.stream().filter(f -> f.getOrder() > child.getOrder()).forEach(Folder::decreaseOrder);
+
         childrenFolder.remove(child);
     }
 
@@ -92,6 +115,10 @@ public class Folder implements AggregateRoot<Folder, Folder.FolderId> {
             throw FolderException.alreadyContainChild(accountId, getId(), ArchiveType.BOOKMARK, bookmark.getId().value());
         }
 
+        var order = childrenFolder.size() + childrenBookmark.size() + 1;
+        bookmark.order(order);
+        bookmark.parent(this);
+
         childrenBookmark.add(bookmark);
     }
 
@@ -99,12 +126,15 @@ public class Folder implements AggregateRoot<Folder, Folder.FolderId> {
         bookmarks.forEach(this::addBookmark);
     }
 
-    public void removeBookmark(Bookmark bookmark) {
-        if (!childrenBookmark.contains(bookmark)) {
-            throw FolderException.notContainChild(accountId, getId(), ArchiveType.BOOKMARK, bookmark.getId().value());
+    public void removeBookmark(Bookmark child) {
+        if (!childrenBookmark.contains(child)) {
+            throw FolderException.notContainChild(accountId, getId(), ArchiveType.BOOKMARK, child.getId().value());
         }
 
-        childrenBookmark.remove(bookmark);
+        childrenBookmark.stream().filter(b -> b.getOrder() > child.getOrder()).forEach(Bookmark::decreaseOrder);
+        childrenFolder.stream().filter(f -> f.getOrder() > child.getOrder()).forEach(Folder::decreaseOrder);
+
+        childrenBookmark.remove(child);
     }
 
     public void delete(Instant requestedAt) {

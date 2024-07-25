@@ -29,7 +29,7 @@ public class TopLevelArchiveController {
     @GetMapping
     public ResponseEntity<Map<String, Object>> getTopLevelArchives(@AuthenticationPrincipal AuthenticatedAccount account) {
         var topArchives = archiveUse.getAllOnTheTopLevel(account.getName());
-        return ResponseEntity.ok(GetArchiveResponseBody.of(topArchives.maps(), topArchives.webPages()));
+        return ResponseEntity.ok(GetArchiveResponseBody.of(topArchives.folders(), topArchives.bookmarks()));
     }
 
     public static class GetArchiveResponseBody {

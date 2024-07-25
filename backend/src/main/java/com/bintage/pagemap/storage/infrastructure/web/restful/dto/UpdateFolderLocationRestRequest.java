@@ -12,4 +12,8 @@ public class UpdateFolderLocationRestRequest {
     @NotNull
     @Min(0)
     Long targetFolderId;
+
+    @NotNull
+    @Min(0)
+    int updateOrder;
 }

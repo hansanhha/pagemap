@@ -1,7 +1,10 @@
 package com.bintage.pagemap.storage.application;
 
 import com.bintage.pagemap.auth.domain.account.Account;
-import com.bintage.pagemap.storage.application.dto.*;
+import com.bintage.pagemap.storage.application.dto.ArchiveCountDto;
+import com.bintage.pagemap.storage.application.dto.BookmarkDto;
+import com.bintage.pagemap.storage.application.dto.CurrentFolderResponse;
+import com.bintage.pagemap.storage.application.dto.SpecificArchiveResponse;
 import com.bintage.pagemap.storage.domain.model.bookmark.Bookmark;
 import com.bintage.pagemap.storage.domain.model.bookmark.BookmarkException;
 import com.bintage.pagemap.storage.domain.model.bookmark.BookmarkRepository;
@@ -18,6 +21,8 @@ import org.jmolecules.architecture.hexagonal.PrimaryPort;
 import org.springframework.modulith.NamedInterface;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 @NamedInterface("readOnly")
@@ -36,33 +41,44 @@ public class ArchiveUse {
                 .ifPresent(Bookmark::visit);
     }
 
-    public CurrentMapResponse getMap(String accountIdStr, long mapIdLong) {
+    public CurrentFolderResponse getFolder(String accountIdStr, long mapIdLong) {
         var accountId = new Account.AccountId(accountIdStr);
 
-        var mapId = new Folder.FolderId(mapIdLong);
-        var map = folderRepository.findFamilyById(accountId, mapId)
-                .orElseThrow(() -> FolderException.notFound(accountId, mapId));
+        var folderId = new Folder.FolderId(mapIdLong);
+        var folder = folderRepository.findFamilyById(accountId, folderId)
+                .orElseThrow(() -> FolderException.notFound(accountId, folderId));
 
-        return CurrentMapResponse.from(map);
+        List<Folder> sortedChildrenFolder = folder.getChildrenFolder().stream()
+                .sorted(Comparator.comparing(Folder::getOrder))
+                .toList();
+
+        List<Bookmark> sortedChildrenBookmark = folder.getChildrenBookmark().stream()
+                .sorted(Comparator.comparing(Bookmark::getOrder))
+                .toList();
+
+        return CurrentFolderResponse.from(folder, sortedChildrenFolder, sortedChildrenBookmark);
     }
 
     public SpecificArchiveResponse getAllOnTheTopLevel(String accountIdStr) {
         var accountId = new Account.AccountId(accountIdStr);
 
         var topFolders = folderRepository.findAllByParentId(accountId, Folder.TOP_LEVEL);
-        var topBookmarks = bookmarkRepository.findByParentFolderId(accountId, Bookmark.TOP_LEVEL);
+        var topBookmarks = bookmarkRepository.findAllByParentFolderId(accountId, Bookmark.TOP_LEVEL);
 
-        return SpecificArchiveResponse.from(topFolders, topBookmarks);
+        var sortedTopFolders = topFolders.stream().sorted(Comparator.comparing(Folder::getOrder)).toList();
+        var sortedTopBookmarks = topBookmarks.stream().sorted(Comparator.comparing(Bookmark::getOrder)).toList();
+
+        return SpecificArchiveResponse.from(sortedTopFolders, sortedTopBookmarks);
     }
 
-    public BookmarkDto getWebPage(String accountIdStr, Long webPageIdStr) {
+    public BookmarkDto getBookmark(String accountIdStr, Long webPageIdStr) {
         var accountId = new Account.AccountId(accountIdStr);
-        var webPageId = new Bookmark.BookmarkId(webPageIdStr);
+        var bookmarkId = new Bookmark.BookmarkId(webPageIdStr);
 
-        var webPage = bookmarkRepository.findById(webPageId)
-                .orElseThrow(() -> BookmarkException.notFound(accountId, webPageId));
+        var bookmark = bookmarkRepository.findById(bookmarkId)
+                .orElseThrow(() -> BookmarkException.notFound(accountId, bookmarkId));
 
-        return BookmarkDto.from(webPage);
+        return BookmarkDto.from(bookmark);
     }
 
     public ArchiveCountDto getArchiveCount(String accountIdStr) {

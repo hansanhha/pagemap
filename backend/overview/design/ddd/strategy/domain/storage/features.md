@@ -1,7 +1,7 @@
 ## CRUD
 
 데이터 관리
-* map - 웹 페이지 보관함(폴더)
+* folder - 웹 페이지 보관함(폴더)
     * title
     * category
     * tag

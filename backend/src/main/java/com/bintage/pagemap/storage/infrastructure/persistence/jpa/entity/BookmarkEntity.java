@@ -5,9 +5,9 @@ import com.bintage.pagemap.storage.domain.model.bookmark.Bookmark;
 import com.bintage.pagemap.storage.domain.model.folder.Folder;
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.net.URI;
+import java.time.Instant;
 
 @Table(name = "bookmark")
 @Entity
@@ -28,18 +28,21 @@ public class BookmarkEntity {
     @Column(columnDefinition = "TEXT")
     private String uri;
 
-    @Setter
-    private int visitCount;
+    private Integer visitCount;
+
+    private Integer orders;
 
     @Embedded
     private EmbeddedDelete delete;
 
-    public void update(String name, String uri) {
+    private Instant createdAt;
+
+    private Instant lastModifiedAt;
+
+    public void update(String name, String uri, int order, Long parentFolderId) {
         this.name = name;
         this.uri = uri;
-    }
-
-    public void parent(Long parentFolderId) {
+        this.orders = order;
         this.parentFolderId = parentFolderId;
     }
 
@@ -58,7 +61,10 @@ public class BookmarkEntity {
         entity.name = domainModel.getName();
         entity.uri = domainModel.getUrl().toString();
         entity.visitCount = domainModel.getVisitCount();
+        entity.orders = domainModel.getOrder();
         entity.delete = EmbeddedDelete.fromDomainModel(domainModel.getDeleted());
+        entity.createdAt = domainModel.getCreatedAt();
+        entity.lastModifiedAt = domainModel.getLastModifiedAt();
         return entity;
     }
 
@@ -70,7 +76,10 @@ public class BookmarkEntity {
         entity.name = domainModel.getName();
         entity.uri = domainModel.getUrl().toString();
         entity.visitCount = domainModel.getVisitCount();
+        entity.orders = domainModel.getOrder();
         entity.delete = EmbeddedDelete.fromDomainModel(domainModel.getDeleted());
+        entity.createdAt = domainModel.getCreatedAt();
+        entity.lastModifiedAt = domainModel.getLastModifiedAt();
         return entity;
     }
 
@@ -82,7 +91,10 @@ public class BookmarkEntity {
                 .name(entity.getName())
                 .url(URI.create(entity.getUri()))
                 .visitCount(entity.getVisitCount())
+                .order(entity.getOrders())
                 .deleted(EmbeddedDelete.toDomainModel(entity.getDelete()))
+                .createdAt(entity.getCreatedAt())
+                .lastModifiedAt(entity.getLastModifiedAt())
                 .build();
     }
 

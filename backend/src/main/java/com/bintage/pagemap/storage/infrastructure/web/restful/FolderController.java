@@ -3,7 +3,7 @@ package com.bintage.pagemap.storage.infrastructure.web.restful;
 import com.bintage.pagemap.auth.infrastructure.security.AuthenticatedAccount;
 import com.bintage.pagemap.storage.application.ArchiveUse;
 import com.bintage.pagemap.storage.application.FolderStore;
-import com.bintage.pagemap.storage.application.dto.CurrentMapResponse;
+import com.bintage.pagemap.storage.application.dto.CurrentFolderResponse;
 import com.bintage.pagemap.storage.application.dto.FolderCreateRequest;
 import com.bintage.pagemap.storage.application.dto.FolderDto;
 import com.bintage.pagemap.storage.application.dto.SpecificArchiveResponse;
@@ -38,7 +38,7 @@ public class FolderController {
     @GetMapping("/{id}")
     public ResponseEntity<Map<String, Object>> getFolder(@AuthenticationPrincipal AuthenticatedAccount account,
                                                          @PathVariable Long id) {
-        return ResponseEntity.ok(GetMapResponseBody.of(archiveUse.getMap(account.getName(), id)));
+        return ResponseEntity.ok(GetMapResponseBody.of(archiveUse.getFolder(account.getName(), id)));
     }
 
     @PostMapping
@@ -51,7 +51,7 @@ public class FolderController {
     @PatchMapping("/{id}")
     public ResponseEntity<Map<String, String>> updateMap(@AuthenticationPrincipal AuthenticatedAccount account,
                                                          @PathVariable Long id,
-                                                         @RequestBody UpdateFolderNicknameRestRequest request) {
+                                                         @Valid @RequestBody UpdateFolderNicknameRestRequest request) {
         folderStore.rename(account.getName(), id, request.getName());
         return ResponseEntity.ok(UpdatedMapResponseBody.of());
     }
@@ -60,7 +60,7 @@ public class FolderController {
     public ResponseEntity<Map<String, String>> updateMapLocation(@AuthenticationPrincipal AuthenticatedAccount account,
                                                     @PathVariable Long id,
                                                     @RequestBody @Valid UpdateFolderLocationRestRequest request) {
-        folderStore.move(account.getName(), id, request.getTargetFolderId());
+        folderStore.move(account.getName(), id, request.getTargetFolderId(), request.getUpdateOrder());
         return ResponseEntity.ok(UpdatedMapResponseBody.of());
     }
 
@@ -79,13 +79,13 @@ public class FolderController {
     }
 
     public static class GetMapResponseBody {
-        public static Map<String, Object> of(CurrentMapResponse archive) {
-            return Map.of(MESSAGE_NAME, SUCCESS, "currentFolders", archive.currentMap(),
-                    "childrenFolder", archive.childrenMap(), "childrenBookmark", archive.childrenWebPage());
+        public static Map<String, Object> of(CurrentFolderResponse archive) {
+            return Map.of(MESSAGE_NAME, SUCCESS, "currentFolders", archive.currentFolder(),
+                    "childrenFolder", archive.childrenFolder(), "childrenBookmark", archive.childrenBookmark());
         }
 
         public static Map<String, Object> of(SpecificArchiveResponse archive) {
-            return Map.of(MESSAGE_NAME, SUCCESS, FOLDERS, archive.maps(), BOOKMARKS, archive.webPages());
+            return Map.of(MESSAGE_NAME, SUCCESS, FOLDERS, archive.folders(), BOOKMARKS, archive.bookmarks());
         }
 
         public static Map<String, Object> of(List<FolderDto> folderDtos) {

@@ -1,7 +1,6 @@
 package com.bintage.pagemap.storage.infrastructure.persistence.jpa;
 
 import com.bintage.pagemap.auth.domain.account.Account;
-import com.bintage.pagemap.storage.domain.model.Delete;
 import com.bintage.pagemap.storage.domain.model.folder.Folder;
 import com.bintage.pagemap.storage.domain.model.folder.FolderException;
 import com.bintage.pagemap.storage.domain.model.folder.FolderRepository;
@@ -71,13 +70,19 @@ public class FolderRepositoryJpaAdapter implements FolderRepository {
 
         if (currentFolderEntity.getChildrenFolder() != null && !currentFolderEntity.getChildrenFolder().isEmpty()) {
             var childrenFolderEntity = folderEntityRepository.findNotDeletedAllById(accountId.value(), currentFolderEntity.getChildrenFolder());
-            var childrenFolder = childrenFolderEntity.stream().map(child -> FolderEntity.toChildDomainModel(currentFolder.getId(), child)).toList();
+            var childrenFolder = childrenFolderEntity.stream()
+                    .filter(child -> !child.getDelete().isMoveTrashed())
+                    .map(child -> FolderEntity.toChildDomainModel(currentFolder.getId(), child))
+                    .toList();
             currentFolder.addFolder(childrenFolder);
         }
 
         if (currentFolderEntity.getChildrenBookmark() != null && !currentFolderEntity.getChildrenBookmark().isEmpty()) {
             var childrenBookmarkEntity = bookmarkEntityRepository.findNotDeletedAllById(accountId.value(), currentFolderEntity.getChildrenBookmark());
-            var childrenBookmark = childrenBookmarkEntity.stream().map(BookmarkEntity::toDomainModel).toList();
+            var childrenBookmark = childrenBookmarkEntity.stream()
+                    .filter(child -> !child.getDelete().isMoveTrashed())
+                    .map(BookmarkEntity::toDomainModel)
+                    .toList();
             currentFolder.addBookmark(childrenBookmark);
         }
 
@@ -102,10 +107,22 @@ public class FolderRepositoryJpaAdapter implements FolderRepository {
 
     @Override
     public void update(Folder folder) {
-        var mapEntity = folderEntityRepository.findById(folder.getId().value())
+        var folderEntity = folderEntityRepository.findById(folder.getId().value())
                 .orElseThrow(() -> FolderException.notFound(folder.getAccountId(), folder.getId()));
 
-        mapEntity.update(folder.getName());
+        folderEntity.update(folder.getName(), folder.getOrder(), folder.getParentFolderId().value());
+    }
+
+    @Override
+    public void update(List<Folder> folders) {
+        var ids = folders.stream().map(b -> b.getId().value()).toList();
+        var entities = folderEntityRepository.findAllById(ids);
+
+        entities.forEach(entity -> folders.stream()
+                .filter(bookmark -> bookmark.getId().value().equals(entity.getId()))
+                .findFirst()
+                .ifPresent(f ->
+                        entity.update(f.getName(), f.getOrder(), f.getParentFolderId().value())));
     }
 
     @Override
@@ -119,7 +136,8 @@ public class FolderRepositoryJpaAdapter implements FolderRepository {
 
     @Override
     public void updateFamily(Folder folder) {
-        var entity = folderEntityRepository.findById(folder.getId().value())
+        var entity = folderEntityRepository
+                .findFetchFamilyById(folder.getAccountId().value(), folder.getId().value())
                 .orElseThrow(() -> FolderException.notFound(folder.getAccountId(), folder.getId()));
 
         entity.updateFamily(folder);

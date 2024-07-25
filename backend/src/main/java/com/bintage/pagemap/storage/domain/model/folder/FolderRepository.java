@@ -25,6 +25,8 @@ public interface FolderRepository {
 
     void update(Folder folder);
 
+    void update(List<Folder> folders);
+
     void updateDeleteStatus(Folder folder);
 
     void updateFamily(Folder folder);

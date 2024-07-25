@@ -133,7 +133,7 @@ public class BookmarkStore {
 
         if (targetFolderId.equals(Bookmark.TOP_LEVEL)) {
             if (sourceBookmark.hasParent()) {
-                folderRepository.findById(sourceBookmark.getParentFolderId())
+                folderRepository.findFamilyById(accountId, sourceBookmark.getParentFolderId())
                         .ifPresentOrElse(parentFolder -> {
                             parentFolder.removeBookmark(sourceBookmark);
                             folderRepository.updateFamily(parentFolder);
@@ -147,7 +147,7 @@ public class BookmarkStore {
             return;
         }
 
-        var targetFolder = folderRepository.findById(targetFolderId)
+        var targetFolder = folderRepository.findFamilyById(accountId, targetFolderId)
                 .orElseThrow(() -> FolderException.notFound(accountId, targetFolderId));
 
         if (targetFolder.isParent(sourceBookmark)) {
@@ -155,7 +155,7 @@ public class BookmarkStore {
         }
 
         if (sourceBookmark.hasParent()) {
-            folderRepository.findById(sourceBookmark.getParentFolderId())
+            folderRepository.findFamilyById(accountId, sourceBookmark.getParentFolderId())
                     .ifPresentOrElse(parentFolder -> {
                         parentFolder.removeBookmark(sourceBookmark);
                         folderRepository.updateFamily(parentFolder);

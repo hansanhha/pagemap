@@ -125,7 +125,7 @@ public class FolderRepositoryJpaAdapter implements FolderRepository {
 
     @Override
     public void updateFamily(Folder folder) {
-        var entity = folderEntityRepository.findById(folder.getId().value())
+        var entity = folderEntityRepository.findFetchFamilyById(folder.getAccountId().value(), folder.getId().value())
                 .orElseThrow(() -> FolderException.notFound(folder.getAccountId(), folder.getId()));
 
         entity.updateFamily(folder);

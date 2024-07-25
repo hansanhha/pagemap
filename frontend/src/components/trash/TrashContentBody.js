@@ -13,7 +13,7 @@ const TrashContentBody = ({deletedArchive, onRestore}) => {
     return (
         <StyledTrashContent>
             <TrashContentTitleSection>
-                <HyperLink to={deletedArchive.url}>
+                <HyperLink to={deletedArchive.uri}>
                     {deletedArchive.name}
                 </HyperLink>
             </TrashContentTitleSection>

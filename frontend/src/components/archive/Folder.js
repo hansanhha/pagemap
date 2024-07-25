@@ -11,7 +11,7 @@ import ArchiveDrag from "./ArchiveDrag";
 import OrderLine from "../common/OrderLine";
 import ArchiveContextMenu from "./ArchiveContextMenu";
 
-const Folder = ({folder, onUpdateHierarchy, onUpdateOrder}) => {
+const Folder = ({folder, onUpdateHierarchy, onUpdateOrder, onCreateFolder}) => {
     let {accessToken} = useLogin();
     const [name, setName] = useState(folder.name);
     const [isClicked, setIsClicked] = useState(false);
@@ -30,14 +30,15 @@ const Folder = ({folder, onUpdateHierarchy, onUpdateOrder}) => {
             })
                 .then(response => response.json())
                 .then(data => {
+                    console.log(data);
                     let childrenFolder = [];
                     let childrenBookmark = [];
 
                     if (data.childrenFolder && data.childrenFolder.length > 0) {
                         childrenFolder = data.childrenFolder.map(folder => new FolderDto(folder));
                         childrenFolder.forEach(childFolder => {
-                            const hierarchyParentIds = childFolder.hierarchyParentIds;
-                            hierarchyParentIds.push(...folder.hierarchyParentIds);
+                            const hierarchyParentIds = childFolder.hierarchyParentFolderIds;
+                            hierarchyParentIds.push(...folder.hierarchyParentFolderIds);
                         });
                     }
 
@@ -45,46 +46,14 @@ const Folder = ({folder, onUpdateHierarchy, onUpdateOrder}) => {
                         childrenBookmark = data.childrenBookmark.map(bookmark => new BookmarkDto(bookmark));
                         childrenBookmark.forEach(childBookmark => {
                             const hierarchyParentIds = childBookmark.hierarchyParentFolderIds;
-                            hierarchyParentIds.push(...folder.hierarchyParentIds);
+                            hierarchyParentIds.push(...folder.hierarchyParentFolderIds);
                         })
                     }
 
-                    const sort = [...childrenFolder, ...childrenBookmark].sort((a, b) => a.order - b.order);
-                    setChildrenSortedArchive(sort);
+                    setChildrenSortedArchive([...childrenFolder, ...childrenBookmark].sort((a, b) => a.order - b.order));
                 })
                 .catch(err => console.error("Error fetching children:", err));
         }
-    }
-
-    const handleCreateHierarchyFolder = (bookmark1, bookmark2) => {
-        fetch(process.env.REACT_APP_SERVER + "/storage/folders", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/problem+json",
-                "Authorization": `Bearer ${accessToken}`,
-            },
-            body: JSON.stringify({
-                title: "New Folder",
-                bookmarks: [bookmark1, bookmark2],
-            })
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.createdFolder) {
-                    const folderDto = new FolderDto(data.createdFolder);
-
-                    const extractedChildrenArchive = childrenSortedArchive.filter(archive => {
-                        return (archive.id !== bookmark1.id && BookmarkDto.isBookmark(archive))
-                            && (archive.id !== bookmark2.id && BookmarkDto.isBookmark(archive));
-                    });
-
-                    const newSortedChildrenArchive = extractedChildrenArchive.sort((a, b) => a.order - b.order);
-                    newSortedChildrenArchive.push(folderDto);
-
-                    setChildrenSortedArchive(newSortedChildrenArchive);
-                }
-            })
-            .catch(err => console.error("Error fetching create folder:", err));
     }
 
     return (
@@ -111,7 +80,9 @@ const Folder = ({folder, onUpdateHierarchy, onUpdateOrder}) => {
                                 <StyledChildArchive key={archive.id}>
                                     <Folder folder={archive}
                                             onUpdateHierarchy={onUpdateHierarchy}
-                                            onUpdateOrder={onUpdateOrder}/>
+                                            onUpdateOrder={onUpdateOrder}
+                                            onCreateFolder={onCreateFolder}
+                                    />
                                 </StyledChildArchive>
                             )
                             :
@@ -120,7 +91,7 @@ const Folder = ({folder, onUpdateHierarchy, onUpdateOrder}) => {
                                     <Bookmark bookmark={archive}
                                               onUpdateHierarchy={onUpdateHierarchy}
                                               onUpdateOrder={onUpdateOrder}
-                                              onCreateFolder={handleCreateHierarchyFolder}
+                                              onCreateFolder={onCreateFolder}
                                     />
                                 </StyledChildArchive>
                             ));

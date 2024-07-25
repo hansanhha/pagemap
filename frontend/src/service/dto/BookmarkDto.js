@@ -13,7 +13,7 @@ export default class BookmarkDto {
         this.name = Bookmark.name;
         this.uri = Bookmark.uri;
         this.parentFolderId = Bookmark.parentFolderId;
-        this.order = 0;
+        this.order = Bookmark.order;
         this.hierarchyParentFolderIds = [Bookmark.parentFolderId];
     }
 

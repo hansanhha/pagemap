@@ -24,8 +24,6 @@ const ArchiveSection = () => {
             })
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data);
-
                     let folders = [];
                     let bookmarks = [];
 
@@ -70,6 +68,7 @@ const ArchiveSection = () => {
                 },
                 body: JSON.stringify({
                     targetFolderId: target.id,
+                    updateOrder: target.order,
                 })
             })
                 .then(response => response.json())
@@ -86,6 +85,7 @@ const ArchiveSection = () => {
                 },
                 body: JSON.stringify({
                     targetFolderId: target.id,
+                    updateOrder: target.order,
                 })
             })
                 .then(response => response.json())
@@ -102,8 +102,7 @@ const ArchiveSection = () => {
                 },
                 body: JSON.stringify({
                     targetFolderId: target.id,
-                    name: source.title,
-                    uri: source.url,
+                    updateOrder: target.order,
                 })
             })
                 .then(response => response.json())
@@ -118,7 +117,7 @@ const ArchiveSection = () => {
         handleActive();
     }
 
-    const handleCreateFolder = (bookmark1, bookmark2) => {
+    const handleCreateFolder = (folderId, bookmark1, bookmark2) => {
         fetch(process.env.REACT_APP_SERVER + "/storage/folders", {
             method: "POST",
             headers: {
@@ -126,7 +125,7 @@ const ArchiveSection = () => {
                 "Authorization": `Bearer ${accessToken}`,
             },
             body: JSON.stringify({
-                parentFolderId: 0,
+                parentFolderId: folderId,
                 bookmarkIds: [bookmark1.id, bookmark2.id]
             })
         })

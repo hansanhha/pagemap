@@ -1,11 +1,12 @@
 import styled from "styled-components";
 import {useState} from "react";
 import FolderDto from "../../service/dto/FolderDto";
+import BookmarkDto from "../../service/dto/BookmarkDto";
 
-let source = null;
+let sourceArchive = null;
 
 const setSource = (s) => {
-    source = s;
+    sourceArchive = s;
 }
 
 const OrderLine = ({ archive, onDropped }) => {
@@ -13,11 +14,14 @@ const OrderLine = ({ archive, onDropped }) => {
 
     const dragStart = (e) => {
         e.stopPropagation();
+        e.preventDefault();
     }
 
     const dragEnter = (e) => {
         e.stopPropagation();
-        if (FolderDto.isFolder(source) && archive.isDescendant(source)) {
+        e.preventDefault();
+        if (FolderDto.isFolder(sourceArchive)
+            && (sourceArchive.isDescendant(archive) || sourceArchive.isHierarchyParent(archive))) {
             return;
         }
 
@@ -26,17 +30,20 @@ const OrderLine = ({ archive, onDropped }) => {
 
     const dragLeave = (e) => {
         e.stopPropagation();
+        e.preventDefault();
         setIsDraggingOver(false);
     }
 
     const drop = (e) => {
         e.stopPropagation();
-        if (FolderDto.isFolder(source) && archive.isDescendant(source)) {
+        e.preventDefault();
+        if (FolderDto.isFolder(sourceArchive)
+            && (sourceArchive.isDescendant(archive) || sourceArchive.isHierarchyParent(archive))) {
             return;
         }
 
         setIsDraggingOver(false);
-        onDropped(source, archive);
+        onDropped(sourceArchive, archive);
     }
 
     return (

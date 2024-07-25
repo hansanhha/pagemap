@@ -59,7 +59,7 @@ const FolderCreatable = ({bookmark, onDropped, children}) => {
             return;
         }
 
-        onDropped(bookmark, new BookmarkDto(JSON.parse(e.dataTransfer.getData(bookmarkDataTransferName))));
+        onDropped(bookmark.parentFolderId, bookmark, new BookmarkDto(JSON.parse(e.dataTransfer.getData(bookmarkDataTransferName))));
     }
 
     return (

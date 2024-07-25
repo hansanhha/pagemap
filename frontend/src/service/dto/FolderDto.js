@@ -6,7 +6,7 @@ export default class FolderDto {
     childrenFolder;
     childrenBookmark;
     order;
-    hierarchyParentIds;
+    hierarchyParentFolderIds;
 
     constructor(Folder) {
         this.id = Folder.id;
@@ -14,9 +14,9 @@ export default class FolderDto {
         this.name = Folder.name;
         this.parentFolderId = Folder.parentFolderId;
         this.childrenFolder = Folder.childrenFolder ? Folder.childrenFolder : [];
-        this.childrenBookmark = Folder.bookmarks ? Folder.bookmarks : [];
-        this.order = 0;
-        this.hierarchyParentIds = [Folder.parentMapId];
+        this.childrenBookmark = Folder.childrenBookmark ? Folder.childrenBookmark : [];
+        this.order = Folder.order;
+        this.hierarchyParentFolderIds = [Folder.parentFolderId];
     }
 
     static isFolder(archive) {
@@ -24,6 +24,10 @@ export default class FolderDto {
     }
 
     isDescendant(folder) {
-        return this.hierarchyParentIds.includes(folder.id);
+        return this.hierarchyParentFolderIds.includes(folder.id);
+    }
+
+    isHierarchyParent(archive) {
+        return archive.hierarchyParentFolderIds.includes(this.id);
     }
 }

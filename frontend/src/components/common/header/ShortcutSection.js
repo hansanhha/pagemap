@@ -113,7 +113,7 @@ const ShortcutSection = () => {
                     "Authorization": "Bearer " + accessToken,
                 },
                 body: JSON.stringify({
-                    parentMapId: 0,
+                    parentFolderId: 0,
                     title: source.title,
                     uri: source.url,
                     description: "shortcut dropzone test",

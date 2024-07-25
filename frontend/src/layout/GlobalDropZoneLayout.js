@@ -2,13 +2,14 @@ import styled from "styled-components";
 import {useLocation} from "react-router-dom";
 import {useState} from "react";
 import {useLogin} from "../hooks/useLogin";
-import {bookmarkDataTransferName} from "../components/archive/ArchiveDrag";
+import {bookmarkDataTransferName, folderDataTransferName} from "../components/archive/ArchiveDrag";
 import {shortcutDataTransferName} from "../components/archive/ShortcutDrag";
 
 const isValidExternalDrag = (e) => {
 
-    if (e.dataTransfer.types.includes(bookmarkDataTransferName)
-    || e.dataTransfer.types.includes(shortcutDataTransferName)) {
+    if (e.dataTransfer.types.includes(folderDataTransferName)
+        || e.dataTransfer.types.includes(bookmarkDataTransferName)
+        || e.dataTransfer.types.includes(shortcutDataTransferName)) {
         return false;
     }
 
@@ -77,7 +78,16 @@ const GlobalDropZoneLayout = ({children}) => {
             }
         }
 
+        let uri = null;
         if (e.dataTransfer.types.includes("text/plain")) {
+            uri = e.dataTransfer.getData("text/plain");
+        } else if (e.dataTransfer.types.includes("text/uri-list")) {
+            uri = e.dataTransfer.getData("text/uri-list");
+        } else if (e.dataTransfer.types.includes("text/html")) {
+            uri = e.dataTransfer.getData("text/html");
+        }
+
+        if (uri) {
             fetch(process.env.REACT_APP_SERVER + "/storage/bookmarks/auto", {
                 method: "POST",
                 headers: {
@@ -86,7 +96,7 @@ const GlobalDropZoneLayout = ({children}) => {
                 },
                 body: JSON.stringify({
                     parentFolderId: 0,
-                    uri: e.dataTransfer.getData("text/plain"),
+                    uri: uri,
                 })
             })
                 .then(response => response.json())

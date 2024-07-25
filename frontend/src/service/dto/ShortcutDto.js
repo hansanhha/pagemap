@@ -10,7 +10,7 @@ class ShortcutDto {
         this.logo = null;
         this.name = Shortcut.name;
         this.uri = Shortcut.uri;
-        this.order = 0;
+        this.order = Shortcut.order;
     }
 
     static isShortcut(archive) {

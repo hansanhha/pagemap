@@ -38,7 +38,7 @@ public class BookmarkController {
     @GetMapping("/{id}")
     public ResponseEntity<Map<String, Object>> getBookmark(@AuthenticationPrincipal AuthenticatedAccount account,
                                                            @PathVariable Long id) {
-        return ResponseEntity.ok(GetBookmarkResponseBody.of(archiveUse.getWebPage(account.getName(), id)));
+        return ResponseEntity.ok(GetBookmarkResponseBody.of(archiveUse.getBookmark(account.getName(), id)));
     }
 
     @PostMapping

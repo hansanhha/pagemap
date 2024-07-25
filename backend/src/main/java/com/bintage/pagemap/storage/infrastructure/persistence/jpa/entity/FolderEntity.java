@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -42,6 +43,10 @@ public class FolderEntity {
     @Setter
     private String name;
 
+    private Instant createdAt;
+
+    private Instant lastModifiedAt;
+
     public void update(String name) {
         this.name = name;
     }
@@ -66,6 +71,8 @@ public class FolderEntity {
         entity.childrenFolder = convertChildrenFolderIdsFromDomainModel(domainModel.getChildrenFolder());
         entity.childrenBookmark = convertChildrenBookmarkIdsFromDomainModel(domainModel.getChildrenBookmark());
         entity.delete = EmbeddedDelete.fromDomainModel(domainModel.getDeleted());
+        entity.createdAt = domainModel.getCreatedAt();
+        entity.lastModifiedAt = domainModel.getLastModifiedAt();
         return entity;
     }
 
@@ -78,6 +85,8 @@ public class FolderEntity {
         entity.childrenFolder = FolderEntity.convertChildrenFolderIdsFromDomainModel(domainModel.getChildrenFolder());
         entity.childrenBookmark = convertChildrenBookmarkIdsFromDomainModel(domainModel.getChildrenBookmark());
         entity.delete = EmbeddedDelete.fromDomainModel(domainModel.getDeleted());
+        entity.createdAt = domainModel.getCreatedAt();
+        entity.lastModifiedAt = domainModel.getLastModifiedAt();
         return entity;
     }
 
@@ -90,6 +99,8 @@ public class FolderEntity {
                 .deleted(EmbeddedDelete.toDomainModel(entity.getDelete()))
                 .childrenFolder(new LinkedList<>())
                 .childrenBookmark(new LinkedList<>())
+                .createdAt(entity.getCreatedAt())
+                .lastModifiedAt(entity.getLastModifiedAt())
                 .build();
     }
 
@@ -102,6 +113,10 @@ public class FolderEntity {
                 .accountId(new Account.AccountId(childEntity.accountId))
                 .name(childEntity.getName())
                 .deleted(EmbeddedDelete.toDomainModel(childEntity.getDelete()))
+                .childrenFolder(new LinkedList<>())
+                .childrenBookmark(new LinkedList<>())
+                .createdAt(childEntity.getCreatedAt())
+                .lastModifiedAt(childEntity.getLastModifiedAt())
                 .build();
     }
 

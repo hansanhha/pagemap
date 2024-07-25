@@ -25,6 +25,8 @@ public class Folder implements AggregateRoot<Folder, Folder.FolderId> {
     private List<Folder> childrenFolder;
     private List<Bookmark> childrenBookmark;
     private String name;
+    @Builder.Default private Instant createdAt = Instant.now();
+    @Builder.Default private Instant lastModifiedAt = Instant.now();
     @Builder.Default private Delete deleted = Delete.notScheduled();
 
     public void rename(String name) {

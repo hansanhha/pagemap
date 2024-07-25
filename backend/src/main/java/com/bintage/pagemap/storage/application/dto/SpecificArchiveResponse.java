@@ -6,16 +6,13 @@ import com.bintage.pagemap.storage.domain.model.bookmark.Bookmark;
 import java.util.LinkedList;
 import java.util.List;
 
-public record SpecificArchiveResponse(List<FolderDto> maps,
-                                      List<BookmarkDto> webPages) {
+public record SpecificArchiveResponse(List<FolderDto> folders,
+                                      List<BookmarkDto> bookmarks) {
 
     public static SpecificArchiveResponse from(List<Folder> folders, List<Bookmark> bookmarks) {
-        var mapDtos = new LinkedList<FolderDto>();
-        var webPageDtos = new LinkedList<BookmarkDto>();
+        var folderDtos = folders.stream().map(FolderDto::from).toList();
+        var bookmarkDtos = bookmarks.stream().map(BookmarkDto::from).toList();
 
-        folders.forEach(map -> mapDtos.add(FolderDto.from(map)));
-        bookmarks.forEach(webPage -> webPageDtos.add(BookmarkDto.from(webPage)));
-
-        return new SpecificArchiveResponse(mapDtos, webPageDtos);
+        return new SpecificArchiveResponse(folderDtos, bookmarkDtos);
     }
 }

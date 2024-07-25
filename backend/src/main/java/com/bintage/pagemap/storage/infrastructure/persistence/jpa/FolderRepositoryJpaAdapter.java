@@ -71,13 +71,19 @@ public class FolderRepositoryJpaAdapter implements FolderRepository {
 
         if (currentFolderEntity.getChildrenFolder() != null && !currentFolderEntity.getChildrenFolder().isEmpty()) {
             var childrenFolderEntity = folderEntityRepository.findNotDeletedAllById(accountId.value(), currentFolderEntity.getChildrenFolder());
-            var childrenFolder = childrenFolderEntity.stream().map(child -> FolderEntity.toChildDomainModel(currentFolder.getId(), child)).toList();
+            var childrenFolder = childrenFolderEntity.stream()
+                    .filter(child -> !child.getDelete().isMoveTrashed())
+                    .map(child -> FolderEntity.toChildDomainModel(currentFolder.getId(), child))
+                    .toList();
             currentFolder.addFolder(childrenFolder);
         }
 
         if (currentFolderEntity.getChildrenBookmark() != null && !currentFolderEntity.getChildrenBookmark().isEmpty()) {
             var childrenBookmarkEntity = bookmarkEntityRepository.findNotDeletedAllById(accountId.value(), currentFolderEntity.getChildrenBookmark());
-            var childrenBookmark = childrenBookmarkEntity.stream().map(BookmarkEntity::toDomainModel).toList();
+            var childrenBookmark = childrenBookmarkEntity.stream()
+                    .filter(child -> !child.getDelete().isMoveTrashed())
+                    .map(BookmarkEntity::toDomainModel)
+                    .toList();
             currentFolder.addBookmark(childrenBookmark);
         }
 

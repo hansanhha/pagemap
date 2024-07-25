@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.net.URI;
+import java.time.Instant;
 
 @Table(name = "bookmark")
 @Entity
@@ -34,6 +35,10 @@ public class BookmarkEntity {
     @Embedded
     private EmbeddedDelete delete;
 
+    private Instant createdAt;
+
+    private Instant lastModifiedAt;
+
     public void update(String name, String uri) {
         this.name = name;
         this.uri = uri;
@@ -59,6 +64,8 @@ public class BookmarkEntity {
         entity.uri = domainModel.getUrl().toString();
         entity.visitCount = domainModel.getVisitCount();
         entity.delete = EmbeddedDelete.fromDomainModel(domainModel.getDeleted());
+        entity.createdAt = domainModel.getCreatedAt();
+        entity.lastModifiedAt = domainModel.getLastModifiedAt();
         return entity;
     }
 
@@ -71,6 +78,8 @@ public class BookmarkEntity {
         entity.uri = domainModel.getUrl().toString();
         entity.visitCount = domainModel.getVisitCount();
         entity.delete = EmbeddedDelete.fromDomainModel(domainModel.getDeleted());
+        entity.createdAt = domainModel.getCreatedAt();
+        entity.lastModifiedAt = domainModel.getLastModifiedAt();
         return entity;
     }
 
@@ -83,6 +92,8 @@ public class BookmarkEntity {
                 .url(URI.create(entity.getUri()))
                 .visitCount(entity.getVisitCount())
                 .deleted(EmbeddedDelete.toDomainModel(entity.getDelete()))
+                .createdAt(entity.getCreatedAt())
+                .lastModifiedAt(entity.getLastModifiedAt())
                 .build();
     }
 

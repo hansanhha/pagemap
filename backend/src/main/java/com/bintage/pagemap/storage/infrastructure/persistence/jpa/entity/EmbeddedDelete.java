@@ -2,9 +2,11 @@ package com.bintage.pagemap.storage.infrastructure.persistence.jpa.entity;
 
 import com.bintage.pagemap.storage.domain.model.Delete;
 import jakarta.persistence.Embeddable;
+import lombok.Getter;
 
 import java.time.Instant;
 
+@Getter
 @Embeddable
 public class EmbeddedDelete {
 

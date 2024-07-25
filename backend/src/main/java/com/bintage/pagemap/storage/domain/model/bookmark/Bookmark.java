@@ -24,6 +24,8 @@ public class Bookmark implements AggregateRoot<Bookmark, Bookmark.BookmarkId>{
     @Builder.Default private Folder.FolderId parentFolderId = TOP_LEVEL;
     private URI url;
     private String name;
+    @Builder.Default private Instant createdAt = Instant.now();
+    @Builder.Default private Instant lastModifiedAt = Instant.now();
     @Builder.Default private int visitCount = 0;
     @Builder.Default private Delete deleted = Delete.notScheduled();
 

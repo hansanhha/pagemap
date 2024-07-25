@@ -46,7 +46,7 @@ public class FolderStore {
         List<Bookmark> newFolderChildrenBookmark = bookmarkRepository.findAllById(accountId,
                 request.bookmarkIds().stream().map(Bookmark.BookmarkId::new).toList());
 
-        var folder = Folder.builder()
+        var newFolder = Folder.builder()
                 .accountId(accountId)
                 .name(DEFAULT_FOLDER_NAME)
                 .childrenFolder(List.of())
@@ -55,19 +55,18 @@ public class FolderStore {
 
         // 최상위 계층에 폴더를 생성하는 경우
         if (isTopLevel(parentFolderId)) {
-            var created = folderRepository.save(folder);
+            var created = folderRepository.save(newFolder);
 
             archiveCounter.increment(ArchiveCounter.CountType.FOLDER);
             archiveCounterRepository.save(archiveCounter);
 
             // 새 폴더 하위에 생기는 북마크들의 order 및 parent 처리
-            newFolderChildrenBookmark.forEach(bookmark -> {
+            for (int i = 0; i < newFolderChildrenBookmark.size(); i++) {
+                var bookmark = newFolderChildrenBookmark.get(i);
+
                 // 새 폴더 하위에 생기는 북마크의 원래 부모가 최상위 계층인 경우 최상위 계층 자식 간의 순서 조정
                 if (bookmark.getParentFolderId().equals(Bookmark.TOP_LEVEL)) {
                     decreaseOrderGreaterThanEqual(topLevelFolders, topLevelBookmarks, bookmark.getOrder());
-
-                    folderRepository.update(topLevelFolders);
-                    bookmarkRepository.update(topLevelBookmarks);
                 }
                 // 아닌 경우, 해당 폴더에서 북마크 참조 삭제
                 else {
@@ -77,22 +76,20 @@ public class FolderStore {
                     bookmarkOriginalParentFolder.removeBookmark(bookmark);
                 }
 
+                bookmark.order(i+1);
                 bookmark.parent(created);
-                bookmarkRepository.update(bookmark);
-            });
+            }
 
-            // 새 폴더 하위에 생기는 북마크의 부모가 최상위 계층인 경우, 최상위 계층으로부터 삭제되는 북마크 계산
-            // 새 폴더의 order를 지정하기 위한 용도
-            int topLevelBookmarkCount = newFolderChildrenBookmark.stream()
+            var childrenBookmarksOnTheTopLevel = newFolderChildrenBookmark.stream()
                     .filter(bookmark -> bookmark.getParentFolderId().equals(Bookmark.TOP_LEVEL))
-                    .toList()
-                    .size();
+                    .toList();
 
-            var order = topLevelBookmarks.size() + topLevelFolders.size() + 1 - topLevelBookmarkCount;
-
+            var order = topLevelFolders.size() + topLevelBookmarks.size() - childrenBookmarksOnTheTopLevel.size();
             created.order(order);
             folderRepository.update(created);
-
+            folderRepository.update(topLevelFolders);
+            bookmarkRepository.update(topLevelBookmarks);
+            bookmarkRepository.update(newFolderChildrenBookmark);
             return FolderDto.from(created);
         }
 
@@ -100,32 +97,34 @@ public class FolderStore {
         var parentFolder = folderRepository.findFamilyById(accountId, parentFolderId)
                 .orElseThrow(() -> FolderException.notFound(accountId, parentFolderId));
 
-        newFolderChildrenBookmark.forEach(bookmark -> {
-            // 새 폴더 하위에 생기는 북마크의 원래 부모가 새 폴더의 부모인 경우 해당 북마크 참조 삭제
+        var created = folderRepository.save(newFolder);
+        archiveCounter.increment(ArchiveCounter.CountType.FOLDER);
+
+        for (int i = 0; i < newFolderChildrenBookmark.size(); i++) {
+            var bookmark = newFolderChildrenBookmark.get(i);
+
+            // 새 폴더 하위에 생기는 북마크의 원래 부모가 새 폴더 부모와 동일한 경우 - 원래 부모의 북마크 참조 삭제
             if (bookmark.getParentFolderId().equals(parentFolder.getId())) {
                 parentFolder.removeBookmark(bookmark);
             }
-            // 최상위인 경우 계층 내에서 순서 재조정
+            // 아닌 경우 북마크의 원래 부모를 찾아와서 참조 삭제
             else {
-                decreaseOrderGreaterThanEqual(parentFolder.getChildrenFolder(),
-                        parentFolder.getChildrenBookmark(), bookmark.getOrder());
+                var bookmarkOriginalParentFolder = folderRepository.findFamilyById(accountId, bookmark.getParentFolderId())
+                        .orElseThrow(() -> FolderException.notFound(accountId, bookmark.getParentFolderId()));
+
+                bookmarkOriginalParentFolder.removeBookmark(bookmark);
             }
-        });
 
-        var order = parentFolder.getChildrenFolder().size() + parentFolder.getChildrenBookmark().size() + 1;
+            bookmark.order(i+1);
+            bookmark.parent(created);
+        }
 
-        folder.parent(parentFolder);
-        folder.order(order);
-
-        var created = folderRepository.save(folder);
-        newFolderChildrenBookmark.forEach(bookmark -> bookmark.parent(created));
         parentFolder.addFolder(created);
 
-        archiveCounter.increment(ArchiveCounter.CountType.FOLDER);
-
-        folderRepository.updateFamily(parentFolder);
         archiveCounterRepository.save(archiveCounter);
         bookmarkRepository.update(newFolderChildrenBookmark);
+        folderRepository.updateFamily(parentFolder);
+        folderRepository.update(created);
         return FolderDto.from(created);
     }
 

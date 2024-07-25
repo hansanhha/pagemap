@@ -61,6 +61,10 @@ public class Bookmark implements AggregateRoot<Bookmark, Bookmark.BookmarkId>{
         this.order = order;
     }
 
+    public void name(String name) {
+        this.name = name;
+    }
+
     public void decreaseOrder() {
         this.order--;
     }

@@ -104,8 +104,8 @@ public class Folder implements AggregateRoot<Folder, Folder.FolderId> {
             throw FolderException.notContainChild(accountId, getId(), ArchiveType.FOLDER, child.getId().value());
         }
 
-        childrenBookmark.stream().takeWhile(b -> b.getOrder() > child.getOrder()).forEach(Bookmark::decreaseOrder);
-        childrenFolder.stream().takeWhile(f -> f.getOrder() > child.getOrder()).forEach(Folder::decreaseOrder);
+        childrenBookmark.stream().filter(b -> b.getOrder() > child.getOrder()).forEach(Bookmark::decreaseOrder);
+        childrenFolder.stream().filter(f -> f.getOrder() > child.getOrder()).forEach(Folder::decreaseOrder);
 
         childrenFolder.remove(child);
     }
@@ -131,8 +131,8 @@ public class Folder implements AggregateRoot<Folder, Folder.FolderId> {
             throw FolderException.notContainChild(accountId, getId(), ArchiveType.BOOKMARK, child.getId().value());
         }
 
-        childrenBookmark.stream().takeWhile(b -> b.getOrder() > child.getOrder()).forEach(Bookmark::decreaseOrder);
-        childrenFolder.stream().takeWhile(f -> f.getOrder() > child.getOrder()).forEach(Folder::decreaseOrder);
+        childrenBookmark.stream().filter(b -> b.getOrder() > child.getOrder()).forEach(Bookmark::decreaseOrder);
+        childrenFolder.stream().filter(f -> f.getOrder() > child.getOrder()).forEach(Folder::decreaseOrder);
 
         childrenBookmark.remove(child);
     }

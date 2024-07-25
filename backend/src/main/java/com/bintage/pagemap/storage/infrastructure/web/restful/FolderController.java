@@ -51,7 +51,7 @@ public class FolderController {
     @PatchMapping("/{id}")
     public ResponseEntity<Map<String, String>> updateMap(@AuthenticationPrincipal AuthenticatedAccount account,
                                                          @PathVariable Long id,
-                                                         @RequestBody UpdateFolderNicknameRestRequest request) {
+                                                         @Valid @RequestBody UpdateFolderNicknameRestRequest request) {
         folderStore.rename(account.getName(), id, request.getName());
         return ResponseEntity.ok(UpdatedMapResponseBody.of());
     }

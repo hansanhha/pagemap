@@ -39,6 +39,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BookmarkStore {
 
+    private static final String DEFAULT_BOOKMARK_NAME = "새 북마크";
+
     private final FolderRepository folderRepository;
     private final BookmarkRepository bookmarkRepository;
     private final ArchiveCounterRepository archiveCounterRepository;
@@ -64,10 +66,39 @@ public class BookmarkStore {
         var accountId = new Account.AccountId(request.accountId());
         var parentFolderId = Folder.FolderId.of(request.parentFolderId());
         var uri = request.uri();
-        var client = HttpClient.newHttpClient();
-        Bookmark bookmark;
 
-        try {
+        var archiveCounter = archiveCounterRepository.findByAccountId(accountId)
+                .orElseThrow(() -> ArchiveCounterException.notFound(accountId));
+
+        var bookmark = Bookmark.builder()
+                .accountId(accountId)
+                .name(DEFAULT_BOOKMARK_NAME)
+                .url(uri)
+                .build();
+
+        Bookmark created;
+
+        if (isTopLevel(parentFolderId)) {
+            var topLevelBookmarks = bookmarkRepository.findAllByParentFolderId(accountId, Bookmark.TOP_LEVEL);
+            var topLevelFolders = folderRepository.findAllByParentId(accountId, Folder.TOP_LEVEL);
+
+            var order = topLevelBookmarks.size() + topLevelFolders.size() + 1;
+
+            bookmark.order(order);
+            created = bookmarkRepository.save(bookmark);
+
+            archiveCounter.increment(ArchiveCounter.CountType.BOOKMARK);
+            archiveCounterRepository.save(archiveCounter);
+        } else {
+            var parentFolder = folderRepository.findFamilyById(accountId, parentFolderId)
+                    .orElseThrow(() -> FolderException.notFound(accountId, parentFolderId));
+
+            created = bookmarkRepository.save(bookmark);
+            parentFolder.addBookmark(created);
+            folderRepository.updateFamily(parentFolder);
+        }
+
+        try (var client = HttpClient.newHttpClient()) {
             if (uri.toString().length() > Bookmark.MAX_URI_LENGTH) {
                 throw BookmarkException.failedAutoNamingTooManyLongURI(accountId, uri);
             }
@@ -86,24 +117,12 @@ public class BookmarkStore {
                 webPageTitle = webPageTitle.substring(0, Bookmark.MAX_NAME_LENGTH);
             }
 
-
-            bookmark = Bookmark.builder()
-                    .accountId(accountId)
-                    .name(webPageTitle)
-                    .url(uri)
-                    .build();
+            created.name(webPageTitle);
         } catch (IOException | InterruptedException e) {
             throw BookmarkException.failedAutoSave(accountId, uri);
-        } finally {
-            client.close();
         }
 
-        if (isTopLevel(parentFolderId)) {
-            var created = creatOnTheTopLevel(accountId, bookmark);
-            return BookmarkDto.from(created);
-        }
-
-        var created = createOnTheOtherFolder(accountId, parentFolderId, bookmark);
+        bookmarkRepository.update(created);
         return BookmarkDto.from(created);
     }
 

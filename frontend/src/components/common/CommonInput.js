@@ -9,6 +9,7 @@ const CommonInput = ({ placeholder, value, readOnly, onUpdateValue }) => {
         <StyledInputForm placeholder={placeholder}
                          value={value}
                          readOnly={readOnly}
+                         autoFocus={true}
                          onChange={handleChange}/>
     )
 }

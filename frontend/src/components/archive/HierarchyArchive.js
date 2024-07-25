@@ -14,6 +14,7 @@ const HierarchyArchive = ({archives, onUpdateHierarchy, onUpdateOrder, onCreateF
                                 folder={archive}
                                 onUpdateHierarchy={onUpdateHierarchy}
                                 onUpdateOrder={onUpdateOrder}
+                                onCreateFolder={onCreateFolder}
                         />
                     )
                     :

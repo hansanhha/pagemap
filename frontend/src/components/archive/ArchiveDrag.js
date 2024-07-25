@@ -34,8 +34,10 @@ const ArchiveDrag = ({ archive, children, onDropped }) => {
 
     const dragEnter = (e) => {
         e.stopPropagation();
+        e.preventDefault();
         if (FolderDto.isFolder(archive)) {
-            if (FolderDto.isFolder(sourceArchive) && archive.isDescendant(sourceArchive)) {
+            if (FolderDto.isFolder(sourceArchive)
+                && (sourceArchive.isDescendant(archive) || sourceArchive.isHierarchyParent(archive))) {
                 return;
             }
 
@@ -52,8 +54,10 @@ const ArchiveDrag = ({ archive, children, onDropped }) => {
 
     const drop = (e) => {
         e.stopPropagation();
+        e.preventDefault();
         if (FolderDto.isFolder(archive)) {
-            if (FolderDto.isFolder(sourceArchive) && archive.isDescendant(sourceArchive)) {
+            if (FolderDto.isFolder(sourceArchive)
+                && (sourceArchive.isDescendant(archive) || sourceArchive.isHierarchyParent(archive))) {
                 return;
             }
 

@@ -14,7 +14,7 @@ const AccountPage = () => {
     const [isUpdatable, setIsUpdatable] = useState(false);
     const [nickname, setNickname] = useState("");
     const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
-    const [archiveCount, setArchiveCount] = useState({bookmark: null, folder: null});
+    const [archiveCount, setArchiveCount] = useState({folder: null, bookmark: null});
 
     useEffect(() => {
         fetch(`${process.env.REACT_APP_SERVER}/account/me`, {
@@ -33,8 +33,8 @@ const AccountPage = () => {
                 if (data.nickname) {
                     setNickname(data.nickname);
                 }
-                if (data.mapCount && data.webPageCount) {
-                    setArchiveCount({bookmark: data.webPageCount, folder: data.mapCount});
+                if (data.folderCount || data.bookmarkCount) {
+                    setArchiveCount({folder: data.folderCount, bookmark: data.bookmarkCount});
                 }
             })
             .catch(err => console.log("failure fetching archive count: ", err));

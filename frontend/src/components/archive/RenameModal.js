@@ -13,10 +13,10 @@ const isValidTitle = (title) => {
         && titleRegex.test(title);
 }
 
-const RenameModal = ({id, archiveType, originalTitle, onRename, onClose}) => {
+const RenameModal = ({id, archiveType, originalName, onRename, onClose}) => {
     const {isMobile} = useMediaQuery();
     const {accessToken} = useLogin();
-    const [updateTitle, setUpdateTitle] = useState("");
+    const [updateName, setUpdateName] = useState("");
     const [error, setError] = useState(false);
     const RenameModalRef = useRef(null);
 
@@ -41,7 +41,7 @@ const RenameModal = ({id, archiveType, originalTitle, onRename, onClose}) => {
         }
 
         setError(false);
-        setUpdateTitle(updateTitle);
+        setUpdateName(updateTitle);
     }
 
     const closeModal = () => {
@@ -49,7 +49,7 @@ const RenameModal = ({id, archiveType, originalTitle, onRename, onClose}) => {
     }
 
     const handleRename = () => {
-        if (!isValidTitle(updateTitle)) {
+        if (!isValidTitle(updateName)) {
             setError(true);
             return;
         }
@@ -58,13 +58,13 @@ const RenameModal = ({id, archiveType, originalTitle, onRename, onClose}) => {
 
         switch (archiveType) {
             case "folder":
-                type = "maps";
+                type = "folders";
                 break;
             case "bookmark":
                 type = "webpages";
                 break;
             case "shortcut":
-                type = "webpages";
+                type = "shortcuts";
                 break;
             default:
                 console.error("Invalid archive type");
@@ -78,12 +78,12 @@ const RenameModal = ({id, archiveType, originalTitle, onRename, onClose}) => {
                 "Authorization": `Bearer ${accessToken}`,
             },
             body: JSON.stringify({
-                title: updateTitle
+                name: updateName.toString()
             })
         })
             .then(res => res.json())
             .then(data => {
-                onRename(updateTitle);
+                onRename(updateName);
             })
             .catch(err => console.error("Error fetching rename:", err));
 
@@ -97,13 +97,13 @@ const RenameModal = ({id, archiveType, originalTitle, onRename, onClose}) => {
             </h2>
             <StyledRenameModalBody>
                 {
-                    updateTitle &&
+                    updateName &&
                     <StyledGuideMessage>
-                        {originalTitle + "에서 " + updateTitle + "(으)로 변경합니다"}
+                        {originalName + "에서 " + updateName + "(으)로 변경합니다"}
                     </StyledGuideMessage>
                 }
-                <CommonInput placeholder={originalTitle}
-                             value={updateTitle}
+                <CommonInput placeholder={originalName}
+                             value={updateName}
                              readOnly={false}
                              onUpdateValue={handleUpdateTitle}/>
                 {

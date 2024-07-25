@@ -42,7 +42,7 @@ const ArchiveContextMenu = ({children, archive, setTitle}) => {
                 isClickedOpenRenameModal &&
                 <RenameModal id={archive.id}
                              archiveType={archiveType}
-                             originalTitle={archive.title}
+                             originalName={archive.name}
                              onRename={setTitle}
                              onClose={closeRenameModal}
                 />

@@ -45,34 +45,18 @@ public class BookmarkStore {
     public long create(BookmarkCreateRequest request) {
         var accountId = new Account.AccountId(request.accountId());
         var parentFolderId = new Folder.FolderId(request.parentFolderId());
-
-        var archiveCounter = archiveCounterRepository.findByAccountId(accountId)
-                .orElseThrow(() -> ArchiveCounterException.notFound(accountId));
-
         var bookmark = Bookmark.builder()
                 .accountId(accountId)
                 .name(request.name())
                 .url(request.uri())
                 .build();
 
-        var savedBookmark = bookmarkRepository.save(bookmark);
-
-        archiveCounter.increment(ArchiveCounter.CountType.BOOKMARK);
-        archiveCounterRepository.save(archiveCounter);
-
-        if (parentFolderId.value() > Bookmark.TOP_LEVEL.value()) {
-            folderRepository.findFamilyById(accountId, parentFolderId)
-                    .ifPresentOrElse(parentFolder -> {
-                        parentFolder.addBookmark(savedBookmark);
-                        savedBookmark.parent(parentFolder);
-                        folderRepository.updateFamily(parentFolder);
-                        bookmarkRepository.updateParent(savedBookmark);
-                    }, () -> {
-                        throw FolderException.notFound(accountId, parentFolderId);
-                    });
+        if (isTopLevel(parentFolderId)) {
+            return creatOnTheTopLevel(accountId, bookmark).getId().value();
         }
 
-        return savedBookmark.getId().value();
+        var created = createOnTheOtherFolder(accountId, parentFolderId, bookmark);
+        return created.getId().value();
     }
 
     public BookmarkDto createByAutoNaming(CreateBookmarkAutoNamingRequest request) {
@@ -80,10 +64,6 @@ public class BookmarkStore {
         var parentFolderId = Folder.FolderId.of(request.parentFolderId());
         var uri = request.uri();
         var client = HttpClient.newHttpClient();
-
-        var archiveCounter = archiveCounterRepository.findByAccountId(accountId)
-                .orElseThrow(() -> ArchiveCounterException.notFound(accountId));
-
         Bookmark bookmark;
 
         try {
@@ -117,22 +97,13 @@ public class BookmarkStore {
             client.close();
         }
 
-        var savedBookmark = bookmarkRepository.save(bookmark);
-        archiveCounter.increment(ArchiveCounter.CountType.BOOKMARK);
-
-        if (parentFolderId.value() > Bookmark.TOP_LEVEL.value()) {
-            folderRepository.findFamilyById(accountId, parentFolderId)
-                    .ifPresentOrElse(parentFolder -> {
-                        parentFolder.addBookmark(savedBookmark);
-                        folderRepository.updateFamily(parentFolder);
-                        bookmarkRepository.updateParent(savedBookmark);
-                    }, () -> {
-                        throw FolderException.notFound(accountId, parentFolderId);
-                    });
+        if (isTopLevel(parentFolderId)) {
+            var created = creatOnTheTopLevel(accountId, bookmark);
+            return BookmarkDto.from(created);
         }
 
-        archiveCounterRepository.save(archiveCounter);
-        return BookmarkDto.from(savedBookmark);
+        var created = createOnTheOtherFolder(accountId, parentFolderId, bookmark);
+        return BookmarkDto.from(created);
     }
 
     public void rename(String accountIdVal, Long bookmarkIdVal, String updateName) {
@@ -221,6 +192,44 @@ public class BookmarkStore {
 
         bookmark.restore();
         bookmarkRepository.updateDeletedStatus(bookmark);
+    }
+
+    private boolean isTopLevel(Folder.FolderId parentFolderId) {
+        return parentFolderId.equals(Bookmark.TOP_LEVEL) || parentFolderId.value() < Bookmark.TOP_LEVEL.value();
+    }
+
+    private Bookmark creatOnTheTopLevel(Account.AccountId accountId, Bookmark bookmark) {
+        var topLevelBookmarks = bookmarkRepository.findByParentFolderId(accountId, Bookmark.TOP_LEVEL);
+        var topLevelFolders = folderRepository.findAllByParentId(accountId, Folder.TOP_LEVEL);
+        var archiveCounter = archiveCounterRepository.findByAccountId(accountId)
+                .orElseThrow(() -> ArchiveCounterException.notFound(accountId));
+        var order = topLevelBookmarks.size() + topLevelFolders.size() + 1;
+
+        bookmark.order(order);
+        var created = bookmarkRepository.save(bookmark);
+
+        archiveCounter.increment(ArchiveCounter.CountType.BOOKMARK);
+        archiveCounterRepository.save(archiveCounter);
+        return created;
+    }
+
+    private Bookmark createOnTheOtherFolder(Account.AccountId accountId, Folder.FolderId parentFolderId, Bookmark bookmark) {
+        var parentFolder = folderRepository.findFamilyById(accountId, parentFolderId).orElseThrow(() -> FolderException.notFound(accountId, parentFolderId));
+        var order = parentFolder.getChildrenFolder().size() + parentFolder.getChildrenBookmark().size() + 1;
+
+        bookmark.parent(parentFolder);
+        bookmark.order(order);
+
+        var created = bookmarkRepository.save(bookmark);
+        parentFolder.addBookmark(created);
+        folderRepository.updateFamily(parentFolder);
+
+        var archiveCounter = archiveCounterRepository.findByAccountId(accountId)
+                .orElseThrow(() -> ArchiveCounterException.notFound(accountId));
+
+        archiveCounter.increment(ArchiveCounter.CountType.BOOKMARK);
+        archiveCounterRepository.save(archiveCounter);
+        return bookmark;
     }
 
     @Async

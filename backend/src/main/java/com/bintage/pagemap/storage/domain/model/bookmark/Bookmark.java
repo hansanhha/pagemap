@@ -24,6 +24,7 @@ public class Bookmark implements AggregateRoot<Bookmark, Bookmark.BookmarkId>{
     @Builder.Default private Folder.FolderId parentFolderId = TOP_LEVEL;
     private URI url;
     private String name;
+    private int order;
     @Builder.Default private Instant createdAt = Instant.now();
     @Builder.Default private Instant lastModifiedAt = Instant.now();
     @Builder.Default private int visitCount = 0;
@@ -54,6 +55,10 @@ public class Bookmark implements AggregateRoot<Bookmark, Bookmark.BookmarkId>{
 
     public void visit() {
         visitCount++;
+    }
+
+    public void order(int order) {
+        this.order = order;
     }
 
     public boolean hasParent() {

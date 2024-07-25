@@ -7,12 +7,14 @@ import java.time.Instant;
 public record FolderDto(long id,
                         long parentFolderId,
                         String name,
+                        int order,
                         Instant createdAt) {
 
     public static FolderDto from(Folder folder) {
         return new FolderDto(folder.getId().value(),
                 folder.getParentId().value(),
                 folder.getName(),
+                folder.getOrder(),
                 folder.getCreatedAt());
     }
 }

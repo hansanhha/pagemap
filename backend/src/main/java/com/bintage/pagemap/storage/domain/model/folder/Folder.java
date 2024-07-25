@@ -25,6 +25,7 @@ public class Folder implements AggregateRoot<Folder, Folder.FolderId> {
     private List<Folder> childrenFolder;
     private List<Bookmark> childrenBookmark;
     private String name;
+    private int order;
     @Builder.Default private Instant createdAt = Instant.now();
     @Builder.Default private Instant lastModifiedAt = Instant.now();
     @Builder.Default private Delete deleted = Delete.notScheduled();
@@ -43,12 +44,16 @@ public class Folder implements AggregateRoot<Folder, Folder.FolderId> {
         }
     }
 
-    public void parent(FolderId parentId) {
-        this.parentId = parentId;
+    public void parent(Folder parent) {
+        this.parentId = parent.getId();
     }
 
     public void goToTopLevel() {
         this.parentId = TOP_LEVEL;
+    }
+
+    public void order(int order) {
+        this.order = order;
     }
 
     public boolean isParent(Folder folder) {

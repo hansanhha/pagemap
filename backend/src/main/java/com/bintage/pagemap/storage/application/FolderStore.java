@@ -33,10 +33,7 @@ public class FolderStore {
 
     public FolderDto create(FolderCreateRequest request) {
         var accountId = new Account.AccountId(request.accountId());
-        var parentMapId = new Folder.FolderId(request.parentFolderId());
-
-        var archiveCounter = archiveCounterRepository.findByAccountId(accountId)
-                .orElseThrow(() -> ArchiveCounterException.notFound(accountId));
+        var parentFolderId = new Folder.FolderId(request.parentFolderId());
 
         List<Bookmark> bookmarks = bookmarkRepository.findAllById(accountId,
                 request.bookmarkIds().stream().map(Bookmark.BookmarkId::new).toList());
@@ -48,29 +45,21 @@ public class FolderStore {
                 .childrenBookmark(bookmarks)
                 .build();
 
-        var savedFolder = folderRepository.save(folder);
-        bookmarks.forEach(bookmark -> {
-            bookmark.parent(savedFolder);
-            bookmarkRepository.updateParent(bookmark);
-        });
-
-        archiveCounter.increment(ArchiveCounter.CountType.FOLDER);
-        archiveCounterRepository.save(archiveCounter);
-
-        if (parentMapId.value() > Folder.TOP_LEVEL.value()) {
-            folderRepository.findFamilyById(accountId, parentMapId)
-                    .ifPresentOrElse(parentFolder -> {
-                                parentFolder.addFolder(savedFolder);
-                                savedFolder.parent(parentMapId);
-                                folderRepository.updateFamily(parentFolder);
-                                folderRepository.updateFamily(savedFolder);
-                            },
-                            () -> {
-                                throw FolderException.notFound(accountId, parentMapId);
-                            });
+        if (isTopLevel(parentFolderId)) {
+            var created = creatOnTheTopLevel(accountId, folder);
+            bookmarks.forEach(bookmark -> {
+                bookmark.parent(created);
+                bookmarkRepository.updateParent(bookmark);
+            });
+            return FolderDto.from(created);
         }
 
-        return FolderDto.from(savedFolder);
+        var  created= createOnTheOtherFolder(accountId, parentFolderId, folder);
+        bookmarks.forEach(bookmark -> {
+            bookmark.parent(created);
+            bookmarkRepository.updateParent(bookmark);
+        });
+        return FolderDto.from(created);
     }
 
 
@@ -128,7 +117,7 @@ public class FolderStore {
                     });
         }
 
-        sourceFolder.parent(targetFolderId);
+        sourceFolder.parent(targetFolder);
         targetFolder.addFolder(sourceFolder);
         folderRepository.updateFamily(sourceFolder);
         folderRepository.updateFamily(targetFolder);
@@ -160,4 +149,42 @@ public class FolderStore {
         folderRepository.updateDeleteStatus(folder);
     }
 
+
+    private boolean isTopLevel(Folder.FolderId parentFolderId) {
+        return parentFolderId.equals(Folder.TOP_LEVEL) || parentFolderId.value() < Folder.TOP_LEVEL.value();
+    }
+
+    private Folder creatOnTheTopLevel(Account.AccountId accountId, Folder folder) {
+        var topLevelBookmarks = bookmarkRepository.findByParentFolderId(accountId, Bookmark.TOP_LEVEL);
+        var topLevelFolders = folderRepository.findAllByParentId(accountId, Folder.TOP_LEVEL);
+        var archiveCounter = archiveCounterRepository.findByAccountId(accountId)
+                .orElseThrow(() -> ArchiveCounterException.notFound(accountId));
+        var order = topLevelBookmarks.size() + topLevelFolders.size() + 1;
+
+        folder.order(order);
+        var created = folderRepository.save(folder);
+
+        archiveCounter.increment(ArchiveCounter.CountType.FOLDER);
+        archiveCounterRepository.save(archiveCounter);
+        return created;
+    }
+
+    private Folder createOnTheOtherFolder(Account.AccountId accountId, Folder.FolderId parentFolderId, Folder folder) {
+        var parentFolder = folderRepository.findFamilyById(accountId, parentFolderId).orElseThrow(() -> FolderException.notFound(accountId, parentFolderId));
+        var order = parentFolder.getChildrenFolder().size() + parentFolder.getChildrenBookmark().size() + 1;
+
+        folder.parent(parentFolder);
+        folder.order(order);
+
+        var created = folderRepository.save(folder);
+        parentFolder.addFolder(created);
+        folderRepository.updateFamily(parentFolder);
+
+        var archiveCounter = archiveCounterRepository.findByAccountId(accountId)
+                .orElseThrow(() -> ArchiveCounterException.notFound(accountId));
+
+        archiveCounter.increment(ArchiveCounter.CountType.FOLDER);
+        archiveCounterRepository.save(archiveCounter);
+        return folder;
+    }
 }

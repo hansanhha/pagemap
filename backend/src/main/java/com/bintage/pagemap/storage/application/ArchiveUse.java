@@ -49,11 +49,11 @@ public class ArchiveUse {
                 .orElseThrow(() -> FolderException.notFound(accountId, folderId));
 
         List<Folder> sortedChildrenFolder = folder.getChildrenFolder().stream()
-                .sorted(Comparator.comparing(Folder::getCreatedAt))
+                .sorted(Comparator.comparing(Folder::getOrder))
                 .toList();
 
         List<Bookmark> sortedChildrenBookmark = folder.getChildrenBookmark().stream()
-                .sorted(Comparator.comparing(Bookmark::getCreatedAt))
+                .sorted(Comparator.comparing(Bookmark::getOrder))
                 .toList();
 
         return CurrentFolderResponse.from(folder, sortedChildrenFolder, sortedChildrenBookmark);
@@ -65,8 +65,8 @@ public class ArchiveUse {
         var topFolders = folderRepository.findAllByParentId(accountId, Folder.TOP_LEVEL);
         var topBookmarks = bookmarkRepository.findByParentFolderId(accountId, Bookmark.TOP_LEVEL);
 
-        var sortedTopFolders = topFolders.stream().sorted(Comparator.comparing(Folder::getCreatedAt)).toList();
-        var sortedTopBookmarks = topBookmarks.stream().sorted(Comparator.comparing(Bookmark::getCreatedAt)).toList();
+        var sortedTopFolders = topFolders.stream().sorted(Comparator.comparing(Folder::getOrder)).toList();
+        var sortedTopBookmarks = topBookmarks.stream().sorted(Comparator.comparing(Bookmark::getOrder)).toList();
 
         return SpecificArchiveResponse.from(sortedTopFolders, sortedTopBookmarks);
     }

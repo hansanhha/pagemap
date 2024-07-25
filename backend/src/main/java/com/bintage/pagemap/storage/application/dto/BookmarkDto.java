@@ -8,6 +8,7 @@ public record BookmarkDto(long id,
                           long parentFolderId,
                           String name,
                           String uri,
+                          int order,
                           Instant createdAt) {
 
     public static BookmarkDto from(Bookmark bookmark) {
@@ -15,6 +16,7 @@ public record BookmarkDto(long id,
                 bookmark.getParentFolderId().value(),
                 bookmark.getName(),
                 bookmark.getUrl().toString(),
+                bookmark.getOrder(),
                 bookmark.getCreatedAt());
     }
 }

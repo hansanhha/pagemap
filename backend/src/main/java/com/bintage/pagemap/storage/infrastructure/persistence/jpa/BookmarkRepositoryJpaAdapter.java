@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @SecondaryAdapter
 @Component
@@ -56,7 +57,7 @@ public class BookmarkRepositoryJpaAdapter implements BookmarkRepository {
     }
 
     @Override
-    public List<Bookmark> findByParentFolderId(Account.AccountId accountId, Folder.FolderId id) {
+    public List<Bookmark> findAllByParentFolderId(Account.AccountId accountId, Folder.FolderId id) {
         return bookmarkEntityRepository
                 .findAllByParentFolderId(accountId.value(), id.value())
                 .stream()
@@ -89,7 +90,19 @@ public class BookmarkRepositoryJpaAdapter implements BookmarkRepository {
         var entity = bookmarkEntityRepository.findById(bookmark.getId().value())
                 .orElseThrow(() -> BookmarkException.notFound(bookmark.getAccountId(), bookmark.getId()));
 
-        entity.update(bookmark.getName(), bookmark.getUrl().toString());
+        entity.update(bookmark.getName(), bookmark.getUrl().toString(), bookmark.getOrder(), bookmark.getParentFolderId().value());
+    }
+
+    @Override
+    public void update(List<Bookmark> bookmarks) {
+        var ids = bookmarks.stream().map(b -> b.getId().value()).toList();
+        var entities = bookmarkEntityRepository.findAllById(ids);
+
+        entities.forEach(entity -> bookmarks.stream()
+                .filter(bookmark -> bookmark.getId().value().equals(entity.getId()))
+                .findFirst()
+                .ifPresent(b ->
+                        entity.update(b.getName(), b.getUrl().toString(), b.getOrder(), b.getParentFolderId().value())));
     }
 
     @Override
@@ -99,14 +112,6 @@ public class BookmarkRepositoryJpaAdapter implements BookmarkRepository {
 
         var delete = EmbeddedDelete.fromDomainModel(bookmark.getDeleted());
         entity.delete(delete);
-    }
-
-    @Override
-    public void updateParent(Bookmark bookmark) {
-        var entity = bookmarkEntityRepository.findById(bookmark.getId().value())
-                .orElseThrow(() -> BookmarkException.notFound(bookmark.getAccountId(), bookmark.getId()));
-
-        entity.parent(bookmark.getParentFolderId().value());
     }
 
     @Override

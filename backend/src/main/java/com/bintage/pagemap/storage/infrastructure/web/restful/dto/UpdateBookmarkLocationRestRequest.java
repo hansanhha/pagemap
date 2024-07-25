@@ -12,4 +12,8 @@ public class UpdateBookmarkLocationRestRequest {
     @NotNull
     @Min(0)
     Long targetFolderId;
+
+    @NotNull
+    @Min(0)
+    int updateOrder;
 }

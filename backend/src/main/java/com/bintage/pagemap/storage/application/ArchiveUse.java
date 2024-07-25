@@ -63,7 +63,7 @@ public class ArchiveUse {
         var accountId = new Account.AccountId(accountIdStr);
 
         var topFolders = folderRepository.findAllByParentId(accountId, Folder.TOP_LEVEL);
-        var topBookmarks = bookmarkRepository.findByParentFolderId(accountId, Bookmark.TOP_LEVEL);
+        var topBookmarks = bookmarkRepository.findAllByParentFolderId(accountId, Bookmark.TOP_LEVEL);
 
         var sortedTopFolders = topFolders.stream().sorted(Comparator.comparing(Folder::getOrder)).toList();
         var sortedTopBookmarks = topBookmarks.stream().sorted(Comparator.comparing(Bookmark::getOrder)).toList();

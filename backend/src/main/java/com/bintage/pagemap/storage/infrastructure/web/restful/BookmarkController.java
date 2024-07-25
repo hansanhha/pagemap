@@ -73,7 +73,7 @@ public class BookmarkController {
     public ResponseEntity<Map<String, String>> updateBookmarkLocation(@AuthenticationPrincipal AuthenticatedAccount account,
                                                                       @PathVariable Long id,
                                                                       @RequestBody UpdateBookmarkLocationRestRequest request) {
-        bookmarkStore.move(account.getName(), id, request.getTargetFolderId());
+        bookmarkStore.move(account.getName(), id, request.getTargetFolderId(), request.getUpdateOrder());
         return ResponseEntity.ok(UpdatedBookmarkResponseBody.of());
     }
 

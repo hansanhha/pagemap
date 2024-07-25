@@ -60,7 +60,7 @@ public class FolderController {
     public ResponseEntity<Map<String, String>> updateMapLocation(@AuthenticationPrincipal AuthenticatedAccount account,
                                                     @PathVariable Long id,
                                                     @RequestBody @Valid UpdateFolderLocationRestRequest request) {
-        folderStore.move(account.getName(), id, request.getTargetFolderId());
+        folderStore.move(account.getName(), id, request.getTargetFolderId(), request.getUpdateOrder());
         return ResponseEntity.ok(UpdatedMapResponseBody.of());
     }
 

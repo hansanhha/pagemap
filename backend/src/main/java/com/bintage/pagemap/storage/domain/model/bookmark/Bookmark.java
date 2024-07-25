@@ -61,6 +61,14 @@ public class Bookmark implements AggregateRoot<Bookmark, Bookmark.BookmarkId>{
         this.order = order;
     }
 
+    public void decreaseOrder() {
+        this.order--;
+    }
+
+    public void increaseOrder() {
+        this.order++;
+    }
+
     public boolean hasParent() {
         return parentFolderId != null && parentFolderId.value() != null && parentFolderId.value() > 0;
     }

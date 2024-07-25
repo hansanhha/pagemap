@@ -25,8 +25,8 @@ public class AccountController {
         var response = accountInfo.getAccountInfo(authenticatedAccount.getName());
         return Map.of("nickname", response.nickname(),
                 "isUpdatableNickname", response.isUpdatableNickname(),
-                "mapCount", response.mapCount(),
-                "webPageCount", response.webPageCount());
+                "folderCount", response.mapCount(),
+                "bookmarkCount", response.webPageCount());
     }
 
     @DeleteMapping("/me")

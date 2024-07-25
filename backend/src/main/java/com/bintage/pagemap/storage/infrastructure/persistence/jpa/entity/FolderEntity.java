@@ -5,7 +5,6 @@ import com.bintage.pagemap.storage.domain.model.bookmark.Bookmark;
 import com.bintage.pagemap.storage.domain.model.folder.Folder;
 import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.time.Instant;
 import java.util.HashSet;
@@ -40,15 +39,18 @@ public class FolderEntity {
     @Embedded
     private EmbeddedDelete delete;
 
-    @Setter
     private String name;
+
+    private Integer orders;
 
     private Instant createdAt;
 
     private Instant lastModifiedAt;
 
-    public void update(String name) {
+    public void update(String name, int order, Long parentFolderId) {
         this.name = name;
+        this.orders = order;
+        this.parentFolderId = parentFolderId;
     }
 
     public void delete(EmbeddedDelete delete) {
@@ -56,7 +58,7 @@ public class FolderEntity {
     }
 
     public void updateFamily(Folder folder) {
-        this.parentFolderId = folder.getParentId().value();
+        this.parentFolderId = folder.getParentFolderId().value();
         this.childrenFolder = folder.getChildrenFolder().stream()
                 .map(child -> child.getId().value()).collect(Collectors.toSet());
         this.childrenBookmark = folder.getChildrenBookmark().stream()
@@ -67,7 +69,8 @@ public class FolderEntity {
         var entity = new FolderEntity();
         entity.accountId = domainModel.getAccountId().value();
         entity.name = domainModel.getName();
-        entity.parentFolderId = domainModel.getParentId().value();
+        entity.orders = domainModel.getOrder();
+        entity.parentFolderId = domainModel.getParentFolderId().value();
         entity.childrenFolder = convertChildrenFolderIdsFromDomainModel(domainModel.getChildrenFolder());
         entity.childrenBookmark = convertChildrenBookmarkIdsFromDomainModel(domainModel.getChildrenBookmark());
         entity.delete = EmbeddedDelete.fromDomainModel(domainModel.getDeleted());
@@ -81,7 +84,8 @@ public class FolderEntity {
         entity.id = domainModel.getId().value();
         entity.accountId = domainModel.getAccountId().value();
         entity.name = domainModel.getName();
-        entity.parentFolderId = domainModel.getParentId().value();
+        entity.orders = domainModel.getOrder();
+        entity.parentFolderId = domainModel.getParentFolderId().value();
         entity.childrenFolder = FolderEntity.convertChildrenFolderIdsFromDomainModel(domainModel.getChildrenFolder());
         entity.childrenBookmark = convertChildrenBookmarkIdsFromDomainModel(domainModel.getChildrenBookmark());
         entity.delete = EmbeddedDelete.fromDomainModel(domainModel.getDeleted());
@@ -93,9 +97,10 @@ public class FolderEntity {
     public static Folder toSoleDomainModel(FolderEntity entity) {
         return Folder.builder()
                 .id(new Folder.FolderId(entity.getId()))
-                .parentId(new Folder.FolderId(entity.getParentFolderId()))
+                .parentFolderId(new Folder.FolderId(entity.getParentFolderId()))
                 .accountId(new Account.AccountId(entity.accountId))
                 .name(entity.getName())
+                .order(entity.getOrders())
                 .deleted(EmbeddedDelete.toDomainModel(entity.getDelete()))
                 .childrenFolder(new LinkedList<>())
                 .childrenBookmark(new LinkedList<>())
@@ -109,9 +114,10 @@ public class FolderEntity {
 
         return Folder.builder()
                 .id(new Folder.FolderId(childEntity.id))
-                .parentId(parentFolderId)
+                .parentFolderId(parentFolderId)
                 .accountId(new Account.AccountId(childEntity.accountId))
                 .name(childEntity.getName())
+                .order(childEntity.getOrders())
                 .deleted(EmbeddedDelete.toDomainModel(childEntity.getDelete()))
                 .childrenFolder(new LinkedList<>())
                 .childrenBookmark(new LinkedList<>())

@@ -12,7 +12,7 @@ public record FolderDto(long id,
 
     public static FolderDto from(Folder folder) {
         return new FolderDto(folder.getId().value(),
-                folder.getParentId().value(),
+                folder.getParentFolderId().value(),
                 folder.getName(),
                 folder.getOrder(),
                 folder.getCreatedAt());

@@ -30,7 +30,6 @@ const Folder = ({folder, onUpdateHierarchy, onUpdateOrder, onCreateFolder}) => {
             })
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data);
                     let childrenFolder = [];
                     let childrenBookmark = [];
 
@@ -62,7 +61,7 @@ const Folder = ({folder, onUpdateHierarchy, onUpdateOrder, onCreateFolder}) => {
                        order={folder.order}
                        onDropped={onUpdateOrder}/>
             <ArchiveDrag archive={folder} onDropped={onUpdateHierarchy}>
-                <ArchiveContextMenu archive={folder} setTitle={setName}>
+                <ArchiveContextMenu archive={folder} onRename={setName}>
                     <StyledParentFolder onClick={handleClick}>
                         <Logo img={folderLogo}/>
                         <Title title={name}/>

@@ -16,7 +16,7 @@ const Shortcut = ({shortcut, onUpdateOrder}) => {
                                order={shortcut.order}
                                onDropped={onUpdateOrder}/>
             <ShortcutDrag shortcut={shortcut}>
-                <ArchiveContextMenu archive={shortcut} setTitle={setName}>
+                <ArchiveContextMenu archive={shortcut} onRename={setName}>
                     <HyperLink to={shortcut.uri}>
                         <StyledShortcut>
                             <Logo img={shortcut.img}/>

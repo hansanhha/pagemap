@@ -53,6 +53,7 @@ public class SecurityConfig {
     }
 
     @Profile("prod")
+    @Primary
     @Bean
     public CorsConfigurationSource productionCorsConfigurationSource() {
         return request -> {

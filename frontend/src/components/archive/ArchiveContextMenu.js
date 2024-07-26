@@ -6,11 +6,11 @@ import RenameModal from "./RenameModal";
 import FolderDto from "../../service/dto/FolderDto";
 import BookmarkDto from "../../service/dto/BookmarkDto";
 
-const ArchiveContextMenu = ({children, archive, setTitle}) => {
+const ArchiveContextMenu = ({children, archive, onRename}) => {
     const [isClickedOpenRenameModal, setIsClickedOpenRenameModal] = useState(false);
     const {isTriggered, clickedArchiveId, openMenu, closeMenu, position} = useArchiveMenuContext();
-    const archiveType = FolderDto.isFolder(archive) ? "folder"
-        : BookmarkDto.isBookmark(archive) ? "bookmark" : "shortcut";
+    const archiveType = FolderDto.isFolder(archive) ? "folders"
+        : BookmarkDto.isBookmark(archive) ? "bookmarks" : "shortcuts";
 
     const handleMenuOpen = (e) => {
         openMenu(archive.id, e.pageX, e.pageY);
@@ -43,7 +43,7 @@ const ArchiveContextMenu = ({children, archive, setTitle}) => {
                 <RenameModal id={archive.id}
                              archiveType={archiveType}
                              originalName={archive.name}
-                             onRename={setTitle}
+                             onRename={onRename}
                              onClose={closeRenameModal}
                 />
             }

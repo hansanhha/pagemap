@@ -22,7 +22,7 @@ const Bookmark = ({bookmark, onUpdateHierarchy, onUpdateOrder, onCreateFolder}) 
                 <ArchiveDrag archive={bookmark}
                              onDropped={onUpdateHierarchy}
                 >
-                    <ArchiveContextMenu archive={bookmark} setTitle={setName}>
+                    <ArchiveContextMenu archive={bookmark} onRename={setName}>
                         <HyperLink to={bookmark.uri}>
                             <StyledBookmark>
                                 <Logo img={bookmark.logo}/>

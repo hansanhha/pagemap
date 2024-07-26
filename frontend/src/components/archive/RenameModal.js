@@ -6,7 +6,7 @@ import {useLogin} from "../../hooks/useLogin";
 import useMediaQuery from "../../hooks/useMediaQuery";
 
 const isValidTitle = (title) => {
-    const titleRegex = /^[a-zA-Z0-9가-힣\s]+$/;
+    const titleRegex = /^[a-zA-Z0-9가-힣ㄱ-ㅎ!@#$%^&*()\s]+$/;
 
     return title.length <= 50
         && title.length > 0
@@ -54,24 +54,7 @@ const RenameModal = ({id, archiveType, originalName, onRename, onClose}) => {
             return;
         }
 
-        let type = null;
-
-        switch (archiveType) {
-            case "folder":
-                type = "folders";
-                break;
-            case "bookmark":
-                type = "webpages";
-                break;
-            case "shortcut":
-                type = "shortcuts";
-                break;
-            default:
-                console.error("Invalid archive type");
-                return;
-        }
-
-        fetch(process.env.REACT_APP_SERVER + `/storage/${type}/${id}`, {
+        fetch(process.env.REACT_APP_SERVER + `/storage/${archiveType}/${id}`, {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/problem+json",

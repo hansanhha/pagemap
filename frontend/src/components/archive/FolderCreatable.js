@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import {bookmarkDataTransferName, draggingBookmarkId} from "./ArchiveDrag";
 import {useState} from "react";
-import folderLogo from "../../assets/images/folder.png";
+import folderLogo from "../../assets/images/folder.svg";
 import Logo from "../common/Logo";
 import Title from "./Title";
 import BookmarkDto from "../../service/dto/BookmarkDto";

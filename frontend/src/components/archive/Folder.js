@@ -1,4 +1,5 @@
-import folderLogo from "../../assets/images/folder.png";
+import folderLogo from "../../assets/images/folder.svg";
+import folderOpenLogo from "../../assets/images/folder-open.svg";
 import Logo from "../common/Logo";
 import Title from "./Title";
 import Bookmark from "./Bookmark";
@@ -13,12 +14,18 @@ import ArchiveContextMenu from "./ArchiveContextMenu";
 
 const Folder = ({folder, onUpdateHierarchy, onUpdateOrder, onCreateFolder}) => {
     let {accessToken} = useLogin();
+    const [logo, setLogo] = useState(folderLogo);
     const [name, setName] = useState(folder.name);
     const [isClicked, setIsClicked] = useState(false);
     const [childrenSortedArchive, setChildrenSortedArchive] = useState([]);
 
     const handleClick = () => {
         setIsClicked(!isClicked);
+
+        if (!isClicked === false) {
+            setLogo(folderLogo);
+            return;
+        }
 
         if (!isClicked) {
             fetch(process.env.REACT_APP_SERVER + `/storage/folders/${folder.id}`, {
@@ -50,6 +57,7 @@ const Folder = ({folder, onUpdateHierarchy, onUpdateOrder, onCreateFolder}) => {
                     }
 
                     setChildrenSortedArchive([...childrenFolder, ...childrenBookmark].sort((a, b) => a.order - b.order));
+                    setLogo(folderOpenLogo);
                 })
                 .catch(err => console.error("Error fetching children:", err));
         }
@@ -63,7 +71,7 @@ const Folder = ({folder, onUpdateHierarchy, onUpdateOrder, onCreateFolder}) => {
             <ArchiveDrag archive={folder} onDropped={onUpdateHierarchy}>
                 <ArchiveContextMenu archive={folder} onRename={setName}>
                     <StyledParentFolder onClick={handleClick}>
-                        <Logo img={folderLogo}/>
+                        <Logo img={logo}/>
                         <Title title={name}/>
                     </StyledParentFolder>
                 </ArchiveContextMenu>

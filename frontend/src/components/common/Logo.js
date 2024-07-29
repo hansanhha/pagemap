@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import defaultLogo from "../../assets/images/pagemap_logo.png";
+import defaultLogo from "../../assets/images/bookmark2.svg";
 import useMediaQuery from "../../hooks/useMediaQuery";
 
 const Logo = ({ img }) => {

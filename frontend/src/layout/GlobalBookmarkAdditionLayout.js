@@ -1,9 +1,16 @@
 import styled from "styled-components";
 import {useLocation} from "react-router-dom";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {useLogin} from "../hooks/useLogin";
 import {bookmarkDataTransferName, folderDataTransferName} from "../components/archive/ArchiveDrag";
 import {shortcutDataTransferName} from "../components/archive/ShortcutDrag";
+
+const isValidURL = (url) => {
+    url = url.trim();
+    const expression = /^(https?|ftp):\/\/(([a-z\d]([a-z\d-]*[a-z\d])?\.)+[a-z]{2,}|localhost)(\/[-a-z\d%_.~+]*)*(\?[;&a-z\d%_.~+=-]*)?(\#[-a-z\d_]*)?$/i;
+    const regex = new RegExp(expression);
+    return regex.test(url);
+}
 
 const isValidExternalDrag = (e) => {
 
@@ -19,11 +26,28 @@ const isValidExternalDrag = (e) => {
         || e.dataTransfer.types.includes("text/html");
 }
 
-const GlobalDropZoneLayout = ({children}) => {
+const GlobalBookmarkAdditionLayout = ({children}) => {
     const location = useLocation();
     const {accessToken} = useLogin();
     const [isActive, setIsActive] = useState(true);
     const [isDraggingOver, setIsDraggingOver] = useState(false);
+
+    useEffect(() => {
+        const handlePaste = (e) => {
+            const pasteData = e.clipboardData.getData("text/plain");
+
+            if (pasteData) {
+                createBookmark(pasteData);
+            }
+        }
+
+
+        document.addEventListener('paste', handlePaste);
+
+        return () => {
+            document.removeEventListener('paste', handlePaste);
+        }
+    }, []);
 
     const dragOver = (e) => {
         e.stopPropagation();
@@ -87,26 +111,35 @@ const GlobalDropZoneLayout = ({children}) => {
             uri = e.dataTransfer.getData("text/html");
         }
 
+        createBookmark(uri);
         if (uri) {
-            fetch(process.env.REACT_APP_SERVER + "/storage/bookmarks/auto", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/problem+json",
-                    "Authorization": "Bearer " + accessToken,
-                },
-                body: JSON.stringify({
-                    parentFolderId: 0,
-                    uri: uri,
-                })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (location.pathname === "/") {
-                        handleActive();
-                    }
-                })
-                .catch(err => console.error("Error fetching app drop zone:", err));
+            createBookmark(uri);
         }
+    }
+
+    const createBookmark = (uri) => {
+        if (!isValidURL(uri)) {
+            return;
+        }
+
+        fetch(process.env.REACT_APP_SERVER + "/storage/bookmarks/auto", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/problem+json",
+                "Authorization": "Bearer " + accessToken,
+            },
+            body: JSON.stringify({
+                parentFolderId: 0,
+                uri: uri,
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (location.pathname === "/") {
+                    handleActive();
+                }
+            })
+            .catch(err => console.error("Error fetching app drop zone:", err));
     }
 
     return (
@@ -131,4 +164,4 @@ const StyledGlobalDropZoneLayout = styled.div`
 `;
 
 export {isValidExternalDrag};
-export default GlobalDropZoneLayout;
+export default GlobalBookmarkAdditionLayout;

@@ -4,7 +4,7 @@ import AnonymousPage from "../pages/AnonymousPage";
 import {Outlet} from "react-router-dom";
 import FlexibleViewPortLayout from "../layout/FlexibleViewPortLayout";
 import Header from "../components/common/Header";
-import GlobalDropZoneLayout from "../layout/GlobalDropZoneLayout";
+import GlobalBookmarkAdditionLayout from "../layout/GlobalBookmarkAdditionLayout";
 import Scrollable from "../components/common/Scrollable";
 import GlobalScrollLayout from "../layout/GlobalScrollLayout";
 import {ArchiveMenuContextProvider} from "../hooks/useArchiveMenuContext";
@@ -25,7 +25,7 @@ function Root() {
     }
 
     return (
-        <GlobalDropZoneLayout>
+        <GlobalBookmarkAdditionLayout>
             <FlexibleViewPortLayout>
 
                 <ArchiveMenuContextProvider>
@@ -39,7 +39,7 @@ function Root() {
                 </ArchiveMenuContextProvider>
 
             </FlexibleViewPortLayout>
-        </GlobalDropZoneLayout>
+        </GlobalBookmarkAdditionLayout>
     );
 }
 

@@ -66,6 +66,7 @@ const MenuSection = () => {
             case "Export":
                 break;
             case "로그아웃":
+                window.location.href = "/";
                 logout();
                 break;
             default:

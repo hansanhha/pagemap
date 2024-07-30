@@ -3,7 +3,7 @@ import {bookmarkDataTransferName, draggingBookmarkId} from "./ArchiveDrag";
 import {useState} from "react";
 import folderLogo from "../../assets/images/folder.svg";
 import Logo from "../common/Logo";
-import Title from "./Title";
+import Name from "./Name";
 import BookmarkDto from "../../service/dto/BookmarkDto";
 
 const blockEvent = (e) => {
@@ -31,7 +31,7 @@ const FolderCreatable = ({bookmark, onDropped, children}) => {
         setRenderingChildren(
             <StyledMockFolder>
                 <Logo img={folderLogo}/>
-                <Title title="폴더 생성"/>
+                <Name name="폴더 생성"/>
             </StyledMockFolder>
         );
     }

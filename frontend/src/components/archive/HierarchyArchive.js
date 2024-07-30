@@ -2,7 +2,7 @@ import FolderDto from "../../service/dto/FolderDto";
 import Folder from "./Folder";
 import Bookmark from "./Bookmark";
 
-const HierarchyArchive = ({archives, onUpdateHierarchy, onUpdateOrder, onCreateFolder}) => {
+const HierarchyArchive = ({archives, onArchiveDragging, onUpdateOrder, onCreateFolder}) => {
     return (
         archives &&
         archives.length > 0 &&
@@ -12,7 +12,7 @@ const HierarchyArchive = ({archives, onUpdateHierarchy, onUpdateOrder, onCreateF
                     (
                         <Folder key={archive.id}
                                 folder={archive}
-                                onUpdateHierarchy={onUpdateHierarchy}
+                                onArchiveDragging={onArchiveDragging}
                                 onUpdateOrder={onUpdateOrder}
                                 onCreateFolder={onCreateFolder}
                         />
@@ -21,7 +21,7 @@ const HierarchyArchive = ({archives, onUpdateHierarchy, onUpdateOrder, onCreateF
                     (
                         <Bookmark key={archive.id}
                                   bookmark={archive}
-                                  onUpdateHierarchy={onUpdateHierarchy}
+                                  onArchiveDragging={onArchiveDragging}
                                   onUpdateOrder={onUpdateOrder}
                                   onCreateFolder={onCreateFolder}
                         />

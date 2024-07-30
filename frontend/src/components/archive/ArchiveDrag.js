@@ -1,10 +1,12 @@
 import styled from "styled-components";
-import {useState} from "react";
+import {useContext, useState} from "react";
 import FolderDto from "../../service/dto/FolderDto";
 import {setOrderLineSource} from "../common/OrderLine";
 import BookmarkDto from "../../service/dto/BookmarkDto";
 import ShortcutDto from "../../service/dto/ShortcutDto";
 import {shortcutDataTransferName} from "./ShortcutDrag";
+import {DRAGGING_TYPE} from "./ArchiveSection";
+import {GlobalBookmarkDraggingContext, isValidExternalDrag} from "../../layout/GlobalBookmarkAdditionLayout";
 
 const folderDataTransferName = "folder";
 const bookmarkDataTransferName = "bookmark";
@@ -14,6 +16,7 @@ let draggingBookmarkId = null;
 
 const ArchiveDrag = ({ archive, children, onDropped }) => {
     const [isDraggingOver, setIsDraggingOver] = useState(false);
+    const { globalDragEffectOff } = useContext(GlobalBookmarkDraggingContext);
 
     const dragStart = (e) => {
         e.stopPropagation();
@@ -35,12 +38,18 @@ const ArchiveDrag = ({ archive, children, onDropped }) => {
     const dragEnter = (e) => {
         e.stopPropagation();
         e.preventDefault();
-        if (FolderDto.isFolder(archive)) {
+        if (sourceArchive && FolderDto.isFolder(archive)) {
             if (FolderDto.isFolder(sourceArchive)
                 && (sourceArchive.isDescendant(archive) || sourceArchive.isHierarchyParent(archive))) {
                 return;
             }
 
+            setIsDraggingOver(true);
+            return;
+        }
+
+        if (isValidExternalDrag(e) && FolderDto.isFolder(archive)) {
+            globalDragEffectOff();
             setIsDraggingOver(true);
         }
     }
@@ -55,19 +64,37 @@ const ArchiveDrag = ({ archive, children, onDropped }) => {
     const drop = (e) => {
         e.stopPropagation();
         e.preventDefault();
-        if (FolderDto.isFolder(archive)) {
+        if (sourceArchive && FolderDto.isFolder(archive)) {
             if (FolderDto.isFolder(sourceArchive)
                 && (sourceArchive.isDescendant(archive) || sourceArchive.isHierarchyParent(archive))) {
                 return;
             }
 
-            if (!sourceArchive && e.dataTransfer.getData(shortcutDataTransferName)) {
-                onDropped(new ShortcutDto(JSON.parse(e.dataTransfer.getData(shortcutDataTransferName))), archive);
-                return;
+            setIsDraggingOver(false);
+            onDropped(DRAGGING_TYPE.UPDATE_HIERARCHY, sourceArchive, archive);
+            return;
+        }
+
+        if (isValidExternalDrag(e)) {
+            let uri = null;
+
+            if (e.dataTransfer.types.includes("text/plain")) {
+                uri = e.dataTransfer.getData("text/plain");
+            } else if (e.dataTransfer.types.includes("text/uri-list")) {
+                uri = e.dataTransfer.getData("text/uri-list");
+            } else if (e.dataTransfer.types.includes("text/html")) {
+                uri = e.dataTransfer.getData("text/html");
             }
 
-            setIsDraggingOver(false);
-            onDropped(sourceArchive, archive);
+            if (uri) {
+                globalDragEffectOff();
+                onDropped(DRAGGING_TYPE.CREATE_BOOKMARK_BY_DRAGGING, uri, archive);
+            }
+            return;
+        }
+
+        if (e.dataTransfer.getData(shortcutDataTransferName)) {
+            onDropped(DRAGGING_TYPE.UPDATE_HIERARCHY, new ShortcutDto(JSON.parse(e.dataTransfer.getData(shortcutDataTransferName))), archive);
         }
     }
 

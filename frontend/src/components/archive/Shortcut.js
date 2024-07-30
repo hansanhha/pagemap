@@ -2,7 +2,7 @@ import styled from "styled-components";
 import ShortcutOrderLine from "../common/header/ShortcutOrderLine";
 import HyperLink from "../common/HyperLink";
 import Logo from "../common/Logo";
-import Title from "./Title";
+import Name from "./Name";
 import ShortcutDrag from "./ShortcutDrag";
 import ArchiveContextMenu from "./ArchiveContextMenu";
 import {useState} from "react";
@@ -20,7 +20,7 @@ const Shortcut = ({shortcut, onUpdateOrder}) => {
                     <HyperLink to={shortcut.uri}>
                         <StyledShortcut>
                             <Logo img={shortcut.img}/>
-                            <Title title={name}/>
+                            <Name name={name}/>
                         </StyledShortcut>
                     </HyperLink>
                 </ArchiveContextMenu>

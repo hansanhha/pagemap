@@ -1,5 +1,5 @@
 import Logo from "../common/Logo";
-import Title from "./Title";
+import Name from "./Name";
 import styled from "styled-components";
 import ArchiveDrag from "./ArchiveDrag";
 import OrderLine from "../common/OrderLine";
@@ -8,7 +8,7 @@ import ArchiveContextMenu from "./ArchiveContextMenu";
 import {useState} from "react";
 import FolderCreatable from "./FolderCreatable";
 
-const Bookmark = ({bookmark, onUpdateHierarchy, onUpdateOrder, onCreateFolder}) => {
+const Bookmark = ({bookmark, onArchiveDragging, onUpdateOrder, onCreateFolder}) => {
     const [name, setName] = useState(bookmark.name);
 
     return (
@@ -20,13 +20,13 @@ const Bookmark = ({bookmark, onUpdateHierarchy, onUpdateOrder, onCreateFolder}) 
                              onDropped={onCreateFolder}
             >
                 <ArchiveDrag archive={bookmark}
-                             onDropped={onUpdateHierarchy}
+                             onDropped={onArchiveDragging}
                 >
                     <ArchiveContextMenu archive={bookmark} onRename={setName}>
                         <HyperLink to={bookmark.uri}>
                             <StyledBookmark>
                                 <Logo img={bookmark.logo}/>
-                                <Title title={name}/>
+                                <Name name={name}/>
                             </StyledBookmark>
                         </HyperLink>
                     </ArchiveContextMenu>

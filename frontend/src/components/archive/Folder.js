@@ -1,7 +1,7 @@
 import folderLogo from "../../assets/images/folder.svg";
 import folderOpenLogo from "../../assets/images/folder-open.svg";
 import Logo from "../common/Logo";
-import Title from "./Title";
+import Name from "./Name";
 import Bookmark from "./Bookmark";
 import styled from "styled-components";
 import {useState} from "react";
@@ -12,7 +12,7 @@ import ArchiveDrag from "./ArchiveDrag";
 import OrderLine from "../common/OrderLine";
 import ArchiveContextMenu from "./ArchiveContextMenu";
 
-const Folder = ({folder, onUpdateHierarchy, onUpdateOrder, onCreateFolder}) => {
+const Folder = ({folder, onArchiveDragging, onUpdateOrder, onCreateFolder}) => {
     let {accessToken} = useLogin();
     const [logo, setLogo] = useState(folderLogo);
     const [name, setName] = useState(folder.name);
@@ -68,11 +68,11 @@ const Folder = ({folder, onUpdateHierarchy, onUpdateOrder, onCreateFolder}) => {
             <OrderLine archive={folder}
                        order={folder.order}
                        onDropped={onUpdateOrder}/>
-            <ArchiveDrag archive={folder} onDropped={onUpdateHierarchy}>
+            <ArchiveDrag archive={folder} onDropped={onArchiveDragging}>
                 <ArchiveContextMenu archive={folder} onRename={setName}>
                     <StyledParentFolder onClick={handleClick}>
                         <Logo img={logo}/>
-                        <Title title={name}/>
+                        <Name name={name}/>
                     </StyledParentFolder>
                 </ArchiveContextMenu>
             </ArchiveDrag>
@@ -86,7 +86,7 @@ const Folder = ({folder, onUpdateHierarchy, onUpdateOrder, onCreateFolder}) => {
 
                                 <StyledChildArchive key={archive.id}>
                                     <Folder folder={archive}
-                                            onUpdateHierarchy={onUpdateHierarchy}
+                                            onArchiveDragging={onArchiveDragging}
                                             onUpdateOrder={onUpdateOrder}
                                             onCreateFolder={onCreateFolder}
                                     />
@@ -96,7 +96,7 @@ const Folder = ({folder, onUpdateHierarchy, onUpdateOrder, onCreateFolder}) => {
                             (
                                 <StyledChildArchive key={archive.id}>
                                     <Bookmark bookmark={archive}
-                                              onUpdateHierarchy={onUpdateHierarchy}
+                                              onArchiveDragging={onArchiveDragging}
                                               onUpdateOrder={onUpdateOrder}
                                               onCreateFolder={onCreateFolder}
                                     />

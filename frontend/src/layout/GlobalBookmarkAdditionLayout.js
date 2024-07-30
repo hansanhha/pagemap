@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import {useLocation} from "react-router-dom";
-import {useEffect, useState} from "react";
+import {createContext, useEffect, useState} from "react";
 import {useLogin} from "../hooks/useLogin";
 import {bookmarkDataTransferName, folderDataTransferName} from "../components/archive/ArchiveDrag";
 import {shortcutDataTransferName} from "../components/archive/ShortcutDrag";
@@ -26,6 +26,8 @@ const isValidExternalDrag = (e) => {
         || e.dataTransfer.types.includes("text/html");
 }
 
+const GlobalBookmarkDraggingContext = createContext();
+
 const GlobalBookmarkAdditionLayout = ({children}) => {
     const location = useLocation();
     const {accessToken} = useLogin();
@@ -49,12 +51,20 @@ const GlobalBookmarkAdditionLayout = ({children}) => {
         }
     }, []);
 
+    const globalDragEffectOn = () => {
+        setIsDraggingOver(true);
+    }
+
+    const globalDragEffectOff = () => {
+        setIsDraggingOver(false);
+    }
+
     const dragOver = (e) => {
         e.stopPropagation();
         e.preventDefault();
 
         if (isValidExternalDrag(e)) {
-            setIsDraggingOver(true);
+            globalDragEffectOn();
         }
     }
 
@@ -63,14 +73,14 @@ const GlobalBookmarkAdditionLayout = ({children}) => {
         e.preventDefault();
 
         if (isValidExternalDrag(e)) {
-            setIsDraggingOver(true);
+            globalDragEffectOn();
         }
     }
 
     const dragLeave = (e) => {
         e.stopPropagation();
         e.preventDefault();
-        setIsDraggingOver(false);
+        globalDragEffectOff();
     }
 
     const handleActive = () => {
@@ -83,7 +93,7 @@ const GlobalBookmarkAdditionLayout = ({children}) => {
     const drop = (e) => {
         e.stopPropagation();
         e.preventDefault();
-        setIsDraggingOver(false);
+        globalDragEffectOff();
 
         if (!isValidExternalDrag(e)) {
             return;
@@ -91,7 +101,6 @@ const GlobalBookmarkAdditionLayout = ({children}) => {
 
         if (e.dataTransfer.types.includes("Files")) {
             const files = e.dataTransfer.files;
-            console.log(files);
             for (const file of files) {
                 const filenames = file.name.split(".");
                 const extension = filenames[filenames.length - 1];
@@ -111,7 +120,6 @@ const GlobalBookmarkAdditionLayout = ({children}) => {
             uri = e.dataTransfer.getData("text/html");
         }
 
-        createBookmark(uri);
         if (uri) {
             createBookmark(uri);
         }
@@ -144,6 +152,7 @@ const GlobalBookmarkAdditionLayout = ({children}) => {
 
     return (
         isActive &&
+
         <StyledGlobalDropZoneLayout
             onDragOver={dragOver}
             onDragEnter={dragEnter}
@@ -151,17 +160,20 @@ const GlobalBookmarkAdditionLayout = ({children}) => {
             onDrop={drop}
             isDraggingOver={isDraggingOver}
         >
-            {children}
+            <GlobalBookmarkDraggingContext.Provider value={{globalDragEffectOff}}>
+                {children}
+            </GlobalBookmarkDraggingContext.Provider>
         </StyledGlobalDropZoneLayout>
+
     );
 }
 
 const StyledGlobalDropZoneLayout = styled.div`
     width: 100vw;
     height: 100vh;
-    filter: ${({ isDraggingOver }) => (isDraggingOver ? 'blur(2px)' : 'none')};
+    filter: ${({isDraggingOver}) => (isDraggingOver ? 'blur(2px)' : 'none')};
     transition: background-color 0.2s ease;
 `;
 
-export {isValidExternalDrag};
+export {isValidExternalDrag, GlobalBookmarkDraggingContext};
 export default GlobalBookmarkAdditionLayout;

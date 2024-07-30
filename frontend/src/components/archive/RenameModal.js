@@ -5,12 +5,11 @@ import Button from "../common/Button";
 import {useLogin} from "../../hooks/useLogin";
 import useMediaQuery from "../../hooks/useMediaQuery";
 
-const isValidTitle = (title) => {
-    const titleRegex = /^[a-zA-Z0-9가-힣ㄱ-ㅎ!@#$%^&*()\s]+$/;
+const isValidName = (name) => {
+    const expression = /^[a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ_\- !()]{1,50}$/;
+    const regex = new RegExp(expression);
 
-    return title.length <= 50
-        && title.length > 0
-        && titleRegex.test(title);
+    return regex.test(name);
 }
 
 const RenameModal = ({id, archiveType, originalName, onRename, onClose}) => {
@@ -18,21 +17,36 @@ const RenameModal = ({id, archiveType, originalName, onRename, onClose}) => {
     const {accessToken} = useLogin();
     const [updateName, setUpdateName] = useState("");
     const [error, setError] = useState(false);
-    const RenameModalRef = useRef(null);
+    const renameModalRef = useRef(null);
 
-    useEffect(() => {
-        const handleClickOutside = (e) => {
-            if (RenameModalRef.current && !RenameModalRef.current.contains(e.target)) {
-                onClose();
-            }
+    const handleClickOutside = (e) => {
+        if (renameModalRef.current && !renameModalRef.current.contains(e.target)) {
+            onClose();
+        }
+    }
+
+    const handleKeyPress = (e) => {
+        if (e.key === "Enter") {
+            handleRename();
+            return;
         }
 
-        document.addEventListener("mousedown", handleClickOutside);
+        if (e.key === "Escape") {
+            onClose();
+        }
+    }
+
+    useEffect(() => {
+        if (renameModalRef.ref == null) {
+            document.addEventListener("keydown", handleKeyPress);
+            document.addEventListener("mousedown", handleClickOutside);
+        }
 
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("keydown", handleKeyPress);
         }
-    }, []);
+    }, [updateName]);
 
     const handleUpdateTitle = (updateTitle) => {
         if (updateTitle.length > 50) {
@@ -49,8 +63,12 @@ const RenameModal = ({id, archiveType, originalName, onRename, onClose}) => {
     }
 
     const handleRename = () => {
-        if (!isValidTitle(updateName)) {
+        if (!isValidName(updateName)) {
             setError(true);
+            return;
+        }
+
+        if (updateName === originalName) {
             return;
         }
 
@@ -74,7 +92,7 @@ const RenameModal = ({id, archiveType, originalName, onRename, onClose}) => {
     }
 
     return (
-        <StyledRenameModal ref={RenameModalRef} isMobile={isMobile}>
+        <StyledRenameModal ref={renameModalRef} isMobile={isMobile}>
             <h2>
                 이름 변경
             </h2>
@@ -98,7 +116,7 @@ const RenameModal = ({id, archiveType, originalName, onRename, onClose}) => {
             </StyledRenameModalBody>
             <StyledButtonGroup>
                 <Button value={"취소"} onClick={closeModal}/>
-                <Button value={"확인"} onClick={handleRename}/>
+                <Button value={"확인"} onClick={() => handleRename(updateName)}/>
             </StyledButtonGroup>
         </StyledRenameModal>
     );

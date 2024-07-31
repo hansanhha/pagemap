@@ -22,7 +22,7 @@ public class DefaultBookmarkProvider {
                 .accountId(accountId)
                 .parentFolderId(folderId)
                 .name("YouTube")
-                .url(URI.create("https://www.youtube.com/"))
+                .uri(URI.create("https://www.youtube.com/"))
                 .build();
     }
 
@@ -31,7 +31,7 @@ public class DefaultBookmarkProvider {
                 .accountId(accountId)
                 .parentFolderId(folderId)
                 .name("Naver")
-                .url(URI.create("https://www.naver.com/"))
+                .uri(URI.create("https://www.naver.com/"))
                 .build();
     }
 
@@ -40,7 +40,7 @@ public class DefaultBookmarkProvider {
                 .accountId(accountId)
                 .parentFolderId(folderId)
                 .name("Instagram")
-                .url(URI.create("https://www.instagram.com/"))
+                .uri(URI.create("https://www.instagram.com/"))
                 .build();
     }
 
@@ -49,7 +49,7 @@ public class DefaultBookmarkProvider {
                 .accountId(accountId)
                 .parentFolderId(folderId)
                 .name("X (Twitter)")
-                .url(URI.create("https://www.twitter.com/"))
+                .uri(URI.create("https://www.twitter.com/"))
                 .build();
     }
 

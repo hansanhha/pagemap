@@ -9,7 +9,7 @@ export default class BookmarkDto {
 
     constructor(Bookmark) {
         this.id = Bookmark.id;
-        this.logo = null;
+        this.logo = Bookmark.logo;
         this.name = Bookmark.name;
         this.uri = Bookmark.uri;
         this.parentFolderId = Bookmark.parentFolderId;

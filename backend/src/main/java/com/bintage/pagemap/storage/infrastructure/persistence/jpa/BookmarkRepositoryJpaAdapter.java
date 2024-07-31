@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @SecondaryAdapter
 @Component
@@ -90,7 +89,7 @@ public class BookmarkRepositoryJpaAdapter implements BookmarkRepository {
         var entity = bookmarkEntityRepository.findById(bookmark.getId().value())
                 .orElseThrow(() -> BookmarkException.notFound(bookmark.getAccountId(), bookmark.getId()));
 
-        entity.update(bookmark.getName(), bookmark.getUrl().toString(), bookmark.getOrder(), bookmark.getParentFolderId().value());
+        entity.update(bookmark.getName(), bookmark.getUri().toString(),bookmark.getLogo().toString(), bookmark.getOrder(), bookmark.getParentFolderId().value());
     }
 
     @Override
@@ -102,7 +101,7 @@ public class BookmarkRepositoryJpaAdapter implements BookmarkRepository {
                 .filter(bookmark -> bookmark.getId().value().equals(entity.getId()))
                 .findFirst()
                 .ifPresent(b ->
-                        entity.update(b.getName(), b.getUrl().toString(), b.getOrder(), b.getParentFolderId().value())));
+                        entity.update(b.getName(), b.getUri().toString(), b.getLogo().toString(), b.getOrder(), b.getParentFolderId().value())));
     }
 
     @Override

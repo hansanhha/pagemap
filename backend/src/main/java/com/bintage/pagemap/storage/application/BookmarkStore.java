@@ -27,11 +27,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 @PrimaryPort
 @Service
@@ -51,7 +53,7 @@ public class BookmarkStore {
         var bookmark = Bookmark.builder()
                 .accountId(accountId)
                 .name(request.name())
-                .url(request.uri())
+                .uri(request.uri())
                 .build();
 
         if (isTopLevel(parentFolderId)) {
@@ -73,7 +75,7 @@ public class BookmarkStore {
         var bookmark = Bookmark.builder()
                 .accountId(accountId)
                 .name(DEFAULT_BOOKMARK_NAME)
-                .url(uri)
+                .uri(uri)
                 .build();
 
         Bookmark created;
@@ -111,6 +113,18 @@ public class BookmarkStore {
             var httpResponse = client.send(httpRequest, HttpResponse.BodyHandlers.ofString());
 
             var doc = Jsoup.parse(httpResponse.body());
+            var favicons = doc.head().select("link[rel=shortcut icon]");
+
+            favicons.stream()
+                    .filter(favicon ->
+                            favicon.attributes().hasKey("rel") &&
+                            favicon.attributes().hasKey("href") &&
+                            favicon.attributes().hasKey("type"))
+                    .findFirst()
+                    .ifPresent(favicon -> {
+                        created.logo(URI.create(favicon.attribute("href").getValue()));
+                    });
+
             var webPageTitle = doc.title();
 
             if (webPageTitle.length() > Bookmark.MAX_NAME_LENGTH) {
@@ -147,7 +161,7 @@ public class BookmarkStore {
         var sourceBookmark = bookmarkRepository.findById(sourceBookmarkId)
                 .orElseThrow(() -> BookmarkException.notFound(accountId, sourceBookmarkId));
 
-        if (sourceBookmark.getParentFolderId().equals(targetFolderId) && sourceBookmark.getOrder() == updateOrder){
+        if (sourceBookmark.getParentFolderId().equals(targetFolderId) && sourceBookmark.getOrder() == updateOrder) {
             return;
         }
 

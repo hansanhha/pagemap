@@ -22,7 +22,8 @@ public class Bookmark implements AggregateRoot<Bookmark, Bookmark.BookmarkId>{
     private final BookmarkId id;
     private final Account.AccountId accountId;
     @Builder.Default private Folder.FolderId parentFolderId = TOP_LEVEL;
-    private URI url;
+    private URI uri;
+    @Builder.Default private URI logo = URI.create("");
     private String name;
     private int order;
     @Builder.Default private Instant createdAt = Instant.now();
@@ -63,6 +64,10 @@ public class Bookmark implements AggregateRoot<Bookmark, Bookmark.BookmarkId>{
 
     public void name(String name) {
         this.name = name;
+    }
+
+    public void logo(URI logo) {
+        this.logo = logo;
     }
 
     public void decreaseOrder() {

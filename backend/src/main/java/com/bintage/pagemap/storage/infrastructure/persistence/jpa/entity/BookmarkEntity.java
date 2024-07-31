@@ -28,6 +28,9 @@ public class BookmarkEntity {
     @Column(columnDefinition = "TEXT")
     private String uri;
 
+    @Column(columnDefinition = "TEXT")
+    private String logo;
+
     private Integer visitCount;
 
     private Integer orders;
@@ -39,9 +42,10 @@ public class BookmarkEntity {
 
     private Instant lastModifiedAt;
 
-    public void update(String name, String uri, int order, Long parentFolderId) {
+    public void update(String name, String uri, String logo, int order, Long parentFolderId) {
         this.name = name;
         this.uri = uri;
+        this.logo = logo;
         this.orders = order;
         this.parentFolderId = parentFolderId;
     }
@@ -59,7 +63,8 @@ public class BookmarkEntity {
         entity.parentFolderId = domainModel.getParentFolderId().value();
         entity.accountId = domainModel.getAccountId().value();
         entity.name = domainModel.getName();
-        entity.uri = domainModel.getUrl().toString();
+        entity.uri = domainModel.getUri().toString();
+        entity.logo = domainModel.getLogo().toString();
         entity.visitCount = domainModel.getVisitCount();
         entity.orders = domainModel.getOrder();
         entity.delete = EmbeddedDelete.fromDomainModel(domainModel.getDeleted());
@@ -74,7 +79,8 @@ public class BookmarkEntity {
         entity.parentFolderId = domainModel.getParentFolderId().value();
         entity.accountId = domainModel.getAccountId().value();
         entity.name = domainModel.getName();
-        entity.uri = domainModel.getUrl().toString();
+        entity.uri = domainModel.getUri().toString();
+        entity.logo = domainModel.getLogo().toString();
         entity.visitCount = domainModel.getVisitCount();
         entity.orders = domainModel.getOrder();
         entity.delete = EmbeddedDelete.fromDomainModel(domainModel.getDeleted());
@@ -89,7 +95,8 @@ public class BookmarkEntity {
                 .parentFolderId(new Folder.FolderId(entity.getParentFolderId()))
                 .accountId(new Account.AccountId(entity.accountId))
                 .name(entity.getName())
-                .url(URI.create(entity.getUri()))
+                .uri(URI.create(entity.getUri()))
+                .logo(URI.create(entity.getLogo()))
                 .visitCount(entity.getVisitCount())
                 .order(entity.getOrders())
                 .deleted(EmbeddedDelete.toDomainModel(entity.getDelete()))

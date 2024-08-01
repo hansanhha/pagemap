@@ -13,46 +13,52 @@ public abstract class ArchiveCounter implements AggregateRoot<ArchiveCounter, Ar
 
     protected final ArchiveCounterId id;
     protected final Account.AccountId accountId;
-    protected int storedMapCount;
-    protected int storedWebPageCount;
+    protected int storedFolderCount;
+    protected int storedBookmarkCount;
 
-    public void increment(CountType type) {
-        increment(type, 1);
+    public void increase(CountType type) {
+        increase(type, 1);
     }
 
-    public void increment(CountType countType, int size) {
+    public void increase(CountType countType, int size) {
         switch (countType) {
             case FOLDER -> {
                 int maximumMapCount = getMaximumMapCount();
-                if (storedMapCount + size > maximumMapCount) {
+                if (storedFolderCount + size > maximumMapCount) {
                     throw ArchiveCounterException.exceedStoreCount(CountType.FOLDER, accountId, maximumMapCount);
                 }
-                storedMapCount += size;
+                storedFolderCount += size;
             }
             case BOOKMARK -> {
                 int maximumWebPageCount = getMaximumWebPageCount();
-                if (storedWebPageCount + size > maximumWebPageCount) {
+                if (storedBookmarkCount + size > maximumWebPageCount) {
                     throw ArchiveCounterException.exceedStoreCount(CountType.BOOKMARK, accountId, maximumWebPageCount);
                 }
-                storedWebPageCount += size;
+                storedBookmarkCount += size;
             }
             default -> {}
         }
     }
 
-    public void decrement(CountType type) {
+    public void decrease(CountType type) {
+        decrease(type, 1);
+    }
+
+    public void decrease(CountType type, int size) {
         switch (type) {
             case FOLDER -> {
-                if (storedMapCount - 1 < 0) {
-                    storedMapCount = 0;
+                if (storedFolderCount - size < 0) {
+                    storedFolderCount = 0;
+                    return;
                 }
-                storedMapCount--;
+                storedFolderCount -= size;
             }
             case BOOKMARK -> {
-                if (storedWebPageCount - 1 < 0) {
-                    storedMapCount = 0;
+                if (storedBookmarkCount - size < 0) {
+                    storedBookmarkCount = 0;
+                    return;
                 }
-                storedMapCount--;
+                storedBookmarkCount -= size;
             }
             default -> {}
         }
@@ -60,8 +66,8 @@ public abstract class ArchiveCounter implements AggregateRoot<ArchiveCounter, Ar
 
     public int getCurrentCount(CountType type) {
         return switch (type) {
-            case FOLDER -> storedMapCount;
-            case BOOKMARK -> storedWebPageCount;
+            case FOLDER -> storedFolderCount;
+            case BOOKMARK -> storedBookmarkCount;
         };
     }
 

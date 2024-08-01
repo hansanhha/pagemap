@@ -19,15 +19,17 @@ public interface FolderRepository {
 
     Optional<Folder> findFamilyById(Account.AccountId accountId, Folder.FolderId folderId);
 
+    Optional<Folder> findDeletedFamilyById(Account.AccountId accountId, Folder.FolderId folderId);
+
     Optional<Folder> findById(Folder.FolderId folderId);
 
-    List<Folder> findAllByParentId(Account.AccountId accountId, Folder.FolderId parentId);
+    List<Folder> findAllByParentId(Account.AccountId accountId, Folder.FolderId parentFolderId);
+
+    List<Folder> findDeletedAllByParentId(Account.AccountId accountId, Folder.FolderId parentFolderId);
 
     void update(Folder folder);
 
     void update(List<Folder> folders);
-
-    void updateDeleteStatus(Folder folder);
 
     void updateFamily(Folder folder);
 

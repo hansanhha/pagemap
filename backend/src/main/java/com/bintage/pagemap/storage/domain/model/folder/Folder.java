@@ -139,10 +139,16 @@ public class Folder implements AggregateRoot<Folder, Folder.FolderId> {
 
     public void delete(Instant requestedAt) {
         deleted = Delete.scheduled(requestedAt);
+
+        childrenFolder.forEach(folder -> folder.delete(requestedAt));
+        childrenBookmark.forEach(bookmark -> bookmark.delete(requestedAt));
     }
 
     public void restore() {
         deleted = Delete.notScheduled();
+
+        childrenFolder.forEach(Folder::restore);
+        childrenBookmark.forEach(Bookmark::restore);
     }
 
     @Override

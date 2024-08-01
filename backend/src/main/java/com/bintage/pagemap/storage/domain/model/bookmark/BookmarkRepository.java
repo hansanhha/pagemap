@@ -18,7 +18,9 @@ public interface BookmarkRepository {
 
     Optional<Bookmark> findById(Bookmark.BookmarkId bookmarkId);
 
-    List<Bookmark> findAllByParentFolderId(Account.AccountId accountId, Folder.FolderId id);
+    List<Bookmark> findAllByParentFolderId(Account.AccountId accountId, Folder.FolderId parentFolderId);
+
+    List<Bookmark> findDeletedAllByParentFolderId(Account.AccountId accountId, Folder.FolderId parentFolderId);
 
     List<Bookmark> findAllById(Account.AccountId accountId, List<Bookmark.BookmarkId> bookmarkIds);
 
@@ -27,8 +29,6 @@ public interface BookmarkRepository {
     void update(Bookmark bookmark);
 
     void update(List<Bookmark> bookmarks);
-
-    void updateDeletedStatus(Bookmark bookmark);
 
     void deleteAll(Account.AccountId accountId, List<Bookmark> bookmarks);
 }

@@ -13,8 +13,14 @@ public interface BookmarkEntityRepository extends JpaRepository<BookmarkEntity, 
     @Query("SELECT b FROM BookmarkEntity b WHERE b.accountId = :accountId AND b.parentFolderId = :parentFolderId AND b.delete.moveTrashed = false")
     List<BookmarkEntity> findAllByParentFolderId(String accountId, Long parentFolderId);
 
+    @Query("SELECT b FROM BookmarkEntity b WHERE b.accountId = :accountId AND b.parentFolderId = :parentFolderId AND b.delete.moveTrashed = true")
+    List<BookmarkEntity> findDeletedAllByParentFolderId(String accountId, Long parentFolderId);
+
     @Query("SELECT b FROM BookmarkEntity b WHERE b.accountId = :accountId AND b.id IN :ids AND b.delete.moveTrashed = false")
     List<BookmarkEntity> findNotDeletedAllById(String accountId, Set<Long> ids);
+
+    @Query("SELECT b FROM BookmarkEntity b WHERE b.accountId = :accountId AND b.id IN :ids AND b.delete.moveTrashed = true")
+    List<BookmarkEntity> findDeletedAllById(String accountId, Set<Long> ids);
 
     @Query("SELECT b FROM BookmarkEntity b WHERE b.accountId = :accountId AND b.delete.moveTrashed = true")
     List<BookmarkEntity> findAllDeletedById(String accountId);

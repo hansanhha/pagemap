@@ -56,9 +56,18 @@ public class BookmarkRepositoryJpaAdapter implements BookmarkRepository {
     }
 
     @Override
-    public List<Bookmark> findAllByParentFolderId(Account.AccountId accountId, Folder.FolderId id) {
+    public List<Bookmark> findAllByParentFolderId(Account.AccountId accountId, Folder.FolderId parentFolderId) {
         return bookmarkEntityRepository
-                .findAllByParentFolderId(accountId.value(), id.value())
+                .findAllByParentFolderId(accountId.value(), parentFolderId.value())
+                .stream()
+                .map(BookmarkEntity::toDomainModel)
+                .toList();
+    }
+
+    @Override
+    public List<Bookmark> findDeletedAllByParentFolderId(Account.AccountId accountId, Folder.FolderId parentFolderId) {
+        return bookmarkEntityRepository
+                .findDeletedAllByParentFolderId(accountId.value(), parentFolderId.value())
                 .stream()
                 .map(BookmarkEntity::toDomainModel)
                 .toList();
@@ -89,7 +98,7 @@ public class BookmarkRepositoryJpaAdapter implements BookmarkRepository {
         var entity = bookmarkEntityRepository.findById(bookmark.getId().value())
                 .orElseThrow(() -> BookmarkException.notFound(bookmark.getAccountId(), bookmark.getId()));
 
-        entity.update(bookmark.getName(), bookmark.getUri().toString(),bookmark.getLogo().toString(), bookmark.getOrder(), bookmark.getParentFolderId().value());
+        entity.update(bookmark);
     }
 
     @Override
@@ -100,17 +109,7 @@ public class BookmarkRepositoryJpaAdapter implements BookmarkRepository {
         entities.forEach(entity -> bookmarks.stream()
                 .filter(bookmark -> bookmark.getId().value().equals(entity.getId()))
                 .findFirst()
-                .ifPresent(b ->
-                        entity.update(b.getName(), b.getUri().toString(), b.getLogo().toString(), b.getOrder(), b.getParentFolderId().value())));
-    }
-
-    @Override
-    public void updateDeletedStatus(Bookmark bookmark) {
-        var entity = bookmarkEntityRepository.findById(bookmark.getId().value())
-                .orElseThrow(() -> BookmarkException.notFound(bookmark.getAccountId(), bookmark.getId()));
-
-        var delete = EmbeddedDelete.fromDomainModel(bookmark.getDeleted());
-        entity.delete(delete);
+                .ifPresent(entity::update));
     }
 
     @Override

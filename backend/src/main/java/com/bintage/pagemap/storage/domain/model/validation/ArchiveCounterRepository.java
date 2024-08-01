@@ -16,4 +16,6 @@ public interface ArchiveCounterRepository {
 
     ArchiveCounter save(ArchiveCounter archiveCounter);
 
+    void update(ArchiveCounter archiveCounter);
+
 }

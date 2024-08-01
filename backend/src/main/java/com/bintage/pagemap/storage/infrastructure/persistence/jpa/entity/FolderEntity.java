@@ -47,10 +47,11 @@ public class FolderEntity {
 
     private Instant lastModifiedAt;
 
-    public void update(String name, int order, Long parentFolderId) {
-        this.name = name;
-        this.orders = order;
-        this.parentFolderId = parentFolderId;
+    public void update(Folder domainModel) {
+        name = domainModel.getName();
+        orders = domainModel.getOrder();
+        parentFolderId = domainModel.getParentFolderId().value();
+        delete = EmbeddedDelete.fromDomainModel(domainModel.getDeleted());
     }
 
     public void delete(EmbeddedDelete delete) {

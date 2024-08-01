@@ -90,6 +90,36 @@ public class FolderRepositoryJpaAdapter implements FolderRepository {
     }
 
     @Override
+    public Optional<Folder> findDeletedFamilyById(Account.AccountId accountId, Folder.FolderId folderId) {
+        var currentFolderEntityOptional = folderEntityRepository.findFetchDeletedFamilyById(accountId.value(), folderId.value());
+
+        if (currentFolderEntityOptional.isEmpty()) {
+            return Optional.empty();
+        }
+
+        var currentFolderEntity = currentFolderEntityOptional.get();
+        var currentFolder = FolderEntity.toSoleDomainModel(currentFolderEntity);
+
+        if (currentFolderEntity.getChildrenFolder() != null && !currentFolderEntity.getChildrenFolder().isEmpty()) {
+            var childrenFolderEntity = folderEntityRepository.findDeletedAllById(accountId.value(), currentFolderEntity.getChildrenFolder());
+            var childrenFolder = childrenFolderEntity.stream()
+                    .map(child -> FolderEntity.toChildDomainModel(currentFolder.getId(), child))
+                    .toList();
+            currentFolder.addFolder(childrenFolder);
+        }
+
+        if (currentFolderEntity.getChildrenBookmark() != null && !currentFolderEntity.getChildrenBookmark().isEmpty()) {
+            var childrenBookmarkEntity = bookmarkEntityRepository.findDeletedAllById(accountId.value(), currentFolderEntity.getChildrenBookmark());
+            var childrenBookmark = childrenBookmarkEntity.stream()
+                    .map(BookmarkEntity::toDomainModel)
+                    .toList();
+            currentFolder.addBookmark(childrenBookmark);
+        }
+
+        return Optional.of(currentFolder);
+    }
+
+    @Override
     public Optional<Folder> findById(Folder.FolderId folderId) {
         return folderEntityRepository
                 .findById(folderId.value())
@@ -106,11 +136,20 @@ public class FolderRepositoryJpaAdapter implements FolderRepository {
     }
 
     @Override
+    public List<Folder> findDeletedAllByParentId(Account.AccountId accountId, Folder.FolderId parentFolderId) {
+        return folderEntityRepository
+                .findDeletedAllByParentFolderId(accountId.value(), parentFolderId.value())
+                .stream()
+                .map(FolderEntity::toSoleDomainModel)
+                .toList();
+    }
+
+    @Override
     public void update(Folder folder) {
         var folderEntity = folderEntityRepository.findById(folder.getId().value())
                 .orElseThrow(() -> FolderException.notFound(folder.getAccountId(), folder.getId()));
 
-        folderEntity.update(folder.getName(), folder.getOrder(), folder.getParentFolderId().value());
+        folderEntity.update(folder);
     }
 
     @Override
@@ -121,17 +160,7 @@ public class FolderRepositoryJpaAdapter implements FolderRepository {
         entities.forEach(entity -> folders.stream()
                 .filter(bookmark -> bookmark.getId().value().equals(entity.getId()))
                 .findFirst()
-                .ifPresent(f ->
-                        entity.update(f.getName(), f.getOrder(), f.getParentFolderId().value())));
-    }
-
-    @Override
-    public void updateDeleteStatus(Folder folder) {
-        var entity = folderEntityRepository.findById(folder.getId().value())
-                .orElseThrow(() -> FolderException.notFound(folder.getAccountId(), folder.getId()));
-
-        var delete = EmbeddedDelete.fromDomainModel(folder.getDeleted());
-        entity.delete(delete);
+                .ifPresent(entity::update));
     }
 
     @Override

@@ -42,16 +42,13 @@ public class BookmarkEntity {
 
     private Instant lastModifiedAt;
 
-    public void update(String name, String uri, String logo, int order, Long parentFolderId) {
-        this.name = name;
-        this.uri = uri;
-        this.logo = logo;
-        this.orders = order;
-        this.parentFolderId = parentFolderId;
-    }
-
-    public void delete(EmbeddedDelete delete) {
-        this.delete = delete;
+    public void update(Bookmark domainModel) {
+        name = domainModel.getName();
+        uri = domainModel.getUri().toString();
+        logo = domainModel.getLogo().toString();
+        orders = domainModel.getOrder();
+        parentFolderId = domainModel.getParentFolderId().value();
+        delete = EmbeddedDelete.fromDomainModel(domainModel.getDeleted());
     }
 
     public void updateVisitCount(int visitCount) {

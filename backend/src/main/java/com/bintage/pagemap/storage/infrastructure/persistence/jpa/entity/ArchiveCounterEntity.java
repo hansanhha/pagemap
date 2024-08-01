@@ -17,16 +17,16 @@ public class ArchiveCounterEntity {
     private String accountId;
 
     @Setter
-    private int storedMapCount;
+    private int storedFolderCount;
 
     @Setter
-    private int storedWebPageCount;
+    private int storedBookmarkCount;
 
     public static ArchiveCounterEntity create(ArchiveCounter domainModel) {
         var entity = new ArchiveCounterEntity();
         entity.accountId = domainModel.getAccountId().value();
-        entity.storedMapCount = domainModel.getStoredMapCount();
-        entity.storedWebPageCount = domainModel.getStoredWebPageCount();
+        entity.storedFolderCount = domainModel.getStoredFolderCount();
+        entity.storedBookmarkCount = domainModel.getStoredBookmarkCount();
         return entity;
     }
 
@@ -34,8 +34,8 @@ public class ArchiveCounterEntity {
         var entity = new ArchiveCounterEntity();
         entity.id = domainModel.getId().value();
         entity.accountId = domainModel.getAccountId().value();
-        entity.storedMapCount = domainModel.getStoredMapCount();
-        entity.storedWebPageCount = domainModel.getStoredWebPageCount();
+        entity.storedFolderCount = domainModel.getStoredFolderCount();
+        entity.storedBookmarkCount = domainModel.getStoredBookmarkCount();
         return entity;
     }
 
@@ -43,12 +43,12 @@ public class ArchiveCounterEntity {
         return new DefaultArchiveCounter(
                 new ArchiveCounter.ArchiveCounterId(entity.id),
                 new Account.AccountId(entity.accountId),
-                entity.storedMapCount,
-                entity.storedWebPageCount);
+                entity.storedFolderCount,
+                entity.storedBookmarkCount);
     }
 
     public void update(ArchiveCounter archiveCounter) {
-        storedMapCount = archiveCounter.getStoredMapCount();
-        storedWebPageCount = archiveCounter.getStoredWebPageCount();
+        storedFolderCount = archiveCounter.getStoredFolderCount();
+        storedBookmarkCount = archiveCounter.getStoredBookmarkCount();
     }
 }

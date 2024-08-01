@@ -17,9 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 @PrimaryPort
@@ -57,8 +54,8 @@ public class FolderStore {
         if (isTopLevel(parentFolderId)) {
             var created = folderRepository.save(newFolder);
 
-            archiveCounter.increment(ArchiveCounter.CountType.FOLDER);
-            archiveCounterRepository.save(archiveCounter);
+            archiveCounter.increase(ArchiveCounter.CountType.FOLDER);
+            archiveCounterRepository.update(archiveCounter);
 
             // 새 폴더 하위에 생기는 북마크들의 order 및 parent 처리
             for (int i = 0; i < newFolderChildrenBookmark.size(); i++) {
@@ -76,7 +73,7 @@ public class FolderStore {
                     bookmarkOriginalParentFolder.removeBookmark(bookmark);
                 }
 
-                bookmark.order(i+1);
+                bookmark.order(i + 1);
                 bookmark.parent(created);
             }
 
@@ -98,7 +95,7 @@ public class FolderStore {
                 .orElseThrow(() -> FolderException.notFound(accountId, parentFolderId));
 
         var created = folderRepository.save(newFolder);
-        archiveCounter.increment(ArchiveCounter.CountType.FOLDER);
+        archiveCounter.increase(ArchiveCounter.CountType.FOLDER);
 
         for (int i = 0; i < newFolderChildrenBookmark.size(); i++) {
             var bookmark = newFolderChildrenBookmark.get(i);
@@ -115,7 +112,7 @@ public class FolderStore {
                 bookmarkOriginalParentFolder.removeBookmark(bookmark);
             }
 
-            bookmark.order(i+1);
+            bookmark.order(i + 1);
             bookmark.parent(created);
         }
 
@@ -150,7 +147,7 @@ public class FolderStore {
         var sourceFolder = folderRepository.findFamilyById(accountId, sourceFolderId)
                 .orElseThrow(() -> FolderException.notFound(accountId, sourceFolderId));
 
-        if (sourceFolder.getParentFolderId().equals(targetFolderId) && sourceFolder.getOrder() == updateOrder){
+        if (sourceFolder.getParentFolderId().equals(targetFolderId) && sourceFolder.getOrder() == updateOrder) {
             return;
         }
 
@@ -301,65 +298,101 @@ public class FolderStore {
     public void delete(String accountIdVal, Long folderIdVal) {
         var folderId = new Folder.FolderId(folderIdVal);
         var accountId = new Account.AccountId(accountIdVal);
+        var deletedAt = Instant.now();
 
-        var folder = folderRepository.findById(folderId)
+        var folder = folderRepository.findFamilyById(accountId, folderId)
                 .orElseThrow(() -> FolderException.notFound(accountId, folderId));
 
-        folder.modifiableCheck(accountId);
-        folder.delete(Instant.now());
+        folder.delete(deletedAt);
 
-        folderRepository.updateDeleteStatus(folder);
+        folderRepository.update(folder);
+
+        var childrenFolder = folder.getChildrenFolder();
+        var childrenBookmark = folder.getChildrenBookmark();
+
+        if (!childrenFolder.isEmpty()) {
+            folderRepository.update(childrenFolder);
+        }
+
+        if (!childrenBookmark.isEmpty()) {
+            bookmarkRepository.update(childrenBookmark);
+        }
+
+        childrenFolder.forEach(childFolder -> deleteInternal(accountId, childFolder, deletedAt));
+    }
+
+    // 삭제 시간 통일
+    @Transactional
+    protected void deleteInternal(Account.AccountId accountId, Folder folder, Instant deletedAt) {
+        var childrenFolder = folderRepository.findAllByParentId(accountId, folder.getId());
+        var childrenBookmark = bookmarkRepository.findAllByParentFolderId(accountId, folder.getId());
+
+        folder.addFolder(childrenFolder);
+        folder.addBookmark(childrenBookmark);
+        folder.delete(deletedAt);
+
+        folderRepository.update(folder);
+
+        if (!childrenFolder.isEmpty()) {
+            folderRepository.update(childrenFolder);
+        }
+
+        if (!childrenBookmark.isEmpty()) {
+            bookmarkRepository.update(childrenBookmark);
+        }
+
+        childrenFolder.forEach(childFolder -> deleteInternal(accountId, childFolder, deletedAt));
     }
 
     public void restore(String accountIdVal, Long folderIdVal) {
         var folderId = new Folder.FolderId(folderIdVal);
         var accountId = new Account.AccountId(accountIdVal);
 
-        var folder = folderRepository.findById(folderId)
+        var folder = folderRepository.findDeletedFamilyById(accountId, folderId)
                 .orElseThrow(() -> FolderException.notFound(accountId, folderId));
 
-        folder.modifiableCheck(accountId);
         folder.restore();
 
-        folderRepository.updateDeleteStatus(folder);
+        folderRepository.update(folder);
+
+        var childrenFolder = folder.getChildrenFolder();
+        var childrenBookmark = folder.getChildrenBookmark();
+
+        if (!childrenFolder.isEmpty()) {
+            folderRepository.update(childrenFolder);
+        }
+
+        if (!childrenBookmark.isEmpty()) {
+            bookmarkRepository.update(childrenBookmark);
+        }
+
+        childrenFolder.forEach(childFolder -> restoreInternal(accountId, childFolder));
+    }
+
+    @Transactional
+    protected void restoreInternal(Account.AccountId accountId, Folder folder) {
+        var childrenFolder = folderRepository.findDeletedAllByParentId(accountId, folder.getId());
+        var childrenBookmark = bookmarkRepository.findDeletedAllByParentFolderId(accountId, folder.getId());
+
+        folder.addFolder(childrenFolder);
+        folder.addBookmark(childrenBookmark);
+        folder.restore();
+
+        folderRepository.update(folder);
+
+        if (!childrenFolder.isEmpty()) {
+            folderRepository.update(childrenFolder);
+        }
+
+        if (!childrenBookmark.isEmpty()) {
+            bookmarkRepository.update(childrenBookmark);
+        }
+
+        childrenFolder.forEach(childFolder -> restoreInternal(accountId, folder));
     }
 
 
     private boolean isTopLevel(Folder.FolderId parentFolderId) {
         return parentFolderId.equals(Folder.TOP_LEVEL) || parentFolderId.value() < Folder.TOP_LEVEL.value();
-    }
-
-    private Folder creatOnTheTopLevel(Account.AccountId accountId, Folder folder, int subtractCount) {
-        var topLevelBookmarks = bookmarkRepository.findAllByParentFolderId(accountId, Bookmark.TOP_LEVEL);
-        var topLevelFolders = folderRepository.findAllByParentId(accountId, Folder.TOP_LEVEL);
-        var archiveCounter = archiveCounterRepository.findByAccountId(accountId)
-                .orElseThrow(() -> ArchiveCounterException.notFound(accountId));
-        var order = topLevelBookmarks.size() + topLevelFolders.size() + 1 - subtractCount;
-
-        folder.order(order);
-        var created = folderRepository.save(folder);
-
-        archiveCounter.increment(ArchiveCounter.CountType.FOLDER);
-        archiveCounterRepository.save(archiveCounter);
-        return created;
-    }
-
-    private Folder createOnTheOtherFolder(Account.AccountId accountId, Folder.FolderId parentFolderId, Folder folder) {
-        var parentFolder = folderRepository.findFamilyById(accountId, parentFolderId).orElseThrow(() -> FolderException.notFound(accountId, parentFolderId));
-        var order = parentFolder.getChildrenFolder().size() + parentFolder.getChildrenBookmark().size() + 1;
-
-        folder.parent(parentFolder);
-        folder.order(order);
-
-        var created = folderRepository.save(folder);
-        parentFolder.addFolder(created);
-        folderRepository.updateFamily(parentFolder);
-
-        var archiveCounter = archiveCounterRepository.findByAccountId(accountId)
-                .orElseThrow(() -> ArchiveCounterException.notFound(accountId));
-
-        archiveCounter.increment(ArchiveCounter.CountType.FOLDER);
-        archiveCounterRepository.save(archiveCounter);
-        return created;
     }
 }

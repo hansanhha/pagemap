@@ -33,7 +33,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 @PrimaryPort
 @Service
@@ -89,8 +88,8 @@ public class BookmarkStore {
             bookmark.order(order);
             created = bookmarkRepository.save(bookmark);
 
-            archiveCounter.increment(ArchiveCounter.CountType.BOOKMARK);
-            archiveCounterRepository.save(archiveCounter);
+            archiveCounter.increase(ArchiveCounter.CountType.BOOKMARK);
+            archiveCounterRepository.update(archiveCounter);
         } else {
             var parentFolder = folderRepository.findFamilyById(accountId, parentFolderId)
                     .orElseThrow(() -> FolderException.notFound(accountId, parentFolderId));
@@ -318,7 +317,7 @@ public class BookmarkStore {
         bookmark.modifiableCheck(accountId);
         bookmark.delete(Instant.now());
 
-        bookmarkRepository.updateDeletedStatus(bookmark);
+        bookmarkRepository.update(bookmark);
     }
 
     public void restore(String accountIdStr, Long bookmarkIdVal) {
@@ -329,7 +328,7 @@ public class BookmarkStore {
                 .orElseThrow(() -> BookmarkException.notFound(accountId, bookmarkId));
 
         bookmark.restore();
-        bookmarkRepository.updateDeletedStatus(bookmark);
+        bookmarkRepository.update(bookmark);
     }
 
     private boolean isTopLevel(Folder.FolderId parentFolderId) {
@@ -346,8 +345,8 @@ public class BookmarkStore {
         bookmark.order(order);
         var created = bookmarkRepository.save(bookmark);
 
-        archiveCounter.increment(ArchiveCounter.CountType.BOOKMARK);
-        archiveCounterRepository.save(archiveCounter);
+        archiveCounter.increase(ArchiveCounter.CountType.BOOKMARK);
+        archiveCounterRepository.update(archiveCounter);
         return created;
     }
 
@@ -365,8 +364,8 @@ public class BookmarkStore {
         var archiveCounter = archiveCounterRepository.findByAccountId(accountId)
                 .orElseThrow(() -> ArchiveCounterException.notFound(accountId));
 
-        archiveCounter.increment(ArchiveCounter.CountType.BOOKMARK);
-        archiveCounterRepository.save(archiveCounter);
+        archiveCounter.increase(ArchiveCounter.CountType.BOOKMARK);
+        archiveCounterRepository.update(archiveCounter);
         return bookmark;
     }
 
@@ -383,7 +382,7 @@ public class BookmarkStore {
 
         bookmarkRepository.saveAll(bookmarks);
 
-        archiveCounter.increment(ArchiveCounter.CountType.BOOKMARK, bookmarks.size());
+        archiveCounter.increase(ArchiveCounter.CountType.BOOKMARK, bookmarks.size());
         archiveCounterRepository.save(archiveCounter);
     }
 

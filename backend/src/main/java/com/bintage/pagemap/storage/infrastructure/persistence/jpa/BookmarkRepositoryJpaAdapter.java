@@ -119,4 +119,9 @@ public class BookmarkRepositoryJpaAdapter implements BookmarkRepository {
                 .map(Bookmark.BookmarkId::value)
                 .collect(Collectors.toList()));
     }
+
+    @Override
+    public void deleteAll(Account.AccountId accountId) {
+        bookmarkEntityRepository.deleteAllByAccountId(accountId.value());
+    }
 }

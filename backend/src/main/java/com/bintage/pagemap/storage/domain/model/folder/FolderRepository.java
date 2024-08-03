@@ -34,4 +34,6 @@ public interface FolderRepository {
     void updateFamily(Folder folder);
 
     void deleteAll(Account.AccountId accountId, List<Folder> deletedFolders);
+
+    void deleteAll(Account.AccountId accountId);
 }

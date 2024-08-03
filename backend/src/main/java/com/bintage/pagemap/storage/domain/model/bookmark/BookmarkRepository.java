@@ -31,4 +31,6 @@ public interface BookmarkRepository {
     void update(List<Bookmark> bookmarks);
 
     void deleteAll(Account.AccountId accountId, List<Bookmark> bookmarks);
+
+    void deleteAll(Account.AccountId accountId);
 }

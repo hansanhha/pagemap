@@ -179,4 +179,9 @@ public class FolderRepositoryJpaAdapter implements FolderRepository {
                 .map(Folder.FolderId::value)
                 .collect(Collectors.toList()));
     }
+
+    @Override
+    public void deleteAll(Account.AccountId accountId) {
+        folderEntityRepository.deleteAllByAccountId(accountId.value());
+    }
 }

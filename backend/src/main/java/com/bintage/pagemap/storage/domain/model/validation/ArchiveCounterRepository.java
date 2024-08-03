@@ -18,4 +18,5 @@ public interface ArchiveCounterRepository {
 
     void update(ArchiveCounter archiveCounter);
 
+    void delete(Account.AccountId accountId);
 }

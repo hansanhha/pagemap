@@ -1,6 +1,7 @@
 package com.bintage.pagemap.storage.application;
 
 import com.bintage.pagemap.auth.domain.account.Account;
+import com.bintage.pagemap.auth.domain.account.event.AccountDeleted;
 import com.bintage.pagemap.auth.domain.account.event.AccountSignedUp;
 import com.bintage.pagemap.storage.application.dto.BookmarkCreateRequest;
 import com.bintage.pagemap.storage.application.dto.BookmarkDto;
@@ -373,7 +374,7 @@ public class BookmarkStore {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener
     @DomainEventHandler
-    public void handle(AccountSignedUp event) {
+    void handle(AccountSignedUp event) {
         var accountId = event.accountId();
         var archiveCounter = archiveCounterRepository.findByAccountId(accountId)
                 .orElseGet(() -> DefaultArchiveCounter.create(accountId));
@@ -386,4 +387,15 @@ public class BookmarkStore {
         archiveCounterRepository.save(archiveCounter);
     }
 
+    @Async
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @TransactionalEventListener
+    @DomainEventHandler
+    void handle(AccountDeleted event) {
+        var accountId = event.accountId();
+
+        bookmarkRepository.deleteAll(accountId);
+        folderRepository.deleteAll(accountId);
+        archiveCounterRepository.delete(accountId);
+    }
 }

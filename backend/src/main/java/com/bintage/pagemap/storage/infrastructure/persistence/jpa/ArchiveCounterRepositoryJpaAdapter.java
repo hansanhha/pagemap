@@ -50,4 +50,9 @@ public class ArchiveCounterRepositoryJpaAdapter implements ArchiveCounterReposit
 
         entity.update(archiveCounter);
     }
+
+    @Override
+    public void delete(Account.AccountId accountId) {
+        archiveCounterEntityRepository.deleteByAccountId(accountId.value());
+    }
 }

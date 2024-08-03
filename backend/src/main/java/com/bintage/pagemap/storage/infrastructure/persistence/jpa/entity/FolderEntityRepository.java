@@ -1,6 +1,7 @@
 package com.bintage.pagemap.storage.infrastructure.persistence.jpa.entity;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.Collection;
@@ -30,4 +31,8 @@ public interface FolderEntityRepository extends JpaRepository<FolderEntity, Long
 
     @Query("SELECT f FROM FolderEntity f WHERE f.accountId = :accountId AND f.delete.moveTrashed = true")
     List<FolderEntity> findAllDeletedById(String accountId);
+
+    @Modifying
+    @Query("DELETE FROM FolderEntity f WHERE f.accountId = :accountId")
+    void deleteAllByAccountId(String accountId);
 }

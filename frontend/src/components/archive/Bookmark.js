@@ -11,7 +11,6 @@ import FolderCreatable from "./FolderCreatable";
 const Bookmark = ({bookmark, onArchiveDragging, onUpdateOrder, onCreateFolder}) => {
     const [name, setName] = useState(bookmark.name);
 
-    console.log(bookmark);
     return (
         <>
             <OrderLine archive={bookmark}

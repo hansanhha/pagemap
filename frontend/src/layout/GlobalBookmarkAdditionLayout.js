@@ -28,28 +28,90 @@ const isValidExternalDrag = (e) => {
 
 const GlobalBookmarkDraggingContext = createContext();
 
+const createBookmarkHTMLFile = (file, location, accessToken, handleActive) => {
+    const filenames = file.name.split(".");
+    const extension = filenames[filenames.length - 1];
+
+    if (extension === "html" && file.type === "text/html") {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        fetch(process.env.REACT_APP_SERVER + "/storage/bookmarks/html", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + accessToken,
+            },
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (location.pathname === "/") {
+                    handleActive();
+                }
+            })
+            .catch(err => console.error("Error fetching app drop zone:", err));
+    }
+}
+
+const createBookmark = (uri, accessToken, location, handleActive) => {
+    if (!isValidURL(uri)) {
+        return;
+    }
+
+    fetch(process.env.REACT_APP_SERVER + "/storage/bookmarks/auto", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/problem+json",
+            "Authorization": "Bearer " + accessToken,
+        },
+        body: JSON.stringify({
+            parentFolderId: 0,
+            uri: uri,
+        })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (location.pathname === "/") {
+                handleActive();
+            }
+        })
+        .catch(err => console.error("Error fetching app drop zone:", err));
+}
+
 const GlobalBookmarkAdditionLayout = ({children}) => {
     const location = useLocation();
     const {accessToken} = useLogin();
     const [isActive, setIsActive] = useState(true);
     const [isDraggingOver, setIsDraggingOver] = useState(false);
 
+    const handleActive = () => {
+        setIsActive(false);
+        setTimeout(() => {
+            setIsActive(true);
+        }, 10);
+    }
+
     useEffect(() => {
         const handlePaste = (e) => {
             const pasteData = e.clipboardData.getData("text/plain");
+            const pasteHTML = e.clipboardData.files;
 
             if (pasteData) {
-                createBookmark(pasteData);
+                createBookmark(pasteData, accessToken, location, handleActive);
+                return;
+            }
+
+            if (pasteHTML.length > 0) {
+                createBookmarkHTMLFile(pasteHTML[0], location, accessToken, handleActive);
             }
         }
-
 
         document.addEventListener('paste', handlePaste);
 
         return () => {
             document.removeEventListener('paste', handlePaste);
         }
-    }, []);
+    }, [accessToken, location, handleActive]);
 
     const globalDragEffectOn = () => {
         setIsDraggingOver(true);
@@ -83,13 +145,6 @@ const GlobalBookmarkAdditionLayout = ({children}) => {
         globalDragEffectOff();
     }
 
-    const handleActive = () => {
-        setIsActive(false);
-        setTimeout(() => {
-            setIsActive(true);
-        }, 10);
-    }
-
     const drop = (e) => {
         e.stopPropagation();
         e.preventDefault();
@@ -102,13 +157,9 @@ const GlobalBookmarkAdditionLayout = ({children}) => {
         if (e.dataTransfer.types.includes("Files")) {
             const files = e.dataTransfer.files;
             for (const file of files) {
-                const filenames = file.name.split(".");
-                const extension = filenames[filenames.length - 1];
-
-                if (extension === "html") {
-                    return;
-                }
+                createBookmarkHTMLFile(file, location, accessToken, handleActive);
             }
+            return;
         }
 
         let uri = null;
@@ -121,33 +172,8 @@ const GlobalBookmarkAdditionLayout = ({children}) => {
         }
 
         if (uri) {
-            createBookmark(uri);
+            createBookmark(uri, accessToken, location, handleActive);
         }
-    }
-
-    const createBookmark = (uri) => {
-        if (!isValidURL(uri)) {
-            return;
-        }
-
-        fetch(process.env.REACT_APP_SERVER + "/storage/bookmarks/auto", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/problem+json",
-                "Authorization": "Bearer " + accessToken,
-            },
-            body: JSON.stringify({
-                parentFolderId: 0,
-                uri: uri,
-            })
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (location.pathname === "/") {
-                    handleActive();
-                }
-            })
-            .catch(err => console.error("Error fetching app drop zone:", err));
     }
 
     return (

@@ -20,7 +20,8 @@ public enum StorageExceptionCode {
     BOOKMARK_MODIFY_ACCESS_PROTECTION(403, "SW02", "web page modify access denied"),
     FAILED_AUTO_SAVE_BOOKMARK(400, "SW03", "failed web save"),
     FAILED_AUTO_SAVE_BOOKMARK_TOO_LONG_URI(400, "SW04", "failed web save"),
-    BOOKMARK_NAME_TOO_LONG(400, "SW05", "bookmark name too long"),
+    FAILED_CREATE_WITH_HTML(400, "SW05", "failed create bookmark"),
+    BOOKMARK_NAME_TOO_LONG(400, "SW06", "bookmark name too long"),
 
     NOT_FOUND_TRASH(400, "ST01", "not found deleted archive item"),
 

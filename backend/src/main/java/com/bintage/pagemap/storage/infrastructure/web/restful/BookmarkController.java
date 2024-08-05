@@ -16,6 +16,7 @@ import org.jmolecules.architecture.hexagonal.PrimaryAdapter;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
 import java.util.List;
@@ -56,6 +57,14 @@ public class BookmarkController {
         return ResponseEntity.ok(CreatedBookmarkResponseBody.of(autoSaveResponse.id()));
     }
 
+    @PostMapping("/html")
+    public ResponseEntity<Map<String, Object>> createBookmarkWithBookmarkHTMLFile(@AuthenticationPrincipal AuthenticatedAccount account,
+                                                                                  @RequestParam("file") MultipartFile bookmarkFile) {
+
+        bookmarkStore.createByBookmarkHTML(account.getName(), bookmarkFile);
+        return ResponseEntity.ok(CreatedBookmarkResponseBody.of());
+    }
+
     @PostMapping("/{id}/visit")
     public void visitWebPage(@PathVariable Long id) {
         archiveUse.visitWebPage(id);
@@ -93,6 +102,9 @@ public class BookmarkController {
 
     public static class CreatedBookmarkResponseBody {
         public static final String CREATED_WEB_PAGE_ID = "id";
+        public static Map<String, Object> of() {
+            return Map.of(MESSAGE_NAME, SUCCESS);
+        }
         public static Map<String, Object> of(Long id) {
             return Map.of(MESSAGE_NAME, SUCCESS, CREATED_WEB_PAGE_ID, id);
         }

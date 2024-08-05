@@ -4,6 +4,7 @@ import com.bintage.pagemap.auth.domain.account.Account;
 import com.bintage.pagemap.storage.domain.ArchiveType;
 import com.bintage.pagemap.storage.domain.StorageException;
 import com.bintage.pagemap.storage.domain.StorageExceptionCode;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
 import java.time.Instant;
@@ -14,6 +15,7 @@ public class BookmarkException extends StorageException {
 
     private static final String URI_KEY = "uri";
     private static final String NAME = "name";
+    private static final String FILE = "file";
 
     protected BookmarkException(Account.AccountId accountId, ArchiveType archiveType, Long archiveId, Instant occurAt, StorageExceptionCode storageExceptionCode, java.util.Map<String, Object> properties) {
         super(accountId, archiveType, archiveId, occurAt, storageExceptionCode, properties);
@@ -39,6 +41,10 @@ public class BookmarkException extends StorageException {
         return new BookmarkException(accountId, ArchiveType.BOOKMARK, id.value(), Instant.now(), StorageExceptionCode.BOOKMARK_NAME_TOO_LONG, Map.of(NAME, updateName));
     }
 
+    public static BookmarkException failedCreateWithHTML(Account.AccountId accountId, MultipartFile file) {
+        return new BookmarkException(accountId, ArchiveType.BOOKMARK, null, Instant.now(), StorageExceptionCode.FAILED_CREATE_WITH_HTML, Map.of(FILE, file));
+    }
+
     @Override
     public String getProblemDetailTitle() {
         return storageExceptionCode.getMessage();
@@ -53,7 +59,8 @@ public class BookmarkException extends StorageException {
             case "SW02" -> "[code: ]".concat(detailCode).concat(" [account: ").concat(accountId.value()).concat("] doesn't have access to update bookmark: ").concat(String.valueOf(archiveId));
             case "SW03" -> "[code: ]".concat(detailCode).concat(" failed bookmark save");
             case "SW04" -> "[code: ]".concat(detailCode).concat(" failed bookmark save too long uri");
-            case "SW05" -> "[code: ]".concat(detailCode).concat(" bookmark name too long").concat(" name: ").concat((String) properties.get(NAME));
+            case "SW05" -> "[code: ]".concat(detailCode).concat(" failed bookmark save invalid html file");
+            case "SW06" -> "[code: ]".concat(detailCode).concat(" bookmark name too long").concat(" name: ").concat((String) properties.get(NAME));
             default -> "";
         };
     }

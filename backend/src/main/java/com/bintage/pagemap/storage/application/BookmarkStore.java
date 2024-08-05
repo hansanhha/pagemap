@@ -6,6 +6,7 @@ import com.bintage.pagemap.auth.domain.account.event.AccountSignedUp;
 import com.bintage.pagemap.storage.application.dto.BookmarkCreateRequest;
 import com.bintage.pagemap.storage.application.dto.BookmarkDto;
 import com.bintage.pagemap.storage.application.dto.CreateBookmarkAutoNamingRequest;
+import com.bintage.pagemap.storage.domain.ArchiveType;
 import com.bintage.pagemap.storage.domain.model.bookmark.Bookmark;
 import com.bintage.pagemap.storage.domain.model.bookmark.BookmarkException;
 import com.bintage.pagemap.storage.domain.model.bookmark.BookmarkRepository;
@@ -17,15 +18,19 @@ import com.bintage.pagemap.storage.domain.model.validation.ArchiveCounter;
 import com.bintage.pagemap.storage.domain.model.validation.ArchiveCounterException;
 import com.bintage.pagemap.storage.domain.model.validation.ArchiveCounterRepository;
 import com.bintage.pagemap.storage.domain.model.validation.DefaultArchiveCounter;
+import com.nimbusds.jose.util.StandardCharset;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.hexagonal.PrimaryPort;
 import org.jmolecules.event.annotation.DomainEventHandler;
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Attributes;
+import org.jsoup.nodes.Element;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.net.URI;
@@ -33,7 +38,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 @PrimaryPort
 @Service
@@ -118,8 +126,8 @@ public class BookmarkStore {
             favicons.stream()
                     .filter(favicon ->
                             favicon.attributes().hasKey("rel") &&
-                            favicon.attributes().hasKey("href") &&
-                            favicon.attributes().hasKey("type"))
+                                    favicon.attributes().hasKey("href") &&
+                                    favicon.attributes().hasKey("type"))
                     .findFirst()
                     .ifPresent(favicon -> {
                         created.logo(URI.create(favicon.attribute("href").getValue()));
@@ -138,6 +146,90 @@ public class BookmarkStore {
 
         bookmarkRepository.update(created);
         return BookmarkDto.from(created);
+    }
+
+    public void createByBookmarkHTML(String accountIdStr, MultipartFile file) {
+        var accountId = new Account.AccountId(accountIdStr);
+
+        var archiveCounter = archiveCounterRepository.findByAccountId(accountId)
+                .orElseThrow(() -> ArchiveCounterException.notFound(accountId));
+
+        var archiveCount = new HashMap<ArchiveType, Integer>();
+        archiveCount.put(ArchiveType.FOLDER, 0);
+        archiveCount.put(ArchiveType.BOOKMARK, 0);
+
+        try {
+            var content = new String(file.getBytes(), StandardCharset.UTF_8);
+            var doc = Jsoup.parse(content);
+            var root = doc.getElementsByTag("dl").get(1);
+
+            createArchives(accountId, Folder.TOP_LEVEL, root, archiveCount);
+            archiveCounter.increase(ArchiveCounter.CountType.FOLDER, archiveCount.get(ArchiveType.FOLDER));
+            archiveCounter.increase(ArchiveCounter.CountType.BOOKMARK, archiveCount.get(ArchiveType.BOOKMARK));
+
+            archiveCounterRepository.update(archiveCounter);
+
+        } catch (IOException e) {
+            throw BookmarkException.failedCreateWithHTML(accountId, file);
+        }
+    }
+
+    private void createArchives(Account.AccountId accountId, Folder.FolderId parentFolderId, Element element, Map<ArchiveType, Integer> archiveCount) {
+        element.children()
+                .stream()
+                .filter(c -> c.nodeName().equals("dt"))
+                .forEach(b -> {
+                    var firstChild = b.firstElementChild();
+
+                    if (firstChild.nodeName().equals("h3")) {
+                        var saved = folderRepository.save(createFolder(accountId, parentFolderId, firstChild));
+
+                        if (!parentFolderId.equals(Folder.TOP_LEVEL)) {
+                            var parentFolder = folderRepository.findFamilyById(accountId, parentFolderId)
+                                    .orElseThrow(() -> FolderException.notFound(accountId, parentFolderId));
+                            parentFolder.addFolder(saved);
+                            folderRepository.updateFamily(parentFolder);
+                        }
+
+                        createArchives(accountId, saved.getId(), b.child(1), archiveCount);
+                        archiveCount.put(ArchiveType.FOLDER, archiveCount.get(ArchiveType.FOLDER) + 1);
+                    } else if (firstChild.nodeName().equals("a")) {
+                        var saved = bookmarkRepository.save(createBookmark(accountId, parentFolderId, firstChild));
+
+                        if (!parentFolderId.equals(Folder.TOP_LEVEL)) {
+                            var parentFolder = folderRepository.findFamilyById(accountId, parentFolderId)
+                                    .orElseThrow(() -> FolderException.notFound(accountId, parentFolderId));
+                            parentFolder.addBookmark(saved);
+                            folderRepository.updateFamily(parentFolder);
+                        }
+
+                        archiveCount.put(ArchiveType.BOOKMARK, archiveCount.get(ArchiveType.BOOKMARK) + 1);
+                    }
+                });
+    }
+
+    private Folder createFolder(Account.AccountId accountId, Folder.FolderId parentFolderId, Element element) {
+        return Folder.builder()
+                .accountId(accountId)
+                .parentFolderId(parentFolderId)
+                .name(element.text())
+                .childrenFolder(new LinkedList<>())
+                .childrenBookmark(new LinkedList<>())
+                .order(0)
+                .build();
+    }
+
+    private Bookmark createBookmark(Account.AccountId accountId, Folder.FolderId parentFolderId, Element element) {
+        var attributes = element.attributes();
+
+        return Bookmark.builder()
+                .accountId(accountId)
+                .parentFolderId(parentFolderId)
+                .name(element.text())
+                .uri(URI.create(attributes.get("href")))
+                .logo(URI.create(attributes.get("icon")))
+                .order(0)
+                .build();
     }
 
     public void rename(String accountIdVal, Long bookmarkIdVal, String updateName) {

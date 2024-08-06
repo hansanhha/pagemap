@@ -1,14 +1,16 @@
 package com.bintage.pagemap.storage.infrastructure.web.restful;
 
 import com.bintage.pagemap.auth.infrastructure.security.AuthenticatedAccount;
+import com.bintage.pagemap.storage.application.ArchiveLocation;
 import com.bintage.pagemap.storage.application.ArchiveUse;
 import com.bintage.pagemap.storage.application.FolderStore;
 import com.bintage.pagemap.storage.application.dto.CurrentFolderResponse;
 import com.bintage.pagemap.storage.application.dto.FolderCreateRequest;
 import com.bintage.pagemap.storage.application.dto.FolderDto;
 import com.bintage.pagemap.storage.application.dto.SpecificArchiveResponse;
+import com.bintage.pagemap.storage.domain.ArchiveType;
 import com.bintage.pagemap.storage.infrastructure.web.restful.dto.CreateFolderRestRequest;
-import com.bintage.pagemap.storage.infrastructure.web.restful.dto.UpdateFolderLocationRestRequest;
+import com.bintage.pagemap.storage.infrastructure.web.restful.dto.UpdateArchiveLocationRestRequest;
 import com.bintage.pagemap.storage.infrastructure.web.restful.dto.UpdateFolderNicknameRestRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +35,7 @@ public class FolderController {
     public static final String FOLDERS = "folders";
 
     private final FolderStore folderStore;
+    private final ArchiveLocation archiveLocation;
     private final ArchiveUse archiveUse;
 
     @GetMapping("/{id}")
@@ -59,8 +62,8 @@ public class FolderController {
     @PatchMapping("/{id}/location")
     public ResponseEntity<Map<String, String>> updateMapLocation(@AuthenticationPrincipal AuthenticatedAccount account,
                                                     @PathVariable Long id,
-                                                    @RequestBody @Valid UpdateFolderLocationRestRequest request) {
-        folderStore.move(account.getName(), id, request.getTargetFolderId(), request.getUpdateOrder());
+                                                    @RequestBody @Valid UpdateArchiveLocationRestRequest request) {
+        archiveLocation.move(ArchiveType.FOLDER, account.getName(), id, request.getTargetFolderId(), request.getUpdateOrder());
         return ResponseEntity.ok(UpdatedMapResponseBody.of());
     }
 

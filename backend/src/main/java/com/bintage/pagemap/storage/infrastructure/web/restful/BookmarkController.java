@@ -1,14 +1,16 @@
 package com.bintage.pagemap.storage.infrastructure.web.restful;
 
 import com.bintage.pagemap.auth.infrastructure.security.AuthenticatedAccount;
+import com.bintage.pagemap.storage.application.ArchiveLocation;
 import com.bintage.pagemap.storage.application.ArchiveUse;
 import com.bintage.pagemap.storage.application.BookmarkStore;
 import com.bintage.pagemap.storage.application.dto.BookmarkCreateRequest;
 import com.bintage.pagemap.storage.application.dto.BookmarkDto;
 import com.bintage.pagemap.storage.application.dto.CreateBookmarkAutoNamingRequest;
+import com.bintage.pagemap.storage.domain.ArchiveType;
 import com.bintage.pagemap.storage.infrastructure.web.restful.dto.CreateBookmarkAutoFillRestRequest;
 import com.bintage.pagemap.storage.infrastructure.web.restful.dto.CreateBookmarkRestRequest;
-import com.bintage.pagemap.storage.infrastructure.web.restful.dto.UpdateBookmarkLocationRestRequest;
+import com.bintage.pagemap.storage.infrastructure.web.restful.dto.UpdateArchiveLocationRestRequest;
 import com.bintage.pagemap.storage.infrastructure.web.restful.dto.UpdateBookmarkNicknameRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +36,7 @@ public class BookmarkController {
     public static final String BOOKMARKS = "bookmarks";
 
     private final BookmarkStore bookmarkStore;
+    private final ArchiveLocation archiveLocation;
     private final ArchiveUse archiveUse;
 
     @GetMapping("/{id}")
@@ -81,8 +84,8 @@ public class BookmarkController {
     @PatchMapping("/{id}/location")
     public ResponseEntity<Map<String, String>> updateBookmarkLocation(@AuthenticationPrincipal AuthenticatedAccount account,
                                                                       @PathVariable Long id,
-                                                                      @RequestBody UpdateBookmarkLocationRestRequest request) {
-        bookmarkStore.move(account.getName(), id, request.getTargetFolderId(), request.getUpdateOrder());
+                                                                      @RequestBody @Valid UpdateArchiveLocationRestRequest request) {
+        archiveLocation.move(ArchiveType.BOOKMARK, account.getName(), id, request.getTargetFolderId(), request.getUpdateOrder());
         return ResponseEntity.ok(UpdatedBookmarkResponseBody.of());
     }
 

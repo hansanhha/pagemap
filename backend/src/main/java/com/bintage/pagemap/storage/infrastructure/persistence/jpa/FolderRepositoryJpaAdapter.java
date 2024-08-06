@@ -74,7 +74,7 @@ public class FolderRepositoryJpaAdapter implements FolderRepository {
                     .filter(child -> !child.getDelete().isMoveTrashed())
                     .map(child -> FolderEntity.toChildDomainModel(currentFolder.getId(), child))
                     .toList();
-            currentFolder.addFolder(childrenFolder);
+            currentFolder.getChildrenFolder().addAll(childrenFolder);
         }
 
         if (currentFolderEntity.getChildrenBookmark() != null && !currentFolderEntity.getChildrenBookmark().isEmpty()) {
@@ -83,7 +83,7 @@ public class FolderRepositoryJpaAdapter implements FolderRepository {
                     .filter(child -> !child.getDelete().isMoveTrashed())
                     .map(BookmarkEntity::toDomainModel)
                     .toList();
-            currentFolder.addBookmark(childrenBookmark);
+            currentFolder.getChildrenBookmark().addAll(childrenBookmark);
         }
 
         return Optional.of(currentFolder);

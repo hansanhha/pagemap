@@ -7,13 +7,11 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class UpdateBookmarkLocationRestRequest {
+public class UpdateArchiveLocationRestRequest {
 
     @NotNull
     @Min(0)
     Long targetFolderId;
 
-    @NotNull
-    @Min(0)
     int updateOrder;
 }

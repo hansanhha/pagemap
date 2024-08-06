@@ -88,10 +88,7 @@ public class Folder implements AggregateRoot<Folder, Folder.FolderId> {
             throw FolderException.alreadyContainChild(accountId, getId(), ArchiveType.FOLDER, folder.getId().value());
         }
 
-        var order = childrenFolder.size() + childrenBookmark.size() + 1;
-        folder.order(order);
         folder.parent(this);
-
         childrenFolder.add(folder);
     }
 
@@ -115,10 +112,7 @@ public class Folder implements AggregateRoot<Folder, Folder.FolderId> {
             throw FolderException.alreadyContainChild(accountId, getId(), ArchiveType.BOOKMARK, bookmark.getId().value());
         }
 
-        var order = childrenFolder.size() + childrenBookmark.size() + 1;
-        bookmark.order(order);
         bookmark.parent(this);
-
         childrenBookmark.add(bookmark);
     }
 

@@ -23,7 +23,6 @@ import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.hexagonal.PrimaryPort;
 import org.jmolecules.event.annotation.DomainEventHandler;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Element;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -40,8 +39,8 @@ import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @PrimaryPort
 @Service
@@ -50,6 +49,7 @@ import java.util.Map;
 public class BookmarkStore {
 
     private static final String DEFAULT_BOOKMARK_NAME = "새 북마크";
+    private static final String IMPORT_FOLDER_NAME = "가져온 북마크들";
 
     private final FolderRepository folderRepository;
     private final BookmarkRepository bookmarkRepository;
@@ -106,6 +106,7 @@ public class BookmarkStore {
             created = bookmarkRepository.save(bookmark);
             parentFolder.addBookmark(created);
             folderRepository.updateFamily(parentFolder);
+            bookmarkRepository.update(created);
         }
 
         try (var client = HttpClient.newHttpClient()) {
@@ -154,6 +155,9 @@ public class BookmarkStore {
         var archiveCounter = archiveCounterRepository.findByAccountId(accountId)
                 .orElseThrow(() -> ArchiveCounterException.notFound(accountId));
 
+        int topLevelFoldersSize = folderRepository.findAllByParentId(accountId, Folder.TOP_LEVEL).size();
+        int topLevelBookmarksSize = bookmarkRepository.findAllByParentFolderId(accountId, Bookmark.TOP_LEVEL).size();
+
         var archiveCount = new HashMap<ArchiveType, Integer>();
         archiveCount.put(ArchiveType.FOLDER, 0);
         archiveCount.put(ArchiveType.BOOKMARK, 0);
@@ -163,7 +167,11 @@ public class BookmarkStore {
             var doc = Jsoup.parse(content);
             var root = doc.getElementsByTag("dl").get(1);
 
-            createArchives(accountId, Folder.TOP_LEVEL, root, archiveCount);
+            var folder = createFolder(accountId, Folder.TOP_LEVEL, IMPORT_FOLDER_NAME, topLevelFoldersSize + topLevelBookmarksSize + 1);
+            var saved = folderRepository.save(folder);
+
+            createArchives(accountId, saved.getId(), root, archiveCount);
+
             archiveCounter.increase(ArchiveCounter.CountType.FOLDER, archiveCount.get(ArchiveType.FOLDER));
             archiveCounter.increase(ArchiveCounter.CountType.BOOKMARK, archiveCount.get(ArchiveType.BOOKMARK));
 
@@ -175,14 +183,18 @@ public class BookmarkStore {
     }
 
     private void createArchives(Account.AccountId accountId, Folder.FolderId parentFolderId, Element element, Map<ArchiveType, Integer> archiveCount) {
+        AtomicInteger elementOrder = new AtomicInteger(1);
+
         element.children()
                 .stream()
                 .filter(c -> c.nodeName().equals("dt"))
                 .forEach(b -> {
+                    int order = elementOrder.getAndIncrement();
+
                     var firstChild = b.firstElementChild();
 
                     if (firstChild.nodeName().equals("h3")) {
-                        var saved = folderRepository.save(createFolder(accountId, parentFolderId, firstChild));
+                        var saved = folderRepository.save(createFolder(accountId, parentFolderId, firstChild.text(), order));
 
                         if (!parentFolderId.equals(Folder.TOP_LEVEL)) {
                             var parentFolder = folderRepository.findFamilyById(accountId, parentFolderId)
@@ -194,7 +206,7 @@ public class BookmarkStore {
                         createArchives(accountId, saved.getId(), b.child(1), archiveCount);
                         archiveCount.put(ArchiveType.FOLDER, archiveCount.get(ArchiveType.FOLDER) + 1);
                     } else if (firstChild.nodeName().equals("a")) {
-                        var saved = bookmarkRepository.save(createBookmark(accountId, parentFolderId, firstChild));
+                        var saved = bookmarkRepository.save(createBookmark(accountId, parentFolderId, firstChild, order));
 
                         if (!parentFolderId.equals(Folder.TOP_LEVEL)) {
                             var parentFolder = folderRepository.findFamilyById(accountId, parentFolderId)
@@ -208,18 +220,18 @@ public class BookmarkStore {
                 });
     }
 
-    private Folder createFolder(Account.AccountId accountId, Folder.FolderId parentFolderId, Element element) {
+    private Folder createFolder(Account.AccountId accountId, Folder.FolderId parentFolderId, String name, int order) {
         return Folder.builder()
                 .accountId(accountId)
                 .parentFolderId(parentFolderId)
-                .name(element.text())
+                .name(name)
                 .childrenFolder(new LinkedList<>())
                 .childrenBookmark(new LinkedList<>())
-                .order(0)
+                .order(order)
                 .build();
     }
 
-    private Bookmark createBookmark(Account.AccountId accountId, Folder.FolderId parentFolderId, Element element) {
+    private Bookmark createBookmark(Account.AccountId accountId, Folder.FolderId parentFolderId, Element element, int order) {
         var attributes = element.attributes();
 
         return Bookmark.builder()
@@ -228,7 +240,7 @@ public class BookmarkStore {
                 .name(element.text())
                 .uri(URI.create(attributes.get("href")))
                 .logo(URI.create(attributes.get("icon")))
-                .order(0)
+                .order(order)
                 .build();
     }
 
@@ -243,161 +255,6 @@ public class BookmarkStore {
         bookmark.rename(updateName);
 
         bookmarkRepository.update(bookmark);
-    }
-
-    public void move(String accountIdVal, Long sourceBookmarkIdVal, Long targetFolderIdVal, int updateOrder) {
-        var accountId = new Account.AccountId(accountIdVal);
-        var sourceBookmarkId = new Bookmark.BookmarkId(sourceBookmarkIdVal);
-        var targetFolderId = new Folder.FolderId(targetFolderIdVal);
-
-        var sourceBookmark = bookmarkRepository.findById(sourceBookmarkId)
-                .orElseThrow(() -> BookmarkException.notFound(accountId, sourceBookmarkId));
-
-        if (sourceBookmark.getParentFolderId().equals(targetFolderId) && sourceBookmark.getOrder() == updateOrder) {
-            return;
-        }
-
-        // 이동 대상 북마크의 부모가 최상위 계층인 경우
-        if (sourceBookmark.getParentFolderId().equals(Bookmark.TOP_LEVEL)) {
-            var topLevelFolder = folderRepository.findAllByParentId(accountId, Bookmark.TOP_LEVEL);
-            var topLevelBookmarks = bookmarkRepository.findAllByParentFolderId(accountId, Bookmark.TOP_LEVEL);
-
-            // 다른 폴더 하위로 이동하는 경우
-            if (!targetFolderId.equals(Bookmark.TOP_LEVEL)) {
-                decreaseOrderGreaterThanEqual(topLevelFolder, topLevelBookmarks, sourceBookmark.getOrder());
-
-                var targetFolder = folderRepository.findFamilyById(accountId, targetFolderId)
-                        .orElseThrow(() -> FolderException.notFound(accountId, targetFolderId));
-
-                targetFolder.addBookmark(sourceBookmark);
-
-                folderRepository.update(topLevelFolder);
-                bookmarkRepository.update(topLevelBookmarks);
-                folderRepository.updateFamily(targetFolder);
-                bookmarkRepository.update(sourceBookmark);
-                return;
-            }
-
-            // 최상위 계층 내에서 순서 변경하는 경우
-            if (targetFolderId.equals(Bookmark.TOP_LEVEL) && sourceBookmark.getOrder() != updateOrder) {
-                reorder(topLevelFolder, topLevelBookmarks, sourceBookmark, updateOrder);
-
-                bookmarkRepository.update(sourceBookmark);
-                folderRepository.update(topLevelFolder);
-                bookmarkRepository.update(topLevelBookmarks);
-                return;
-            }
-
-        }
-        // 이동 대상 폴더의 부모가 폴더인 경우
-        else {
-            var sourceFolderParent = folderRepository.findFamilyById(accountId, sourceBookmark.getParentFolderId())
-                    .orElseThrow(() -> FolderException.notFound(accountId, sourceBookmark.getParentFolderId()));
-
-            // 최상위로 이동하는 경우
-            if (targetFolderId.equals(Folder.TOP_LEVEL)) {
-                sourceFolderParent.removeBookmark(sourceBookmark);
-
-                var topLevelFolder = folderRepository.findAllByParentId(accountId, Folder.TOP_LEVEL);
-                var topLevelBookmarks = bookmarkRepository.findAllByParentFolderId(accountId, Bookmark.TOP_LEVEL);
-
-                sourceBookmark.goToTopLevel();
-                sourceBookmark.order(updateOrder);
-                increaseOrderGreaterThanEqual(topLevelFolder, topLevelBookmarks, updateOrder);
-
-                folderRepository.updateFamily(sourceFolderParent);
-                bookmarkRepository.update(sourceBookmark);
-                folderRepository.update(topLevelFolder);
-                bookmarkRepository.update(topLevelBookmarks);
-                return;
-            }
-
-            // 다른 폴더로 이동하는 경우
-            if (!sourceBookmark.getParentFolderId().equals(targetFolderId)) {
-                sourceFolderParent.removeBookmark(sourceBookmark);
-
-                var targetFolder = folderRepository.findFamilyById(accountId, targetFolderId)
-                        .orElseThrow(() -> FolderException.notFound(accountId, targetFolderId));
-                targetFolder.addBookmark(sourceBookmark);
-
-                folderRepository.updateFamily(sourceFolderParent);
-                folderRepository.updateFamily(targetFolder);
-                bookmarkRepository.update(sourceBookmark);
-                return;
-            }
-
-            // 같은 폴더 내에서 순서 변경하는 경우
-            if (sourceBookmark.getParentFolderId().equals(targetFolderId) && sourceBookmark.getOrder() != updateOrder) {
-                reorder(sourceFolderParent.getChildrenFolder(), sourceFolderParent.getChildrenBookmark(), sourceBookmark, updateOrder);
-
-                folderRepository.update(sourceFolderParent.getChildrenFolder());
-                bookmarkRepository.update(sourceFolderParent.getChildrenBookmark());
-                bookmarkRepository.update(sourceBookmark);
-            }
-        }
-    }
-
-    private void increaseOrderGreaterThanEqual(List<Folder> topLevelFolder, List<Bookmark> topLevelBookmarks, int order) {
-        topLevelFolder.forEach(folder -> {
-            if (folder.getOrder() >= order) {
-                folder.increaseOrder();
-            }
-        });
-
-        topLevelBookmarks.forEach(bookmark -> {
-            if (bookmark.getOrder() >= order) {
-                bookmark.increaseOrder();
-            }
-        });
-    }
-
-    private void decreaseOrderGreaterThanEqual(List<Folder> folders, List<Bookmark> bookmarks, int order) {
-        folders.forEach(folder -> {
-            if (folder.getOrder() >= order) {
-                folder.decreaseOrder();
-            }
-        });
-
-        bookmarks.forEach(bookmark -> {
-            if (bookmark.getOrder() >= order) {
-                bookmark.decreaseOrder();
-            }
-        });
-    }
-
-    private void reorder(List<Folder> folders, List<Bookmark> bookmarks, Bookmark sourceBookmark, int targetOrder) {
-        var sourceOrder = sourceBookmark.getOrder();
-
-        // 정렬 순위를 낮춘 경우 sourceOrder와 targetOrder 사이에 있는 아카이브 위치 조정
-        if (sourceOrder < targetOrder) {
-            folders.stream()
-                    .takeWhile(
-                            folder -> folder.getOrder() > sourceOrder
-                                    && folder.getOrder() < targetOrder)
-                    .forEach(Folder::decreaseOrder);
-            bookmarks.stream()
-                    .takeWhile(
-                            bookmark -> bookmark.getOrder() > sourceOrder
-                                    && bookmark.getOrder() < targetOrder)
-                    .forEach(Bookmark::decreaseOrder);
-
-            sourceBookmark.order(targetOrder - 1);
-        }
-        // 정렬 순위를 높인 경우
-        else {
-            folders.stream()
-                    .takeWhile(
-                            folder -> folder.getOrder() < sourceOrder
-                                    && folder.getOrder() >= targetOrder)
-                    .forEach(Folder::increaseOrder);
-            bookmarks.stream()
-                    .takeWhile(
-                            bookmark -> bookmark.getOrder() < sourceOrder
-                                    && bookmark.getOrder() >= targetOrder)
-                    .forEach(Bookmark::increaseOrder);
-
-            sourceBookmark.order(targetOrder);
-        }
     }
 
     public void delete(String accountIdVal, Long bookmarkIdVal) {

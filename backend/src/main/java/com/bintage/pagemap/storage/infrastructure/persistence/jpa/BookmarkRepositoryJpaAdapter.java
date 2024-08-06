@@ -93,6 +93,7 @@ public class BookmarkRepositoryJpaAdapter implements BookmarkRepository {
                 .toList();
     }
 
+    @Transactional
     @Override
     public void update(Bookmark bookmark) {
         var entity = bookmarkEntityRepository.findById(bookmark.getId().value())

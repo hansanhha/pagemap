@@ -31,9 +31,9 @@ public class BookmarkEntity {
     @Column(columnDefinition = "TEXT")
     private String logo;
 
-    private Integer visitCount;
+    private int visitCount;
 
-    private Integer orders;
+    private int orders;
 
     @Embedded
     private EmbeddedDelete delete;

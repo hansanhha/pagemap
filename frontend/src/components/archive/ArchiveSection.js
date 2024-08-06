@@ -11,8 +11,9 @@ import {useLocation} from "react-router-dom";
 
 const DRAGGING_TYPE = {
     CREATE_BOOKMARK_BY_DRAGGING: "CREATE_BOOKMARK_BY_DRAGGING",
-    UPDATE_ORDER: "UPDATE_ORDER",
-    UPDATE_HIERARCHY: "UPDATE_HIERARCHY",
+    UPDATE_LOCATION_SAME_PARENT: "UPDATE_LOCATION_SAME_LAYER",
+    UPDATE_PARENT: "UPDATE_PARENT",
+    UPDATE_PARENT_AND_LOCATION: "UPDATE_PARENT_AND_LOCATION",
 }
 
 const ArchiveSection = () => {
@@ -63,63 +64,87 @@ const ArchiveSection = () => {
     }
 
     const handleArchiveDragging = (draggingType, source, target) => {
-        if (draggingType === DRAGGING_TYPE.UPDATE_HIERARCHY) {
-            if (source.id === target.id || source.parentFolderId === target.id) {
+        let type = null;
+        if (FolderDto.isFolder(source)) {
+            type = "folders";
+        } else if (BookmarkDto.isBookmark(source)) {
+            type = "bookmarks";
+        } else if (ShortcutDto.isShortcut(source)) {
+            type = "shortcuts";
+        } else {
+            return;
+        }
+
+        if (draggingType === DRAGGING_TYPE.UPDATE_LOCATION_SAME_PARENT) {
+            if (source.id === target.id) {
                 return;
             }
 
-            if (FolderDto.isFolder(source)) {
-                fetch(process.env.REACT_APP_SERVER + `/storage/folders/${source.id}/location`, {
-                    method: "PATCH",
-                    headers: {
-                        "Content-Type": "application/problem+json",
-                        "Authorization": `Bearer ${accessToken}`,
-                    },
-                    body: JSON.stringify({
-                        targetFolderId: target.id,
-                        updateOrder: target.order,
-                    })
+            fetch(process.env.REACT_APP_SERVER + `/storage/${type}/${source.id}/location`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/problem+json",
+                    "Accept": "application/problem+json",
+                    "Authorization": `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify({
+                    targetFolderId: source.parentFolderId,
+                    updateOrder: target.order - 1,
                 })
-                    .then(response => response.json())
-                    .then(data => {
-                        handleActive();
-                    })
-                    .catch(err => console.error("Error update location: ", err));
-            } else if (BookmarkDto.isBookmark(source)) {
-                fetch(process.env.REACT_APP_SERVER + `/storage/bookmarks/${source.id}/location`, {
-                    method: "PATCH",
-                    headers: {
-                        "Content-Type": "application/problem+json",
-                        "Authorization": "Bearer " + accessToken,
-                    },
-                    body: JSON.stringify({
-                        targetFolderId: target.id,
-                        updateOrder: target.order,
-                    })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    handleActive();
                 })
-                    .then(response => response.json())
-                    .then(data => {
-                        handleActive();
-                    })
-                    .catch(err => console.error("Error update location: ", err));
-            } else if (ShortcutDto.isShortcut(source)) {
-                fetch(process.env.REACT_APP_SERVER + `/storage/bookmarks`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/problem+json",
-                        "Authorization": `Bearer ${accessToken}`,
-                    },
-                    body: JSON.stringify({
-                        targetFolderId: target.id,
-                        updateOrder: target.order,
-                    })
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        handleActive();
-                    })
-                    .catch(err => console.error("Error update location: ", err));
+                .catch(err => console.error("Error fetching update location:", err));
+        }
+
+        else if (draggingType === DRAGGING_TYPE.UPDATE_PARENT) {
+            if (source.id === target.id) {
+                return;
             }
+
+            fetch(process.env.REACT_APP_SERVER + `/storage/${type}/${source.id}/location`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/problem+json",
+                    "Accept": "application/problem+json",
+                    "Authorization": `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify({
+                    targetFolderId: target.id,
+                    updateOrder: 0,
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    handleActive();
+                })
+                .catch(err => console.error("Error fetching update parent:", err));
+        }
+
+        else if (draggingType === DRAGGING_TYPE.UPDATE_PARENT_AND_LOCATION) {
+            if (source.id === target.id) {
+                return;
+            }
+
+            fetch(process.env.REACT_APP_SERVER + `/storage/${type}/${source.id}/location`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/problem+json",
+                    "Accept": "application/problem+json",
+                    "Authorization": `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify({
+                    targetFolderId: target.parentFolderId,
+                    updateOrder: target.order - 1,
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    handleActive();
+                })
+                .catch(err => console.error("Error update location: ", err));
         }
 
         else if (draggingType === DRAGGING_TYPE.CREATE_BOOKMARK_BY_DRAGGING) {
@@ -142,10 +167,6 @@ const ArchiveSection = () => {
                 })
                 .catch(err => console.error("Error fetching app drop zone:", err));
         }
-    }
-
-    const handleUpdateOrder = (source, target) => {
-        handleActive();
     }
 
     const handleCreateFolder = (folderId, bookmark1, bookmark2) => {
@@ -176,7 +197,6 @@ const ArchiveSection = () => {
                 <>
                     <HierarchyArchive archives={sortedArchives}
                                       onArchiveDragging={handleArchiveDragging}
-                                      onUpdateOrder={handleUpdateOrder}
                                       onCreateFolder={handleCreateFolder}
                     />
                     <Trash/>

@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import ShortcutOrderLine from "../common/header/ShortcutOrderLine";
+import ShortcutOrderLine from "./ShortcutOrderLine";
 import HyperLink from "../common/HyperLink";
 import Logo from "../common/Logo";
 import Name from "./Name";

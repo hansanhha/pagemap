@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import {useContext, useState} from "react";
 import FolderDto from "../../service/dto/FolderDto";
-import {setOrderLineSource} from "../common/OrderLine";
+import {setOrderLineSource} from "./OrderLine";
 import BookmarkDto from "../../service/dto/BookmarkDto";
 import ShortcutDto from "../../service/dto/ShortcutDto";
 import {shortcutDataTransferName} from "./ShortcutDrag";
@@ -11,36 +11,36 @@ import {GlobalBookmarkDraggingContext, isValidExternalDrag} from "../../layout/G
 const folderDataTransferName = "folder";
 const bookmarkDataTransferName = "bookmark";
 
-let sourceArchive = null;
+let dragged = null;
 let draggingBookmarkId = null;
 
-const ArchiveDrag = ({ archive, children, onDropped }) => {
+const ArchiveDrag = ({ target, children, onArchiveDragging }) => {
     const [isDraggingOver, setIsDraggingOver] = useState(false);
     const { globalDragEffectOff } = useContext(GlobalBookmarkDraggingContext);
 
     const dragStart = (e) => {
         e.stopPropagation();
-        sourceArchive = archive;
-        setOrderLineSource(archive);
+        dragged = target;
+        setOrderLineSource(target);
 
         // ShortcutDropZone에는 Bookmark만 드래그를 허용하기 때문에 분기 처리
-        if (BookmarkDto.isBookmark(archive)) {
-            e.dataTransfer.setData(bookmarkDataTransferName, JSON.stringify(archive));
+        if (BookmarkDto.isBookmark(target)) {
+            e.dataTransfer.setData(bookmarkDataTransferName, JSON.stringify(target));
             // FolderCreatable.js - bookmark 식별 용도
-            draggingBookmarkId = archive.id;
+            draggingBookmarkId = target.id;
         }
 
-        if (FolderDto.isFolder(archive)) {
-            e.dataTransfer.setData(folderDataTransferName, JSON.stringify(archive));
+        if (FolderDto.isFolder(target)) {
+            e.dataTransfer.setData(folderDataTransferName, JSON.stringify(target));
         }
     }
 
     const dragEnter = (e) => {
         e.stopPropagation();
         e.preventDefault();
-        if (sourceArchive && FolderDto.isFolder(archive)) {
-            if (FolderDto.isFolder(sourceArchive)
-                && (sourceArchive.isDescendant(archive) || sourceArchive.isHierarchyParent(archive))) {
+        if (dragged && FolderDto.isFolder(target)) {
+            if (FolderDto.isFolder(dragged)
+                && (dragged.isDescendant(target) || dragged.isHierarchyParent(target))) {
                 return;
             }
 
@@ -48,7 +48,7 @@ const ArchiveDrag = ({ archive, children, onDropped }) => {
             return;
         }
 
-        if (isValidExternalDrag(e) && FolderDto.isFolder(archive)) {
+        if (isValidExternalDrag(e) && FolderDto.isFolder(target)) {
             globalDragEffectOff();
             setIsDraggingOver(true);
         }
@@ -56,7 +56,7 @@ const ArchiveDrag = ({ archive, children, onDropped }) => {
 
     const dragLeave = (e) => {
         e.stopPropagation();
-        if (FolderDto.isFolder(archive)) {
+        if (FolderDto.isFolder(target)) {
             setIsDraggingOver(false);
         }
     }
@@ -64,14 +64,14 @@ const ArchiveDrag = ({ archive, children, onDropped }) => {
     const drop = (e) => {
         e.stopPropagation();
         e.preventDefault();
-        if (sourceArchive && FolderDto.isFolder(archive)) {
-            if (FolderDto.isFolder(sourceArchive)
-                && (sourceArchive.isDescendant(archive) || sourceArchive.isHierarchyParent(archive))) {
+        if (dragged && FolderDto.isFolder(target)) {
+            if (FolderDto.isFolder(dragged)
+                && (dragged.isDescendant(target) || dragged.isHierarchyParent(target))) {
                 return;
             }
 
             setIsDraggingOver(false);
-            onDropped(DRAGGING_TYPE.UPDATE_HIERARCHY, sourceArchive, archive);
+            onArchiveDragging(DRAGGING_TYPE.UPDATE_PARENT, dragged, target);
             return;
         }
 
@@ -88,13 +88,13 @@ const ArchiveDrag = ({ archive, children, onDropped }) => {
 
             if (uri) {
                 globalDragEffectOff();
-                onDropped(DRAGGING_TYPE.CREATE_BOOKMARK_BY_DRAGGING, uri, archive);
+                onArchiveDragging(DRAGGING_TYPE.CREATE_BOOKMARK_BY_DRAGGING, uri, target);
             }
             return;
         }
 
         if (e.dataTransfer.getData(shortcutDataTransferName)) {
-            onDropped(DRAGGING_TYPE.UPDATE_HIERARCHY, new ShortcutDto(JSON.parse(e.dataTransfer.getData(shortcutDataTransferName))), archive);
+            onArchiveDragging(DRAGGING_TYPE.UPDATE_PARENT_AND_LOCATION, new ShortcutDto(JSON.parse(e.dataTransfer.getData(shortcutDataTransferName))), target);
         }
     }
 

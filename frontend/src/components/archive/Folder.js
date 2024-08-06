@@ -9,10 +9,10 @@ import {useLogin} from "../../hooks/useLogin";
 import FolderDto from "../../service/dto/FolderDto";
 import BookmarkDto from "../../service/dto/BookmarkDto";
 import ArchiveDrag from "./ArchiveDrag";
-import OrderLine from "../common/OrderLine";
+import OrderLine from "./OrderLine";
 import ArchiveContextMenu from "./ArchiveContextMenu";
 
-const Folder = ({folder, onArchiveDragging, onUpdateOrder, onCreateFolder}) => {
+const Folder = ({folder, onArchiveDragging, onCreateFolder}) => {
     let {accessToken} = useLogin();
     const [logo, setLogo] = useState(folderLogo);
     const [name, setName] = useState(folder.name);
@@ -65,10 +65,9 @@ const Folder = ({folder, onArchiveDragging, onUpdateOrder, onCreateFolder}) => {
 
     return (
         <StyledFolderContainer>
-            <OrderLine archive={folder}
-                       order={folder.order}
-                       onDropped={onUpdateOrder}/>
-            <ArchiveDrag archive={folder} onDropped={onArchiveDragging}>
+            <OrderLine target={folder}
+                       onArchiveDragging={onArchiveDragging}/>
+            <ArchiveDrag target={folder} onArchiveDragging={onArchiveDragging}>
                 <ArchiveContextMenu archive={folder} onRename={setName}>
                     <StyledParentFolder onClick={handleClick}>
                         <Logo img={logo}/>
@@ -87,7 +86,6 @@ const Folder = ({folder, onArchiveDragging, onUpdateOrder, onCreateFolder}) => {
                                 <StyledChildArchive key={archive.id}>
                                     <Folder folder={archive}
                                             onArchiveDragging={onArchiveDragging}
-                                            onUpdateOrder={onUpdateOrder}
                                             onCreateFolder={onCreateFolder}
                                     />
                                 </StyledChildArchive>
@@ -97,7 +95,6 @@ const Folder = ({folder, onArchiveDragging, onUpdateOrder, onCreateFolder}) => {
                                 <StyledChildArchive key={archive.id}>
                                     <Bookmark bookmark={archive}
                                               onArchiveDragging={onArchiveDragging}
-                                              onUpdateOrder={onUpdateOrder}
                                               onCreateFolder={onCreateFolder}
                                     />
                                 </StyledChildArchive>

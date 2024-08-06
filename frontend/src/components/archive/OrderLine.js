@@ -2,14 +2,15 @@ import styled from "styled-components";
 import {useState} from "react";
 import FolderDto from "../../service/dto/FolderDto";
 import BookmarkDto from "../../service/dto/BookmarkDto";
+import {DRAGGING_TYPE} from "./ArchiveSection";
 
-let sourceArchive = null;
+let dragged = null;
 
 const setSource = (s) => {
-    sourceArchive = s;
+    dragged = s;
 }
 
-const OrderLine = ({ archive, onDropped }) => {
+const OrderLine = ({ target, onArchiveDragging }) => {
     const [isDraggingOver, setIsDraggingOver] = useState(false);
 
     const dragStart = (e) => {
@@ -20,8 +21,8 @@ const OrderLine = ({ archive, onDropped }) => {
     const dragEnter = (e) => {
         e.stopPropagation();
         e.preventDefault();
-        if (sourceArchive && FolderDto.isFolder(sourceArchive)
-            && (sourceArchive.isDescendant(archive) || sourceArchive.isHierarchyParent(archive))) {
+        if (dragged && FolderDto.isFolder(dragged)
+            && (dragged.isDescendant(target) || dragged.isHierarchyParent(target))) {
             return;
         }
 
@@ -37,13 +38,19 @@ const OrderLine = ({ archive, onDropped }) => {
     const drop = (e) => {
         e.stopPropagation();
         e.preventDefault();
-        if (sourceArchive && FolderDto.isFolder(sourceArchive)
-            && (sourceArchive.isDescendant(archive) || sourceArchive.isHierarchyParent(archive))) {
+        if (dragged && FolderDto.isFolder(dragged)
+            && (dragged.isDescendant(target) || dragged.isHierarchyParent(target))) {
             return;
         }
 
         setIsDraggingOver(false);
-        onDropped(sourceArchive, archive);
+
+        if (dragged.parentFolderId === target.parentFolderId) {
+            onArchiveDragging(DRAGGING_TYPE.UPDATE_LOCATION_SAME_PARENT, dragged, target);
+        } else if (dragged.parentFolderId !== target.parentFolderId
+            && (FolderDto.isFolder(target) || BookmarkDto.isBookmark(target))) {
+            onArchiveDragging(DRAGGING_TYPE.UPDATE_PARENT_AND_LOCATION, dragged, target);
+        }
     }
 
     return (
@@ -61,7 +68,12 @@ const OrderLine = ({ archive, onDropped }) => {
 }
 
 const StyledOrderLineWrapper = styled.div`
+    display: flex;
+    flex-direction: column;
     width: 100%;
+    height: 1rem;
+    justify-content: center;
+    align-items: center;
 `;
 
 const StyledOrderLine = styled.div`

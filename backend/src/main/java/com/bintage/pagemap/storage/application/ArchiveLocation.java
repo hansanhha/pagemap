@@ -13,7 +13,6 @@ import org.jmolecules.architecture.hexagonal.PrimaryPort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -48,13 +47,13 @@ public class ArchiveLocation {
                 .orElseThrow(() -> FolderException.notFound(accountId, sourceId));
 
         var sourceParentFolderId = source.getParentFolderId();
+        var originOrder = source.getOrder();
 
         List<Folder> childrenFolder;
         List<Bookmark> childrenBookmark;
 
         // 같은 계층 내에서 이동하는 경우
         if (sourceParentFolderId.equals(targetFolderId)) {
-            var originOrder = source.getOrder();
 
             // order 값이 같거나, 아카이브의 순서를 바로 아래의 아카이브 순서와 바꿀 경우 리턴(바꿔도 순서가 그대로이기 때문에 바꿀 필요가 없음)
             if (originOrder == updateOrder || (originOrder < updateOrder && originOrder + 1 == updateOrder)) {
@@ -95,6 +94,7 @@ public class ArchiveLocation {
 
         // 다른 계층으로 이동하는 경우
         else {
+            // source의 부모가 있는 경우 source 제거
             if (source.hasParent()) {
                 var sourceParent = folderRepository.findFamilyById(accountId, sourceParentFolderId)
                         .orElseThrow(() -> FolderException.notFound(accountId, sourceParentFolderId));
@@ -113,6 +113,14 @@ public class ArchiveLocation {
 
             // 특정 폴더로 이동하는 경우
             else {
+                // 특정 폴더로 이동할 source가 최상위 계층에 위치한  경우
+                if (sourceParentFolderId.equals(Folder.TOP_LEVEL)) {
+                    var topLevelFolders = folderRepository.findAllByParentId(accountId, Folder.TOP_LEVEL);
+                    var topLevelBookmarks = bookmarkRepository.findAllByParentFolderId(accountId, Bookmark.TOP_LEVEL);
+
+                    moveUpChildren(topLevelFolders, topLevelBookmarks, originOrder);
+                }
+
                 var targetFolder = folderRepository.findFamilyById(accountId, targetFolderId)
                         .orElseThrow(() -> FolderException.notFound(accountId, targetFolderId));
 
@@ -123,7 +131,7 @@ public class ArchiveLocation {
                 folderRepository.updateFamily(targetFolder);
             }
 
-            moveDownTargetFolderChildren(childrenFolder, childrenBookmark, updateOrder);
+            moveDownChildren(childrenFolder, childrenBookmark, updateOrder);
             source.order(updateOrder);
 
             folderRepository.update(source);
@@ -138,13 +146,13 @@ public class ArchiveLocation {
                 .orElseThrow(() -> BookmarkException.notFound(accountId, sourceId));
 
         var sourceParentFolderId = source.getParentFolderId();
+        var originOrder = source.getOrder();
 
         List<Folder> childrenFolder;
         List<Bookmark> childrenBookmark;
 
         // 같은 계층 내에서 이동하는 경우
         if (sourceParentFolderId.equals(targetFolderId)) {
-            var originOrder = source.getOrder();
 
             // order 값이 같거나, 아카이브의 순서를 바로 아래의 아카이브 순서와 바꿀 경우 리턴(바꿔도 순서가 그대로이기 때문에 바꿀 필요가 없음)
             if (originOrder == updateOrder || (originOrder < updateOrder && originOrder + 1 == updateOrder)) {
@@ -185,12 +193,15 @@ public class ArchiveLocation {
 
         // 다른 계층으로 이동하는 경우
         else {
+            // source의 부모가 있는 경우 source 제거
             if (source.hasParent()) {
                 var sourceParent = folderRepository.findFamilyById(accountId, sourceParentFolderId)
                         .orElseThrow(() -> FolderException.notFound(accountId, sourceParentFolderId));
 
                 sourceParent.removeBookmark(source);
                 folderRepository.updateFamily(sourceParent);
+                folderRepository.update(sourceParent.getChildrenFolder());
+                bookmarkRepository.update(sourceParent.getChildrenBookmark());
             }
 
             // 최상위 계층으로 이동하는 경우
@@ -203,6 +214,14 @@ public class ArchiveLocation {
 
             // 특정 폴더로 이동하는 경우
             else {
+                // 특정 폴더로 이동할 source가 최상위 계층에 위치한  경우
+                if (sourceParentFolderId.equals(Folder.TOP_LEVEL)) {
+                    var topLevelFolders = folderRepository.findAllByParentId(accountId, Folder.TOP_LEVEL);
+                    var topLevelBookmarks = bookmarkRepository.findAllByParentFolderId(accountId, Bookmark.TOP_LEVEL);
+
+                    moveUpChildren(topLevelFolders, topLevelBookmarks, originOrder);
+                }
+
                 var targetFolder = folderRepository.findFamilyById(accountId, targetFolderId)
                         .orElseThrow(() -> FolderException.notFound(accountId, targetFolderId));
 
@@ -213,7 +232,7 @@ public class ArchiveLocation {
                 folderRepository.updateFamily(targetFolder);
             }
 
-            moveDownTargetFolderChildren(childrenFolder, childrenBookmark, updateOrder);
+            moveDownChildren(childrenFolder, childrenBookmark, updateOrder);
             source.order(updateOrder);
 
             bookmarkRepository.update(source);
@@ -251,15 +270,27 @@ public class ArchiveLocation {
         어떤 아카이브를 다른 폴더의 특정 위치에 놓았을 경우
         해당 위치부터 마지막까지 위치한 자식들의 order 증가
      */
-    private void moveDownTargetFolderChildren(List<Folder> childrenFolder, List<Bookmark> childrenBookmark, int updateOrder) {
+    private void moveDownChildren(List<Folder> childrenFolder, List<Bookmark> childrenBookmark, int order) {
         childrenFolder
                 .stream()
-                .filter(cf -> cf.getOrder() >= updateOrder)
+                .filter(cf -> cf.getOrder() >= order)
                 .forEach(Folder::increaseOrder);
 
         childrenBookmark
                 .stream()
-                .filter(cb -> cb.getOrder() >= updateOrder)
+                .filter(cb -> cb.getOrder() >= order)
                 .forEach(Bookmark::increaseOrder);
+    }
+
+    private void moveUpChildren(List<Folder> childrenFolder, List<Bookmark> childrenBookmark, int order) {
+        childrenFolder
+                .stream()
+                .filter(cf -> cf.getOrder() >= order)
+                .forEach(Folder::decreaseOrder);
+
+        childrenBookmark
+                .stream()
+                .filter(cb -> cb.getOrder() >= order)
+                .forEach(Bookmark::decreaseOrder);
     }
 }

@@ -76,7 +76,7 @@ const ArchiveSection = () => {
         }
 
         if (draggingType === DRAGGING_TYPE.UPDATE_LOCATION_SAME_PARENT) {
-            if (source.id === target.id) {
+            if (source.id === target.id || (source.order < target.order && source.order + 1 === target.order)) {
                 return;
             }
 
@@ -89,7 +89,7 @@ const ArchiveSection = () => {
                 },
                 body: JSON.stringify({
                     targetFolderId: source.parentFolderId,
-                    updateOrder: target.order - 1,
+                    updateOrder: target.order,
                 })
             })
                 .then(res => res.json())
@@ -137,7 +137,7 @@ const ArchiveSection = () => {
                 },
                 body: JSON.stringify({
                     targetFolderId: target.parentFolderId,
-                    updateOrder: target.order - 1,
+                    updateOrder: target.order,
                 })
             })
                 .then(response => response.json())

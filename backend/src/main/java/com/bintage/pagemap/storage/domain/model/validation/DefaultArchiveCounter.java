@@ -8,7 +8,7 @@ import org.jmolecules.ddd.annotation.Entity;
 @Getter
 public class DefaultArchiveCounter extends ArchiveCounter {
 
-    private static final int MAXIMUM_MAP_COUNT = 100;
+    private static final int MAXIMUM_MAP_COUNT = 200;
     private static final int MAXIMUM_WEB_PAGE_COUNT = 1000;
 
     public DefaultArchiveCounter(ArchiveCounterId archiveCounterId, Account.AccountId accountId, int storedMapCount, int storedWebPageCount) {

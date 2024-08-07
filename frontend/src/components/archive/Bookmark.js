@@ -4,7 +4,7 @@ import styled from "styled-components";
 import ArchiveDrag from "./ArchiveDrag";
 import OrderLine from "./OrderLine";
 import HyperLink from "../common/HyperLink";
-import ArchiveContextMenu from "./ArchiveContextMenu";
+import ArchiveContextMenu from "../archive-util/ArchiveContextMenu";
 import {useState} from "react";
 import FolderCreatable from "./FolderCreatable";
 

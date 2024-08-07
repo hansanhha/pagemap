@@ -10,7 +10,7 @@ import FolderDto from "../../service/dto/FolderDto";
 import BookmarkDto from "../../service/dto/BookmarkDto";
 import ArchiveDrag from "./ArchiveDrag";
 import OrderLine from "./OrderLine";
-import ArchiveContextMenu from "./ArchiveContextMenu";
+import ArchiveContextMenu from "../archive-util/ArchiveContextMenu";
 
 const Folder = ({folder, onArchiveDragging, onCreateFolder}) => {
     let {accessToken} = useLogin();

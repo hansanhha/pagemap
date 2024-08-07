@@ -39,6 +39,7 @@ import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -165,7 +166,21 @@ public class BookmarkStore {
         try {
             var content = new String(file.getBytes(), StandardCharset.UTF_8);
             var doc = Jsoup.parse(content);
-            var root = doc.getElementsByTag("dl").get(1);
+            var body = doc.getElementsByTag("body").getFirst();
+            var bookmarks = body.children().stream().filter(c -> c.tagName().equals("dl") || c.tagName().equals("dt")).toList();
+            Element root;
+
+            // Safari의 경우 북마크 h1 태그 이후로 dt 태그로만 시작함
+            if (bookmarks.stream().allMatch(b -> b.tagName().equals("dt"))) {
+                var dl = new Element("dl");
+
+                bookmarks.forEach(dl::appendChild);
+                root = dl;
+            }
+            // 나머지 브라우저의 경우 북마크 h1 태그 이후로 dl 태그로 시작
+            else {
+                root = bookmarks.getFirst();
+            }
 
             var folder = createFolder(accountId, Folder.TOP_LEVEL, IMPORT_FOLDER_NAME, topLevelFoldersSize + topLevelBookmarksSize + 1);
             var saved = folderRepository.save(folder);
@@ -233,13 +248,17 @@ public class BookmarkStore {
 
     private Bookmark createBookmark(Account.AccountId accountId, Folder.FolderId parentFolderId, Element element, int order) {
         var attributes = element.attributes();
+        URI logo = URI.create(attributes.get("icon"));
+        if (logo.toString().length() > 65535) {
+            logo = URI.create("");
+        }
 
         return Bookmark.builder()
                 .accountId(accountId)
                 .parentFolderId(parentFolderId)
                 .name(element.text())
                 .uri(URI.create(attributes.get("href")))
-                .logo(URI.create(attributes.get("icon")))
+                .logo(logo)
                 .order(order)
                 .build();
     }

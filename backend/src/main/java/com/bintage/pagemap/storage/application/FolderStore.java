@@ -97,6 +97,8 @@ public class FolderStore {
         var created = folderRepository.save(newFolder);
         archiveCounter.increase(ArchiveCounter.CountType.FOLDER);
 
+        created.order(parentFolder.getChildrenFolder().size() + parentFolder.getChildrenBookmark().size() + 1);
+
         for (int i = 0; i < newFolderChildrenBookmark.size(); i++) {
             var bookmark = newFolderChildrenBookmark.get(i);
 

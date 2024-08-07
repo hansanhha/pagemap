@@ -80,13 +80,14 @@ public class ArchiveLocation {
             // 위로 이동
             if (originOrder > updateOrder) {
                 moveUpSameParentChildren(childrenFolder, childrenBookmark, originOrder, updateOrder);
+                source.order(updateOrder);
             }
             // 아래로 이동
             else {
                 moveDownSameParentChildren(childrenFolder, childrenBookmark, originOrder, updateOrder);
+                source.order(updateOrder-1);
             }
 
-            source.order(updateOrder);
             folderRepository.update(source);
             bookmarkRepository.update(childrenBookmark);
             folderRepository.update(childrenFolder);
@@ -179,13 +180,14 @@ public class ArchiveLocation {
             // 위로 이동
             if (originOrder > updateOrder) {
                 moveUpSameParentChildren(childrenFolder, childrenBookmark, originOrder, updateOrder);
+                source.order(updateOrder);
             } 
             // 아래로 이동
             else {
                 moveDownSameParentChildren(childrenFolder, childrenBookmark, originOrder, updateOrder);
+                source.order(updateOrder-1);
             }
 
-            source.order(updateOrder);
             bookmarkRepository.update(source);
             bookmarkRepository.update(childrenBookmark);
             folderRepository.update(childrenFolder);
@@ -257,12 +259,12 @@ public class ArchiveLocation {
     private void moveDownSameParentChildren(List<Folder> childrenFolder, List<Bookmark> childrenBookmark, int originOrder, int updateOrder) {
         childrenFolder
                 .stream()
-                .filter(cf -> cf.getOrder() <= updateOrder && cf.getOrder() > originOrder)
+                .filter(cf -> cf.getOrder() < updateOrder && cf.getOrder() > originOrder)
                 .forEach(Folder::decreaseOrder);
 
         childrenBookmark
                 .stream()
-                .filter(cb -> cb.getOrder() <= updateOrder && cb.getOrder() > originOrder)
+                .filter(cb -> cb.getOrder() < updateOrder && cb.getOrder() > originOrder)
                 .forEach(Bookmark::decreaseOrder);
     }
 

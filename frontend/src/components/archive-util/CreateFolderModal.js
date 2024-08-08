@@ -10,12 +10,14 @@ import {useLogin} from "../../hooks/useLogin";
 import {useEffect, useState} from "react";
 import CommonInput from "../common/CommonInput";
 import Button from "../common/Button";
+import {useArchiveSectionRefresh} from "../archive/ArchiveSection";
 
 const CreateFolderModal = ({parentFolderId, onClose, currentRef}) => {
     const [error, setError] = useState(false);
     const [folderName, setFolderName] = useState("");
     const {isMobile} = useMediaQuery();
     const {accessToken} = useLogin();
+    const {refresh} = useArchiveSectionRefresh();
 
     const handleClickOutside = (e) => {
         if (currentRef.current && !currentRef.current.contains(e.target)) {
@@ -44,15 +46,10 @@ const CreateFolderModal = ({parentFolderId, onClose, currentRef}) => {
             document.removeEventListener("mousedown", handleClickOutside);
             document.removeEventListener("keydown", handleKeyPress);
         }
-    }, []);
+    }, [currentRef.ref, handleClickOutside, handleKeyPress]);
 
     const handleFolderName = (folderName) => {
-        if (folderName.length > 50 || (folderName.length > 1 && !isValidName(folderName))) {
-            setError(true);
-        } else {
-            setError(false);
-        }
-
+        setError(false);
         setFolderName(folderName);
     }
 
@@ -62,6 +59,23 @@ const CreateFolderModal = ({parentFolderId, onClose, currentRef}) => {
             return;
         }
 
+        fetch(process.env.REACT_APP_API_URL + "/folders", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${accessToken}}`,
+            },
+            body: JSON.stringify({
+                parentFolderId: parentFolderId,
+                name: folderName
+            })
+        })
+            .then(res => res.json())
+            .then(data => {
+                onClose();
+                refresh();
+            })
+            .catch(err => console.error("Error fetching create folder by CreateFolderModal:", err));
     }
 
     return (

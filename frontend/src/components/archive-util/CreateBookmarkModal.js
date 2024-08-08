@@ -10,10 +10,11 @@ import {useLogin} from "../../hooks/useLogin";
 import {useEffect, useState} from "react";
 import CommonInput from "../common/CommonInput";
 import Button from "../common/Button";
+import {useArchiveSectionRefresh} from "../archive/ArchiveSection";
 
 const isValidURL = (url) => {
     url = url.trim();
-    const expression = /^(https?|ftp):\/\/(([a-z\d]([a-z\d-]*[a-z\d])?\.)+[a-z]{2,}|localhost)(\/[-a-z\d%_.~+]*)*(\?[;&a-z\d%_.~+=-]*)?(\#[-a-z\d_]*)?$/i;
+    const expression = /^(([a-z\d]([a-z\d-]*[a-z\d])?\.)+[a-z]{2,}|localhost)(\/[-a-z\d%_.~+]*)*(\?[;&a-z\d%_.~+=-]*)?(\#[-a-z\d_]*)?$/i;
     const regex = new RegExp(expression);
     return regex.test(url);
 }
@@ -25,6 +26,7 @@ const CreateBookmarkModal = ({parentFolderId, onClose, currentRef}) => {
     const [bookmarkURL, setBookmarkURL] = useState("");
     const {isMobile} = useMediaQuery();
     const {accessToken} = useLogin();
+    const {refresh} = useArchiveSectionRefresh();
 
     const handleClickOutside = (e) => {
         if (currentRef.current && !currentRef.current.contains(e.target)) {
@@ -53,34 +55,47 @@ const CreateBookmarkModal = ({parentFolderId, onClose, currentRef}) => {
             document.removeEventListener("mousedown", handleClickOutside);
             document.removeEventListener("keydown", handleKeyPress);
         }
-    }, []);
+    }, [currentRef.ref, handleClickOutside, handleKeyPress]);
 
     const handleBookmarkName = (bookmarkName) => {
-        if (bookmarkName.length > 50 || (bookmarkName.length > 1 && !isValidName(bookmarkName))) {
-            setNameError(true);
-        } else {
-            setNameError(false);
-        }
-
+        setNameError(false);
         setBookmarkName(bookmarkName);
     }
 
     const handleBookmarkURL = (url) => {
-        if (url.length > 1000 || (url.length > 1 && !isValidURL(url))) {
-            setUrlError(true);
-        } else {
-            setUrlError(false);
-        }
-
+        setUrlError(false);
         setBookmarkURL(url);
     }
 
     const handleCreateBookmark = () => {
-        if (!isValidName(bookmarkName)) {
+        if (bookmarkName.length > 1 && !isValidName(bookmarkName)) {
+            setNameError(true);
+            return;
+        }
+
+        if (bookmarkURL.length > 1000 || (bookmarkURL.length > 1 && !isValidURL(bookmarkURL))) {
             setUrlError(true);
             return;
         }
 
+        fetch(`${process.env.REACT_APP_SERVER_URL}/bookmarks`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({
+                parentFolderId: parentFolderId,
+                name: bookmarkName,
+                uri: bookmarkURL,
+            })
+        })
+            .then(res => res.json())
+            .then(data => {
+                onClose();
+                refresh();
+            })
+            .catch(err => console.error("Error creating bookmark by createBookmarkModal:", err));
     }
 
     return (

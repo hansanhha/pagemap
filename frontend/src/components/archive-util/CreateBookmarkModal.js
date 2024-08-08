@@ -35,11 +35,8 @@ const CreateBookmarkModal = ({parentFolderId, onClose, currentRef}) => {
     }
 
     const handleKeyPress = (e) => {
-        if (e.isComposing) return;
-        e.preventDefault();
-        e.stopPropagation();
-
         if (e.key === "Enter") {
+            if (e.isComposing) return;
             handleCreateBookmark();
             return;
         }

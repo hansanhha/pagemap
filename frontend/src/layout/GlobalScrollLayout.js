@@ -1,6 +1,14 @@
 import React, {useEffect, useRef} from "react";
 import Scrollable from "../components/common/Scrollable";
 
+const suspendGlobalScroll = () => {
+    document.body.style.overflow = "hidden";
+}
+
+const resumeGlobalScroll = () => {
+    document.body.style.overflow = "auto";
+}
+
 const GlobalScrollLayout = ({children}) => {
     const scrollableRef = useRef(null);
 
@@ -34,4 +42,5 @@ const GlobalScrollLayout = ({children}) => {
     );
 }
 
+export {suspendGlobalScroll, resumeGlobalScroll};
 export default GlobalScrollLayout;

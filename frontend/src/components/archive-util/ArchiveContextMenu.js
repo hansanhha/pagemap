@@ -7,6 +7,7 @@ import BookmarkDto from "../../service/dto/BookmarkDto";
 import CreateFolderModal from "./CreateFolderModal";
 import CreateBookmarkModal from "./CreateBookmarkModal";
 import ArchiveUpdateLocationModal from "./ArchiveUpdateLocationModal";
+import {resumeGlobalScroll, suspendGlobalScroll} from "../../layout/GlobalScrollLayout";
 
 const isValidName = (name) => {
     const expression = /^[a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ_\- !()]{1,50}$/;
@@ -64,6 +65,17 @@ const ArchiveContextMenu = ({children, isActive, archive, onIsActiveDrag, onRena
         }
     }, []);
 
+    const focusArchiveMenuModal = () => {
+        closeMenu();
+        onIsActiveDrag(false);
+        suspendGlobalScroll();
+    }
+
+    const unFocusArchiveMenuModal = () => {
+        onIsActiveDrag(true);
+        resumeGlobalScroll();
+    }
+
     return (
         <>
             {
@@ -71,8 +83,7 @@ const ArchiveContextMenu = ({children, isActive, archive, onIsActiveDrag, onRena
                 archive.id === clickedArchiveId &&
                 <StyledArchiveContextModal ref={currentRef} top={position.y} left={position.x}>
                     <StyledArchiveMenuItem onClick={() => {
-                        closeMenu();
-                        onIsActiveDrag(false);
+                        focusArchiveMenuModal();
                         openCreateFolderModal();
                     }}>
                         폴더 생성
@@ -80,23 +91,20 @@ const ArchiveContextMenu = ({children, isActive, archive, onIsActiveDrag, onRena
                     {
                         archiveType !== "bookmarks" && archiveType !== "shortcuts" &&
                         <StyledArchiveMenuItem onClick={() => {
-                            closeMenu();
-                            onIsActiveDrag(false);
+                            focusArchiveMenuModal();
                             openCreateBookmarkModal();
                         }}>
                             북마크 생성
                         </StyledArchiveMenuItem>
                     }
                     <StyledArchiveMenuItem onClick={() => {
-                        closeMenu();
-                        onIsActiveDrag(false);
+                        focusArchiveMenuModal();
                         openRenameModal();
                     }}>
                         이름 변경
                     </StyledArchiveMenuItem>
                     <StyledArchiveMenuItem onClick={() => {
-                        closeMenu();
-                        onIsActiveDrag(false);
+                        focusArchiveMenuModal();
                         openLocationModal();
                     }}>
                         위치 변경
@@ -114,7 +122,7 @@ const ArchiveContextMenu = ({children, isActive, archive, onIsActiveDrag, onRena
                 <CreateFolderModal parentFolderId={archiveType === "folders" ? archive.id : archive.parentFolderId}
                                    currentRef={currentRef}
                                    onClose={() => {
-                                       onIsActiveDrag(true);
+                                       unFocusArchiveMenuModal();
                                        closeCreateFolderModal();
                                    }}
                 />
@@ -124,7 +132,7 @@ const ArchiveContextMenu = ({children, isActive, archive, onIsActiveDrag, onRena
                 <CreateBookmarkModal parentFolderId={archive.id}
                                      currentRef={currentRef}
                                      onClose={() => {
-                                         onIsActiveDrag(true);
+                                         unFocusArchiveMenuModal();
                                          closeCreateBookmarkModal();
                                      }}
                 />
@@ -137,7 +145,7 @@ const ArchiveContextMenu = ({children, isActive, archive, onIsActiveDrag, onRena
                              originalName={archive.name}
                              onRename={onRename}
                              onClose={() => {
-                                 onIsActiveDrag(true);
+                                 unFocusArchiveMenuModal();
                                  closeRenameModal();
                              }}
                 />
@@ -148,7 +156,7 @@ const ArchiveContextMenu = ({children, isActive, archive, onIsActiveDrag, onRena
                                             currentRef={currentRef}
                                             archiveType={archiveType}
                                             onClose={() => {
-                                                onIsActiveDrag(true);
+                                                unFocusArchiveMenuModal();
                                                 closeLocationModal();
                                             }}
                 />

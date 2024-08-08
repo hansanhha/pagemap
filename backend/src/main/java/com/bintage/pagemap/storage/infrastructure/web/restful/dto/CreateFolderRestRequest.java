@@ -20,4 +20,6 @@ public class CreateFolderRestRequest {
     Long parentFolderId;
 
     List<Long> bookmarkIds;
+
+    String name;
 }

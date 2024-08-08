@@ -113,6 +113,7 @@ public class BookmarkStore {
                     .orElseThrow(() -> FolderException.notFound(accountId, parentFolderId));
 
             created = bookmarkRepository.save(bookmark);
+            created.order(parentFolder.getChildrenFolder().size() + parentFolder.getChildrenBookmark().size() + 1);
             parentFolder.addBookmark(created);
             folderRepository.updateFamily(parentFolder);
             bookmarkRepository.update(created);

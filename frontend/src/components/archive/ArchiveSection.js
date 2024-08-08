@@ -14,22 +14,28 @@ const DRAGGING_TYPE = {
     UPDATE_LOCATION_SAME_PARENT: "UPDATE_LOCATION_SAME_LAYER",
     UPDATE_PARENT: "UPDATE_PARENT",
     UPDATE_PARENT_AND_LOCATION: "UPDATE_PARENT_AND_LOCATION",
-}
+};
+
+const ARCHIVE_FETCH_TYPE = {
+    FOLDER: "FOLDER",
+    BOOKMARK: "BOOKMARK",
+    BOTH: "BOTH",
+};
 
 const MainArchiveContext = createContext();
 
 const useArchives = () => {
     const {accessToken} = useLogin();
     const [isRendered, setIsRendered] = useState(true);
-    const [sortedMainArchives, setSortedMainArchives] = useState([]);
+    const [sortedArchives, setSortedArchives] = useState([]);
 
-    const refresh = () => {
+    const refresh = (type) => {
         setIsRendered(false);
         setTimeout(() => {
             setIsRendered(true)
         }, 10);
 
-        fetch(process.env.REACT_APP_SERVER + "/storage", {
+        fetch(process.env.REACT_APP_SERVER + "/storage?" + new URLSearchParams({type: type}), {
             method: "GET",
             headers: {
                 "Content-Type": "application/problem+json",
@@ -49,12 +55,12 @@ const useArchives = () => {
                     bookmarks = data.bookmarks.map(bookmark => new BookmarkDto(bookmark));
                 }
 
-                setSortedMainArchives([...folders, ...bookmarks].sort((a, b) => a.order - b.order));
+                setSortedArchives([...folders, ...bookmarks].sort((a, b) => a.order - b.order));
             })
             .catch(err => console.error("Error fetching shortcuts:", err));
     }
 
-    return [isRendered, sortedMainArchives, refresh];
+    return [isRendered, sortedArchives, refresh];
 }
 
 const ArchiveSection = () => {
@@ -63,7 +69,7 @@ const ArchiveSection = () => {
     const [isRendered, sortedMainArchives, refresh] = useArchives();
 
     useEffect(() => {
-        refresh();
+        refresh(ARCHIVE_FETCH_TYPE.BOTH);
         subscribeEvent(deletedArchive, refresh);
 
         return () => {
@@ -199,6 +205,7 @@ const ArchiveSection = () => {
                 <>
                     <MainArchiveContext.Provider value={{refresh}}>
                         <HierarchyArchive archives={sortedMainArchives}
+                                          folderChildrenFetchType={ARCHIVE_FETCH_TYPE.BOTH}
                                           isDraggable={true}
                                           onArchiveDragging={handleArchiveDragging}
                                           isArchiveMenuActive={true}
@@ -244,5 +251,5 @@ const fadeOut = keyframes`
     }
 `;
 
-export {DRAGGING_TYPE, useArchiveSectionRefresh, useArchives};
+export {DRAGGING_TYPE, useArchiveSectionRefresh, useArchives, ARCHIVE_FETCH_TYPE};
 export default ArchiveSection;

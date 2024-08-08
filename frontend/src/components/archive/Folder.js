@@ -12,7 +12,7 @@ import ArchiveDrag from "./ArchiveDrag";
 import OrderLine from "./OrderLine";
 import ArchiveContextMenu from "../archive-util/ArchiveContextMenu";
 
-const Folder = ({folder, isDraggable, onArchiveDragging, isArchiveMenuActive, onCreateFolder}) => {
+const Folder = ({folder, childrenFetchType, isDraggable, onArchiveDragging, isArchiveMenuActive, onCreateFolder}) => {
     let {accessToken} = useLogin();
     const [logo, setLogo] = useState(folderLogo);
     const [name, setName] = useState(folder.name);
@@ -29,7 +29,8 @@ const Folder = ({folder, isDraggable, onArchiveDragging, isArchiveMenuActive, on
         }
 
         if (!isClicked) {
-            fetch(process.env.REACT_APP_SERVER + `/storage/folders/${folder.id}`, {
+            fetch(process.env.REACT_APP_SERVER + `/storage/folders/${folder.id}?`
+                + new URLSearchParams({type: childrenFetchType}), {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/problem+json",
@@ -89,6 +90,7 @@ const Folder = ({folder, isDraggable, onArchiveDragging, isArchiveMenuActive, on
 
                                 <StyledChildArchive key={archive.id}>
                                     <Folder folder={archive}
+                                            childrenFetchType={childrenFetchType}
                                             isDraggable={isActiveDrag}
                                             onArchiveDragging={onArchiveDragging}
                                             isArchiveMenuActive={isArchiveMenuActive}

@@ -194,6 +194,7 @@ const StyledModal = styled.div`
     background-color: white;
     border: 1px solid #666;
     border-radius: 6px;
+    z-index: 100;
 `;
 
 const StyledModalContainer = styled.div`

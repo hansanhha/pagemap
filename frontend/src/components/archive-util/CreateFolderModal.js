@@ -46,7 +46,7 @@ const CreateFolderModal = ({parentFolderId, onClose, currentRef}) => {
             document.removeEventListener("mousedown", handleClickOutside);
             document.removeEventListener("keydown", handleKeyPress);
         }
-    }, [currentRef.ref, handleClickOutside, handleKeyPress]);
+    }, []);
 
     const handleFolderName = (folderName) => {
         setError(false);

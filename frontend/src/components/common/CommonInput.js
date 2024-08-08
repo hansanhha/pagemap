@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-const CommonInput = ({ placeholder, value, readOnly, onUpdateValue }) => {
+const CommonInput = ({ placeholder, value, readOnly, onUpdateValue, focus }) => {
     const handleChange = (e) => {
         onUpdateValue(e.target.value);
     }
@@ -9,7 +9,7 @@ const CommonInput = ({ placeholder, value, readOnly, onUpdateValue }) => {
         <StyledInputForm placeholder={placeholder}
                          value={value}
                          readOnly={readOnly}
-                         autoFocus={true}
+                         autoFocus={focus !== undefined ? focus : true}
                          onChange={handleChange}/>
     )
 }

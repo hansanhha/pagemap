@@ -55,7 +55,7 @@ const CreateBookmarkModal = ({parentFolderId, onClose, currentRef}) => {
             document.removeEventListener("mousedown", handleClickOutside);
             document.removeEventListener("keydown", handleKeyPress);
         }
-    }, [currentRef.ref, handleClickOutside, handleKeyPress]);
+    }, []);
 
     const handleBookmarkName = (bookmarkName) => {
         setNameError(false);
@@ -107,10 +107,12 @@ const CreateBookmarkModal = ({parentFolderId, onClose, currentRef}) => {
                 <CommonInput placeholder={"북마크 이름을 입력하세요"}
                              value={bookmarkName}
                              readOnly={false}
+                             focus={true}
                              onUpdateValue={handleBookmarkName}/>
                 <CommonInput placeholder={"URL을 입력하세요"}
                              value={bookmarkURL}
                              readOnly={false}
+                             focus={false}
                              onUpdateValue={handleBookmarkURL}/>
                 {
                     nameError &&

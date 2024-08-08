@@ -7,6 +7,7 @@ import HierarchyArchive from "../archive/HierarchyArchive";
 import styled from "styled-components";
 import Name from "../archive/Name";
 import {useLogin} from "../../hooks/useLogin";
+import FolderDto from "../../service/dto/FolderDto";
 
 const ArchiveUpdateLocationModal = ({target, currentRef, archiveType, onClose}) => {
     const {isMobile} = useMediaQuery();
@@ -37,23 +38,26 @@ const ArchiveUpdateLocationModal = ({target, currentRef, archiveType, onClose}) 
 
     useEffect(() => {
         refresh(ARCHIVE_FETCH_TYPE.FOLDER);
-        target.hierarchyParentFolderIds.forEach(id => {
-            if (id === 0) {
-                return;
-            }
-            fetch(process.env.REACT_APP_SERVER + "/storage/folders/" + id, {
+        const ids = target.hierarchyParentFolderIds.filter(id => id !== 0).join(',');
+        if (ids.length > 0) {
+            fetch(`${process.env.REACT_APP_SERVER}/storage/folders?`
+                + new URLSearchParams({ids: ids, type:ARCHIVE_FETCH_TYPE.FOLDER}), {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/problem+json",
-                    "Authorization": `Bearer ${accessToken}}`,
+                    "Authorization": `Bearer ${accessToken}`,
                 }
             })
-                .then(res=> res.json())
+                .then(res => res.json())
                 .then(data => {
-                    setTargetOriginalParents([...targetOriginalParents, data]);
+                    if (data && data.length > 0) {
+                        const parentFolders = data.map(d => new FolderDto(d.currentFolders));
+                        const reversedParentFolders = parentFolders.reverse();
+                        setTargetOriginalParents(reversedParentFolders);
+                    }
                 })
                 .catch(err => console.error("Error fetching folders:", err));
-        });
+        }
 
         document.addEventListener("keydown", handleKeyPress);
         document.addEventListener("mousedown", handleClickOutside);
@@ -76,8 +80,17 @@ const ArchiveUpdateLocationModal = ({target, currentRef, archiveType, onClose}) 
             </h2>
             <StyledSelectedArchiveInfoContainer>
                 <Name name={`대상: ${target.name}`}/>
-                <Name name={`원래 위치: ${target.hierarchyParentFolderIds.includes(0) ? "맨 위" : "아래"}`}/>
-                <Name name={`수정 위치: ${selectedArchive.name} 아래`}/>
+                <Name name={
+                    `원래 위치: 
+                        ${target.hierarchyParentFolderIds.includes(0) && target.hierarchyParentFolderIds.length === 1 
+                        ? "맨 위" 
+                        : targetOriginalParents.map(parent => parent.name).join("/") 
+                    }`}
+                />
+                {
+                    selectedArchive.name &&
+                    <Name name={`수정 위치: ${selectedArchive.name}`}/>
+                }
             </StyledSelectedArchiveInfoContainer>
             <StyledModalContainer>
                 <StyledScrollableSize>

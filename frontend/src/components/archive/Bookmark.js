@@ -8,7 +8,7 @@ import ArchiveContextMenu from "../archive-util/ArchiveContextMenu";
 import {useState} from "react";
 import FolderCreatable from "./FolderCreatable";
 
-const Bookmark = ({bookmark, onArchiveDragging, onCreateFolder}) => {
+const Bookmark = ({bookmark, isDraggable, onArchiveDragging, isArchiveMenuActive, onCreateFolder}) => {
     const [name, setName] = useState(bookmark.name);
 
     return (
@@ -19,9 +19,10 @@ const Bookmark = ({bookmark, onArchiveDragging, onCreateFolder}) => {
                              onDropped={onCreateFolder}
             >
                 <ArchiveDrag target={bookmark}
+                             isDraggable={isDraggable}
                              onArchiveDragging={onArchiveDragging}
                 >
-                    <ArchiveContextMenu archive={bookmark} onRename={setName}>
+                    <ArchiveContextMenu archive={bookmark} isActive={isArchiveMenuActive} onRename={setName}>
                         <HyperLink to={bookmark.uri}>
                             <StyledBookmark>
                                 <Logo img={bookmark.logo}/>

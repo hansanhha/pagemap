@@ -29,7 +29,7 @@ const useModal = () => {
     return [isClicked, openModal, closeModal];
 }
 
-const ArchiveContextMenu = ({children, archive, onRename}) => {
+const ArchiveContextMenu = ({children, isActive, archive, onRename}) => {
     const [isClickedRenameModal, openRenameModal, closeRenameModal] = useModal();
     const [isClickedCreateFolderModal, openCreateFolderModal, closeCreateFolderModal] = useModal();
     const [isClickedCreateBookmarkModal, openCreateBookmarkModal, closeCreateBookmarkModal] = useModal();
@@ -43,7 +43,9 @@ const ArchiveContextMenu = ({children, archive, onRename}) => {
         : BookmarkDto.isBookmark(archive) ? "bookmarks" : "shortcuts";
 
     const handleMenuOpen = (e) => {
-        openMenu(archive.id, e.pageX, e.pageY);
+        if (isActive) {
+            openMenu(archive.id, e.pageX, e.pageY);
+        }
     }
 
     const handleClickOutside = (e) => {
@@ -100,9 +102,9 @@ const ArchiveContextMenu = ({children, archive, onRename}) => {
                     </StyledArchiveMenuItem>
                 </StyledArchiveContextModal>
             }
-            <StyledArchiveContextMenuTrigger onContextMenu={handleMenuOpen}>
+            <StyledArchiveContextMenu onContextMenu={handleMenuOpen}>
                 {children}
-            </StyledArchiveContextMenuTrigger>
+            </StyledArchiveContextMenu>
             {
                 isClickedCreateFolderModal &&
                 <CreateFolderModal parentFolderId={archiveType === "folders" ? archive.id : archive.parentFolderId}
@@ -139,7 +141,7 @@ const ArchiveContextMenu = ({children, archive, onRename}) => {
     )
 }
 
-const StyledArchiveContextMenuTrigger = styled.div`
+const StyledArchiveContextMenu = styled.div`
 `;
 
 const StyledArchiveContextModal = styled.div`

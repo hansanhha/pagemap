@@ -201,6 +201,7 @@ const ArchiveSection = () => {
                         <HierarchyArchive archives={sortedMainArchives}
                                           isDraggable={true}
                                           onArchiveDragging={handleArchiveDragging}
+                                          isArchiveMenuActive={true}
                                           onCreateFolder={handleCreateFolder}
                         />
                     </MainArchiveContext.Provider>

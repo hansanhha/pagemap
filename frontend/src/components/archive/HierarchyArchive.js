@@ -2,7 +2,7 @@ import FolderDto from "../../service/dto/FolderDto";
 import Folder from "./Folder";
 import Bookmark from "./Bookmark";
 
-const HierarchyArchive = ({archives, isDraggable, onArchiveDragging, onCreateFolder}) => {
+const HierarchyArchive = ({archives, isDraggable, onArchiveDragging, isArchiveMenuActive, onCreateFolder}) => {
     return (
         archives &&
         archives.length > 0 &&
@@ -14,6 +14,7 @@ const HierarchyArchive = ({archives, isDraggable, onArchiveDragging, onCreateFol
                                 folder={archive}
                                 isDraggable={isDraggable}
                                 onArchiveDragging={onArchiveDragging}
+                                isArchiveMenuActive={isArchiveMenuActive}
                                 onCreateFolder={onCreateFolder}
                         />
                     )
@@ -23,6 +24,7 @@ const HierarchyArchive = ({archives, isDraggable, onArchiveDragging, onCreateFol
                                   bookmark={archive}
                                   isDraggable={isDraggable}
                                   onArchiveDragging={onArchiveDragging}
+                                  isArchiveMenuActive={isArchiveMenuActive}
                                   onCreateFolder={onCreateFolder}
                         />
                     ));

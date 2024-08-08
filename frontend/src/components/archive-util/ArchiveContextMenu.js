@@ -29,7 +29,7 @@ const useModal = () => {
     return [isClicked, openModal, closeModal];
 }
 
-const ArchiveContextMenu = ({children, isActive, archive, onRename}) => {
+const ArchiveContextMenu = ({children, isActive, archive, onIsActiveDrag, onRename}) => {
     const [isClickedRenameModal, openRenameModal, closeRenameModal] = useModal();
     const [isClickedCreateFolderModal, openCreateFolderModal, closeCreateFolderModal] = useModal();
     const [isClickedCreateBookmarkModal, openCreateBookmarkModal, closeCreateBookmarkModal] = useModal();
@@ -72,6 +72,7 @@ const ArchiveContextMenu = ({children, isActive, archive, onRename}) => {
                 <StyledArchiveContextModal ref={currentRef} top={position.y} left={position.x}>
                     <StyledArchiveMenuItem onClick={() => {
                         closeMenu();
+                        onIsActiveDrag(false);
                         openCreateFolderModal();
                     }}>
                         폴더 생성
@@ -80,6 +81,7 @@ const ArchiveContextMenu = ({children, isActive, archive, onRename}) => {
                         archiveType !== "bookmarks" && archiveType !== "shortcuts" &&
                         <StyledArchiveMenuItem onClick={() => {
                             closeMenu();
+                            onIsActiveDrag(false);
                             openCreateBookmarkModal();
                         }}>
                             북마크 생성
@@ -87,12 +89,14 @@ const ArchiveContextMenu = ({children, isActive, archive, onRename}) => {
                     }
                     <StyledArchiveMenuItem onClick={() => {
                         closeMenu();
+                        onIsActiveDrag(false);
                         openRenameModal();
                     }}>
                         이름 변경
                     </StyledArchiveMenuItem>
                     <StyledArchiveMenuItem onClick={() => {
                         closeMenu();
+                        onIsActiveDrag(false);
                         openLocationModal();
                     }}>
                         위치 변경
@@ -109,14 +113,20 @@ const ArchiveContextMenu = ({children, isActive, archive, onRename}) => {
                 isClickedCreateFolderModal &&
                 <CreateFolderModal parentFolderId={archiveType === "folders" ? archive.id : archive.parentFolderId}
                                    currentRef={currentRef}
-                                   onClose={closeCreateFolderModal}
+                                   onClose={() => {
+                                       onIsActiveDrag(true);
+                                       closeCreateFolderModal();
+                                   }}
                 />
             }
             {
                 isClickedCreateBookmarkModal &&
                 <CreateBookmarkModal parentFolderId={archive.id}
                                      currentRef={currentRef}
-                                     onClose={closeCreateBookmarkModal}
+                                     onClose={() => {
+                                         onIsActiveDrag(true);
+                                         closeCreateBookmarkModal();
+                                     }}
                 />
             }
             {
@@ -126,7 +136,10 @@ const ArchiveContextMenu = ({children, isActive, archive, onRename}) => {
                              archiveType={archiveType}
                              originalName={archive.name}
                              onRename={onRename}
-                             onClose={closeRenameModal}
+                             onClose={() => {
+                                 onIsActiveDrag(true);
+                                 closeRenameModal();
+                             }}
                 />
             }
             {
@@ -134,7 +147,10 @@ const ArchiveContextMenu = ({children, isActive, archive, onRename}) => {
                 <ArchiveUpdateLocationModal target={archive}
                                             currentRef={currentRef}
                                             archiveType={archiveType}
-                                            onClose={closeLocationModal}
+                                            onClose={() => {
+                                                onIsActiveDrag(true);
+                                                closeLocationModal();
+                                            }}
                 />
             }
         </>

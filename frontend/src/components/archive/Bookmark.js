@@ -10,6 +10,7 @@ import FolderCreatable from "./FolderCreatable";
 
 const Bookmark = ({bookmark, isDraggable, onArchiveDragging, isArchiveMenuActive, onCreateFolder}) => {
     const [name, setName] = useState(bookmark.name);
+    const [isActiveDrag, setIsActiveDrag] = useState(isDraggable);
 
     return (
         <>
@@ -19,10 +20,13 @@ const Bookmark = ({bookmark, isDraggable, onArchiveDragging, isArchiveMenuActive
                              onDropped={onCreateFolder}
             >
                 <ArchiveDrag target={bookmark}
-                             isDraggable={isDraggable}
+                             isDraggable={isActiveDrag}
                              onArchiveDragging={onArchiveDragging}
                 >
-                    <ArchiveContextMenu archive={bookmark} isActive={isArchiveMenuActive} onRename={setName}>
+                    <ArchiveContextMenu archive={bookmark}
+                                        isActive={isArchiveMenuActive}
+                                        onIsActiveDrag={setIsActiveDrag}
+                                        onRename={setName}>
                         <HyperLink to={bookmark.uri}>
                             <StyledBookmark>
                                 <Logo img={bookmark.logo}/>

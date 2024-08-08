@@ -17,6 +17,7 @@ const Folder = ({folder, isDraggable, onArchiveDragging, isArchiveMenuActive, on
     const [logo, setLogo] = useState(folderLogo);
     const [name, setName] = useState(folder.name);
     const [isClicked, setIsClicked] = useState(false);
+    const [isActiveDrag, setIsActiveDrag] = useState(isDraggable);
     const [childrenSortedArchive, setChildrenSortedArchive] = useState([]);
 
     const handleClick = () => {
@@ -67,8 +68,11 @@ const Folder = ({folder, isDraggable, onArchiveDragging, isArchiveMenuActive, on
         <StyledFolderContainer>
             <OrderLine target={folder}
                        onArchiveDragging={onArchiveDragging}/>
-            <ArchiveDrag target={folder} isDraggable={isDraggable} onArchiveDragging={onArchiveDragging}>
-                <ArchiveContextMenu archive={folder} isActive={isArchiveMenuActive} onRename={setName}>
+            <ArchiveDrag target={folder} isDraggable={isActiveDrag} onArchiveDragging={onArchiveDragging}>
+                <ArchiveContextMenu archive={folder}
+                                    isActive={isArchiveMenuActive}
+                                    onIsActiveDrag={setIsActiveDrag}
+                                    onRename={setName}>
                     <StyledParentFolder onClick={handleClick}>
                         <Logo img={logo}/>
                         <Name name={name}/>
@@ -85,7 +89,7 @@ const Folder = ({folder, isDraggable, onArchiveDragging, isArchiveMenuActive, on
 
                                 <StyledChildArchive key={archive.id}>
                                     <Folder folder={archive}
-                                            isDraggable={isDraggable}
+                                            isDraggable={isActiveDrag}
                                             onArchiveDragging={onArchiveDragging}
                                             isArchiveMenuActive={isArchiveMenuActive}
                                             onCreateFolder={onCreateFolder}
@@ -96,7 +100,7 @@ const Folder = ({folder, isDraggable, onArchiveDragging, isArchiveMenuActive, on
                             (
                                 <StyledChildArchive key={archive.id}>
                                     <Bookmark bookmark={archive}
-                                              isDraggable={isDraggable}
+                                              isDraggable={isActiveDrag}
                                               onArchiveDragging={onArchiveDragging}
                                               isArchiveMenuActive={isArchiveMenuActive}
                                               onCreateFolder={onCreateFolder}

@@ -45,6 +45,10 @@ public class BookmarkException extends StorageException {
         return new BookmarkException(accountId, ArchiveType.BOOKMARK, null, Instant.now(), StorageExceptionCode.FAILED_CREATE_WITH_HTML, Map.of(FILE, file));
     }
 
+    public static BookmarkException failedAutoSaveFromURI(Account.AccountId accountId, URI uri) {
+        return new BookmarkException(accountId,ArchiveType.BOOKMARK, null, Instant.now(), StorageExceptionCode.FAILED_AUTO_SAVE_BOOKMARK_FROM_URI, Map.of(URI_KEY, uri));
+    }
+
     @Override
     public String getProblemDetailTitle() {
         return storageExceptionCode.getMessage();
@@ -61,6 +65,7 @@ public class BookmarkException extends StorageException {
             case "SW04" -> "[code: ]".concat(detailCode).concat(" failed bookmark save too long uri");
             case "SW05" -> "[code: ]".concat(detailCode).concat(" failed bookmark save invalid html file");
             case "SW06" -> "[code: ]".concat(detailCode).concat(" bookmark name too long").concat(" name: ").concat((String) properties.get(NAME));
+            case "SW07" -> "[code: ]".concat(detailCode).concat(" invalid uri :").concat((String) properties.get(URI_KEY));
             default -> "";
         };
     }

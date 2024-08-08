@@ -48,15 +48,15 @@ public class BookmarkController {
     @PostMapping
     public ResponseEntity<Map<String, Object>> createBookmark(@AuthenticationPrincipal AuthenticatedAccount account,
                                                               @Valid @RequestBody CreateBookmarkRestRequest request) {
-        var saveResponse = bookmarkStore.create(BookmarkCreateRequest.of(account.getName(), request.getParentMapId(), request.getName(), URI.create(request.getUri())));
-        return ResponseEntity.ok(CreatedBookmarkResponseBody.of(saveResponse));
+        var saveResponse = bookmarkStore.createByAutoNaming(CreateBookmarkAutoNamingRequest.of(account.getName(), request.getParentFolderId(), request.getName(), URI.create(request.getUri())));
+        return ResponseEntity.ok(CreatedBookmarkResponseBody.of(saveResponse.id()));
     }
 
     @PostMapping("/auto")
     public ResponseEntity<Map<String, Object>> createBookmarkAutoFillContent(@AuthenticationPrincipal AuthenticatedAccount account,
                                                                              @Valid @RequestBody CreateBookmarkAutoFillRestRequest request) {
         var autoSaveResponse =
-                bookmarkStore.createByAutoNaming(CreateBookmarkAutoNamingRequest.of(account.getName(), request.getParentFolderId(), URI.create(request.getUri())));
+                bookmarkStore.createByAutoNaming(CreateBookmarkAutoNamingRequest.of(account.getName(), request.getParentFolderId(), null, URI.create(request.getUri())));
         return ResponseEntity.ok(CreatedBookmarkResponseBody.of(autoSaveResponse.id()));
     }
 

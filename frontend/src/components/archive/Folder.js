@@ -12,7 +12,7 @@ import ArchiveDrag from "./ArchiveDrag";
 import OrderLine from "./OrderLine";
 import ArchiveContextMenu from "../archive-util/ArchiveContextMenu";
 
-const Folder = ({folder, onArchiveDragging, onCreateFolder}) => {
+const Folder = ({folder, isDraggable, onArchiveDragging, onCreateFolder}) => {
     let {accessToken} = useLogin();
     const [logo, setLogo] = useState(folderLogo);
     const [name, setName] = useState(folder.name);
@@ -67,7 +67,7 @@ const Folder = ({folder, onArchiveDragging, onCreateFolder}) => {
         <StyledFolderContainer>
             <OrderLine target={folder}
                        onArchiveDragging={onArchiveDragging}/>
-            <ArchiveDrag target={folder} onArchiveDragging={onArchiveDragging}>
+            <ArchiveDrag target={folder} isDraggable={isDraggable} onArchiveDragging={onArchiveDragging}>
                 <ArchiveContextMenu archive={folder} onRename={setName}>
                     <StyledParentFolder onClick={handleClick}>
                         <Logo img={logo}/>
@@ -85,6 +85,7 @@ const Folder = ({folder, onArchiveDragging, onCreateFolder}) => {
 
                                 <StyledChildArchive key={archive.id}>
                                     <Folder folder={archive}
+                                            isDraggable={isDraggable}
                                             onArchiveDragging={onArchiveDragging}
                                             onCreateFolder={onCreateFolder}
                                     />
@@ -94,6 +95,7 @@ const Folder = ({folder, onArchiveDragging, onCreateFolder}) => {
                             (
                                 <StyledChildArchive key={archive.id}>
                                     <Bookmark bookmark={archive}
+                                              isDraggable={isDraggable}
                                               onArchiveDragging={onArchiveDragging}
                                               onCreateFolder={onCreateFolder}
                                     />

@@ -65,7 +65,8 @@ const ArchiveUpdateLocationModal = ({target, currentRef, archiveType, onClose}) 
                     <StyledScrollable>
                         {
                             isRendered &&
-                            <HierarchyArchive archives={sortedMainArchives}/>
+                            <HierarchyArchive isDraggable={false}
+                                              archives={sortedMainArchives}/>
                         }
                     </StyledScrollable>
                 </StyledScrollableSize>

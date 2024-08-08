@@ -46,14 +46,18 @@ const CreateBookmarkModal = ({parentFolderId, onClose, currentRef}) => {
     }
 
     useEffect(() => {
-        if (currentRef.ref == null) {
-            document.addEventListener("keydown", handleKeyPress);
-            document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener("keydown", handleKeyPress);
+
+        return () => {
+            document.removeEventListener("keydown", handleKeyPress);
         }
+    }, [handleKeyPress]);
+
+    useEffect(() => {
+        document.addEventListener("mousedown", handleClickOutside);
 
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
-            document.removeEventListener("keydown", handleKeyPress);
         }
     }, []);
 

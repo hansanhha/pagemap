@@ -190,7 +190,7 @@ const StyledModal = styled.div`
     gap: ${({isMobile}) => isMobile ? "0.5rem" : "1.5rem"};
     width: ${({isMobile}) => isMobile ? "80vw" : "400px"};
     padding: 2rem;
-    top: 30%;
+    top: ${({top}) => top ? top : "30%"};
     background-color: white;
     border: 1px solid #666;
     border-radius: 6px;

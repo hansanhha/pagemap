@@ -107,7 +107,7 @@ const CreateBookmarkModal = ({parentFolderId, onClose, currentRef}) => {
     }
 
     return (
-        <StyledModal ref={currentRef} isMobile={isMobile}>
+        <StyledModal ref={currentRef} isMobile={isMobile} top={"30%"}>
             <h2>
                 북마크 생성
             </h2>

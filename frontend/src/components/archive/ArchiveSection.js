@@ -21,7 +21,7 @@ const MainArchiveContext = createContext();
 const useArchives = () => {
     const {accessToken} = useLogin();
     const [isRendered, setIsRendered] = useState(true);
-    const [sortedArchives, setSortedArchives] = useState([]);
+    const [sortedMainArchives, setSortedMainArchives] = useState([]);
 
     const refresh = () => {
         setIsRendered(false);
@@ -49,18 +49,18 @@ const useArchives = () => {
                     bookmarks = data.bookmarks.map(bookmark => new BookmarkDto(bookmark));
                 }
 
-                setSortedArchives([...folders, ...bookmarks].sort((a, b) => a.order - b.order));
+                setSortedMainArchives([...folders, ...bookmarks].sort((a, b) => a.order - b.order));
             })
             .catch(err => console.error("Error fetching shortcuts:", err));
     }
 
-    return [isRendered, sortedArchives, refresh];
+    return [isRendered, sortedMainArchives, refresh];
 }
 
 const ArchiveSection = () => {
     const location = useLocation();
     let {accessToken} = useLogin();
-    const [isRendered, sortedArchives, refresh] = useArchives();
+    const [isRendered, sortedMainArchives, refresh] = useArchives();
 
     useEffect(() => {
         refresh();
@@ -198,7 +198,7 @@ const ArchiveSection = () => {
                 isRendered &&
                 <>
                     <MainArchiveContext.Provider value={{refresh}}>
-                        <HierarchyArchive archives={sortedArchives}
+                        <HierarchyArchive archives={sortedMainArchives}
                                           onArchiveDragging={handleArchiveDragging}
                                           onCreateFolder={handleCreateFolder}
                         />
@@ -242,5 +242,5 @@ const fadeOut = keyframes`
     }
 `;
 
-export {DRAGGING_TYPE, useArchiveSectionRefresh};
+export {DRAGGING_TYPE, useArchiveSectionRefresh, useArchives};
 export default ArchiveSection;

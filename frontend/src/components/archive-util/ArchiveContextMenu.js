@@ -6,6 +6,7 @@ import FolderDto from "../../service/dto/FolderDto";
 import BookmarkDto from "../../service/dto/BookmarkDto";
 import CreateFolderModal from "./CreateFolderModal";
 import CreateBookmarkModal from "./CreateBookmarkModal";
+import ArchiveUpdateLocationModal from "./ArchiveUpdateLocationModal";
 
 const isValidName = (name) => {
     const expression = /^[a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ_\- !()]{1,50}$/;
@@ -32,6 +33,7 @@ const ArchiveContextMenu = ({children, archive, onRename}) => {
     const [isClickedRenameModal, openRenameModal, closeRenameModal] = useModal();
     const [isClickedCreateFolderModal, openCreateFolderModal, closeCreateFolderModal] = useModal();
     const [isClickedCreateBookmarkModal, openCreateBookmarkModal, closeCreateBookmarkModal] = useModal();
+    const [isClickedLocationModal, openLocationModal, closeLocationModal] = useModal();
 
     const currentRef = useRef(null);
 
@@ -68,12 +70,6 @@ const ArchiveContextMenu = ({children, archive, onRename}) => {
                 <StyledArchiveContextModal ref={currentRef} top={position.y} left={position.x}>
                     <StyledArchiveMenuItem onClick={() => {
                         closeMenu();
-                        openRenameModal();
-                    }}>
-                        이름 변경
-                    </StyledArchiveMenuItem>
-                    <StyledArchiveMenuItem onClick={() => {
-                        closeMenu();
                         openCreateFolderModal();
                     }}>
                         폴더 생성
@@ -87,6 +83,18 @@ const ArchiveContextMenu = ({children, archive, onRename}) => {
                             북마크 생성
                         </StyledArchiveMenuItem>
                     }
+                    <StyledArchiveMenuItem onClick={() => {
+                        closeMenu();
+                        openRenameModal();
+                    }}>
+                        이름 변경
+                    </StyledArchiveMenuItem>
+                    <StyledArchiveMenuItem onClick={() => {
+                        closeMenu();
+                        openLocationModal();
+                    }}>
+                        위치 변경
+                    </StyledArchiveMenuItem>
                     <StyledArchiveMenuItem onClick={closeMenu}>
                         닫기
                     </StyledArchiveMenuItem>
@@ -95,16 +103,6 @@ const ArchiveContextMenu = ({children, archive, onRename}) => {
             <StyledArchiveContextMenuTrigger onContextMenu={handleMenuOpen}>
                 {children}
             </StyledArchiveContextMenuTrigger>
-            {
-                isClickedRenameModal &&
-                <RenameModal id={archive.id}
-                             currentRef={currentRef}
-                             archiveType={archiveType}
-                             originalName={archive.name}
-                             onRename={onRename}
-                             onClose={closeRenameModal}
-                />
-            }
             {
                 isClickedCreateFolderModal &&
                 <CreateFolderModal parentFolderId={archiveType === "folders" ? archive.id : archive.parentFolderId}
@@ -117,6 +115,24 @@ const ArchiveContextMenu = ({children, archive, onRename}) => {
                 <CreateBookmarkModal parentFolderId={archive.id}
                                      currentRef={currentRef}
                                      onClose={closeCreateBookmarkModal}
+                />
+            }
+            {
+                isClickedRenameModal &&
+                <RenameModal id={archive.id}
+                             currentRef={currentRef}
+                             archiveType={archiveType}
+                             originalName={archive.name}
+                             onRename={onRename}
+                             onClose={closeRenameModal}
+                />
+            }
+            {
+                isClickedLocationModal &&
+                <ArchiveUpdateLocationModal target={archive}
+                                            currentRef={currentRef}
+                                            archiveType={archiveType}
+                                            onClose={closeLocationModal}
                 />
             }
         </>

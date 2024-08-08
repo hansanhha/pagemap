@@ -78,7 +78,7 @@ const CreateBookmarkModal = ({parentFolderId, onClose, currentRef}) => {
             return;
         }
 
-        fetch(`${process.env.REACT_APP_SERVER_URL}/bookmarks`, {
+        fetch(`${process.env.REACT_APP_SERVER}/storage/bookmarks`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

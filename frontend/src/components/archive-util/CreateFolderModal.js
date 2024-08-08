@@ -59,7 +59,7 @@ const CreateFolderModal = ({parentFolderId, onClose, currentRef}) => {
             return;
         }
 
-        fetch(process.env.REACT_APP_API_URL + "/folders", {
+        fetch(process.env.REACT_APP_SERVER + "/storage/folders", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

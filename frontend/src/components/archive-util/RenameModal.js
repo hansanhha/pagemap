@@ -4,15 +4,15 @@ import CommonInput from "../common/CommonInput";
 import Button from "../common/Button";
 import {useLogin} from "../../hooks/useLogin";
 import useMediaQuery from "../../hooks/useMediaQuery";
+import {
+    isValidName,
+    StyledButtonGroup,
+    StyledErrorMessage,
+    StyledModal,
+    StyledModalContainer
+} from "./ArchiveContextMenu";
 
-const isValidName = (name) => {
-    const expression = /^[a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ_\- !()]{1,50}$/;
-    const regex = new RegExp(expression);
-
-    return regex.test(name);
-}
-
-const RenameModal = ({id, archiveType, originalName, onRename, onClose}) => {
+const RenameModal = ({id, archiveType, originalName, onRename, onClose, currentRef}) => {
     const {isMobile} = useMediaQuery();
     const {accessToken} = useLogin();
     const [updateName, setUpdateName] = useState("");
@@ -20,7 +20,7 @@ const RenameModal = ({id, archiveType, originalName, onRename, onClose}) => {
     const renameModalRef = useRef(null);
 
     const handleClickOutside = (e) => {
-        if (renameModalRef.current && !renameModalRef.current.contains(e.target)) {
+        if (currentRef.current && !currentRef.current.contains(e.target)) {
             onClose();
         }
     }
@@ -37,7 +37,7 @@ const RenameModal = ({id, archiveType, originalName, onRename, onClose}) => {
     }
 
     useEffect(() => {
-        if (renameModalRef.ref == null) {
+        if (currentRef.ref == null) {
             document.addEventListener("keydown", handleKeyPress);
             document.addEventListener("mousedown", handleClickOutside);
         }
@@ -49,12 +49,12 @@ const RenameModal = ({id, archiveType, originalName, onRename, onClose}) => {
     }, [updateName]);
 
     const handleUpdateTitle = (updateTitle) => {
-        if (updateTitle.length > 50) {
+        if (updateTitle.length > 50 || (updateTitle.length > 1 && !isValidName(updateTitle))) {
             setError(true);
-            return;
+        } else {
+            setError(false);
         }
 
-        setError(false);
         setUpdateName(updateTitle);
     }
 
@@ -92,11 +92,11 @@ const RenameModal = ({id, archiveType, originalName, onRename, onClose}) => {
     }
 
     return (
-        <StyledRenameModal ref={renameModalRef} isMobile={isMobile}>
+        <StyledModal ref={currentRef} isMobile={isMobile}>
             <h2>
                 이름 변경
             </h2>
-            <StyledRenameModalBody>
+            <StyledModalContainer>
                 {
                     updateName &&
                     <StyledGuideMessage>
@@ -113,47 +113,19 @@ const RenameModal = ({id, archiveType, originalName, onRename, onClose}) => {
                         유효하지 않은 이름입니다
                     </StyledErrorMessage>
                 }
-            </StyledRenameModalBody>
+            </StyledModalContainer>
             <StyledButtonGroup>
                 <Button value={"취소"} onClick={closeModal}/>
                 <Button value={"확인"} onClick={() => handleRename(updateName)}/>
             </StyledButtonGroup>
-        </StyledRenameModal>
+        </StyledModal>
     );
 }
-
-const StyledRenameModal = styled.div`
-    position: fixed;
-    display: flex;
-    flex-direction: column;
-    gap: ${({isMobile}) => isMobile ? "0.5rem" : "1.5rem"};
-    width: ${({isMobile}) => isMobile ? "80vw" : "400px"};
-    padding: 2rem;
-    top: 30%;
-    background-color: white;
-    border: 1px solid #666;
-    border-radius: 6px;
-`;
-
-const StyledRenameModalBody = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-`;
 
 const StyledGuideMessage = styled.div`
     color: #666;
     text-wrap: wrap;
 `;
 
-const StyledErrorMessage = styled.div`
-    color: red;
-`;
-
-const StyledButtonGroup = styled.div`
-    display: flex;
-    justify-content: end;
-    gap: 0.5rem;
-`;
 
 export default RenameModal;

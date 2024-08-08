@@ -4,7 +4,7 @@ import HyperLink from "../common/HyperLink";
 import Logo from "../common/Logo";
 import Name from "./Name";
 import ShortcutDrag from "./ShortcutDrag";
-import ArchiveContextMenu from "./ArchiveContextMenu";
+import ArchiveContextMenu from "../archive-util/ArchiveContextMenu";
 import {useState} from "react";
 
 const Shortcut = ({shortcut, onUpdateOrder}) => {

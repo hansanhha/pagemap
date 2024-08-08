@@ -47,7 +47,7 @@ public class FolderController {
     @PostMapping
     public ResponseEntity<Map<String, Object>> createFolder(@AuthenticationPrincipal AuthenticatedAccount account,
                                                             @Valid @RequestBody CreateFolderRestRequest request) {
-        var createdFolder = folderStore.create(FolderCreateRequest.of(account.getName(), request.getParentFolderId(), request.getBookmarkIds()));
+        var createdFolder = folderStore.create(FolderCreateRequest.of(account.getName(), request.getName().trim(), request.getParentFolderId(), request.getBookmarkIds()));
         return ResponseEntity.ok(CreatedMapResponseBody.of(createdFolder));
     }
 

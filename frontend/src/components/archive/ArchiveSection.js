@@ -1,7 +1,7 @@
 import styled, {keyframes} from "styled-components";
 import FolderDto from "../../service/dto/FolderDto";
 import {useLogin} from "../../hooks/useLogin";
-import {useEffect, useState} from "react";
+import {createContext, useContext, useEffect, useState} from "react";
 import BookmarkDto from "../../service/dto/BookmarkDto";
 import HierarchyArchive from "./HierarchyArchive";
 import ShortcutDto from "../../service/dto/ShortcutDto";
@@ -16,52 +16,60 @@ const DRAGGING_TYPE = {
     UPDATE_PARENT_AND_LOCATION: "UPDATE_PARENT_AND_LOCATION",
 }
 
+const MainArchiveContext = createContext();
+
+const useArchives = () => {
+    const {accessToken} = useLogin();
+    const [isRendered, setIsRendered] = useState(true);
+    const [sortedArchives, setSortedArchives] = useState([]);
+
+    const refresh = () => {
+        setIsRendered(false);
+        setTimeout(() => {
+            setIsRendered(true)
+        }, 10);
+
+        fetch(process.env.REACT_APP_SERVER + "/storage", {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/problem+json",
+                "Authorization": "Bearer " + accessToken,
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                let folders = [];
+                let bookmarks = [];
+
+                if (data.folders && data.folders.length > 0) {
+                    folders = data.folders.map(folder => new FolderDto(folder));
+                }
+
+                if (data.bookmarks && data.bookmarks.length > 0) {
+                    bookmarks = data.bookmarks.map(bookmark => new BookmarkDto(bookmark));
+                }
+
+                setSortedArchives([...folders, ...bookmarks].sort((a, b) => a.order - b.order));
+            })
+            .catch(err => console.error("Error fetching shortcuts:", err));
+    }
+
+    return [isRendered, sortedArchives, refresh];
+}
+
 const ArchiveSection = () => {
     const location = useLocation();
     let {accessToken} = useLogin();
-    const [isActive, setIsActive] = useState(true);
-    const [sortedArchives, setSortedArchives] = useState([]);
+    const [isRendered, sortedArchives, refresh] = useArchives();
 
     useEffect(() => {
-        if (isActive) {
-            fetch(process.env.REACT_APP_SERVER + "/storage", {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/problem+json",
-                    "Authorization": "Bearer " + accessToken,
-                }
-            })
-                .then(response => response.json())
-                .then(data => {
-                    let folders = [];
-                    let bookmarks = [];
-
-                    if (data.folders && data.folders.length > 0) {
-                        folders = data.folders.map(folder => new FolderDto(folder));
-                    }
-
-                    if (data.bookmarks && data.bookmarks.length > 0) {
-                        bookmarks = data.bookmarks.map(bookmark => new BookmarkDto(bookmark));
-                    }
-
-                    setSortedArchives([...folders, ...bookmarks].sort((a, b) => a.order - b.order));
-                })
-                .catch(err => console.error("Error fetching shortcuts:", err));
-        }
-
-        subscribeEvent(deletedArchive, handleActive);
+        refresh();
+        subscribeEvent(deletedArchive, refresh);
 
         return () => {
-            unsubscribeEvent(deletedArchive, handleActive);
+            unsubscribeEvent(deletedArchive, refresh);
         }
-    }, [accessToken, isActive]);
-
-    const handleActive = () => {
-        setIsActive(false);
-        setTimeout(() => {
-            setIsActive(true);
-        }, 10);
-    }
+    }, []);
 
     const handleArchiveDragging = (draggingType, source, target) => {
         let type = null;
@@ -94,12 +102,10 @@ const ArchiveSection = () => {
             })
                 .then(res => res.json())
                 .then(data => {
-                    handleActive();
+                    refresh();
                 })
                 .catch(err => console.error("Error fetching update location:", err));
-        }
-
-        else if (draggingType === DRAGGING_TYPE.UPDATE_PARENT) {
+        } else if (draggingType === DRAGGING_TYPE.UPDATE_PARENT) {
             if (source.id === target.id) {
                 return;
             }
@@ -118,12 +124,10 @@ const ArchiveSection = () => {
             })
                 .then(res => res.json())
                 .then(data => {
-                    handleActive();
+                    refresh();
                 })
                 .catch(err => console.error("Error fetching update parent:", err));
-        }
-
-        else if (draggingType === DRAGGING_TYPE.UPDATE_PARENT_AND_LOCATION) {
+        } else if (draggingType === DRAGGING_TYPE.UPDATE_PARENT_AND_LOCATION) {
             if (source.id === target.id) {
                 return;
             }
@@ -142,12 +146,10 @@ const ArchiveSection = () => {
             })
                 .then(response => response.json())
                 .then(data => {
-                    handleActive();
+                    refresh();
                 })
                 .catch(err => console.error("Error update location: ", err));
-        }
-
-        else if (draggingType === DRAGGING_TYPE.CREATE_BOOKMARK_BY_DRAGGING) {
+        } else if (draggingType === DRAGGING_TYPE.CREATE_BOOKMARK_BY_DRAGGING) {
             fetch(process.env.REACT_APP_SERVER + "/storage/bookmarks/auto", {
                 method: "POST",
                 headers: {
@@ -162,7 +164,7 @@ const ArchiveSection = () => {
                 .then(response => response.json())
                 .then(data => {
                     if (location.pathname === "/") {
-                        handleActive();
+                        refresh();
                     }
                 })
                 .catch(err => console.error("Error fetching app drop zone:", err));
@@ -184,26 +186,32 @@ const ArchiveSection = () => {
             .then(res => res.json())
             .then(data => {
                 if (data.createdFolder) {
-                    handleActive();
+                    refresh();
                 }
             })
             .catch(err => console.error("Error fetching create folder:", err));
     }
 
     return (
-        <StyledArchiveSection isActive={isActive}>
+        <StyledArchiveSection isRendered={isRendered}>
             {
-                isActive &&
+                isRendered &&
                 <>
-                    <HierarchyArchive archives={sortedArchives}
-                                      onArchiveDragging={handleArchiveDragging}
-                                      onCreateFolder={handleCreateFolder}
-                    />
+                    <MainArchiveContext.Provider value={{refresh}}>
+                        <HierarchyArchive archives={sortedArchives}
+                                          onArchiveDragging={handleArchiveDragging}
+                                          onCreateFolder={handleCreateFolder}
+                        />
+                    </MainArchiveContext.Provider>
                     <Trash/>
                 </>
             }
         </StyledArchiveSection>
     )
+}
+
+const useArchiveSectionRefresh = () => {
+    return useContext(MainArchiveContext);
 }
 
 const StyledArchiveSection = styled.div`
@@ -213,7 +221,7 @@ const StyledArchiveSection = styled.div`
     gap: 0.1rem;
     padding: 0 1.5rem;
 
-    animation: ${({isActive}) => isActive ? fadeIn : fadeOut} 0.2s;
+    animation: ${({isRendered}) => isRendered ? fadeIn : fadeOut} 0.2s;
 `;
 
 const fadeIn = keyframes`
@@ -234,5 +242,5 @@ const fadeOut = keyframes`
     }
 `;
 
-export {DRAGGING_TYPE};
+export {DRAGGING_TYPE, useArchiveSectionRefresh};
 export default ArchiveSection;

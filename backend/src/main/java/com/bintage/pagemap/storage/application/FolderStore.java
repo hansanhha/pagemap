@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.LinkedList;
 import java.util.List;
 
 @PrimaryPort
@@ -34,20 +35,28 @@ public class FolderStore {
     public FolderDto create(FolderCreateRequest request) {
         var accountId = new Account.AccountId(request.accountId());
         var parentFolderId = new Folder.FolderId(request.parentFolderId());
+        var name = request.name();
 
         var topLevelBookmarks = bookmarkRepository.findAllByParentFolderId(accountId, Bookmark.TOP_LEVEL);
         var topLevelFolders = folderRepository.findAllByParentId(accountId, Folder.TOP_LEVEL);
         var archiveCounter = archiveCounterRepository.findByAccountId(accountId)
                 .orElseThrow(() -> ArchiveCounterException.notFound(accountId));
 
-        List<Bookmark> newFolderChildrenBookmark = bookmarkRepository.findAllById(accountId,
-                request.bookmarkIds().stream().map(Bookmark.BookmarkId::new).toList());
+        var childrenBookmarks = new LinkedList<Bookmark>();
+        var childrenBookmarksId = request.bookmarkIds();
+
+        if (childrenBookmarksId != null && !childrenBookmarksId.isEmpty()) {
+            childrenBookmarks.addAll(
+                    bookmarkRepository.findAllById(accountId, childrenBookmarksId.stream().map(Bookmark.BookmarkId::new).toList())
+            );
+        }
 
         var newFolder = Folder.builder()
+                .parentFolderId(parentFolderId)
                 .accountId(accountId)
-                .name(DEFAULT_FOLDER_NAME)
+                .name(!name.isBlank() ? name : DEFAULT_FOLDER_NAME)
                 .childrenFolder(List.of())
-                .childrenBookmark(newFolderChildrenBookmark)
+                .childrenBookmark(childrenBookmarks)
                 .build();
 
         // 최상위 계층에 폴더를 생성하는 경우
@@ -55,19 +64,72 @@ public class FolderStore {
             var created = folderRepository.save(newFolder);
 
             archiveCounter.increase(ArchiveCounter.CountType.FOLDER);
-            archiveCounterRepository.update(archiveCounter);
 
-            // 새 폴더 하위에 생기는 북마크들의 order 및 parent 처리
-            for (int i = 0; i < newFolderChildrenBookmark.size(); i++) {
-                var bookmark = newFolderChildrenBookmark.get(i);
+            // 폴더만 새로 생성하는 경우
+            if (childrenBookmarks.isEmpty()) {
+                created.order(topLevelFolders.size() + topLevelBookmarks.size() + 1);
+            }
+            // 새 폴더 생성과 동시에 북마크를 생성하는 경우(드래그/드랍 시)
+            else  {
+                // 새 폴더 하위에 생기는 북마크들의 order 및 parent 처리
+                for (int i = 0; i < childrenBookmarks.size(); i++) {
+                    var bookmark = childrenBookmarks.get(i);
 
-                // 새 폴더 하위에 생기는 북마크의 원래 부모가 최상위 계층인 경우 최상위 계층 자식 간의 순서 조정
-                if (bookmark.getParentFolderId().equals(Bookmark.TOP_LEVEL)) {
-                    decreaseOrderGreaterThanEqual(topLevelFolders, topLevelBookmarks, bookmark.getOrder());
+                    // 새 폴더 하위에 생기는 북마크의 원래 부모가 최상위 계층인 경우 최상위 계층 자식 간의 순서 조정
+                    if (bookmark.getParentFolderId().equals(Bookmark.TOP_LEVEL)) {
+                        decreaseOrderGreaterThanEqual(topLevelFolders, topLevelBookmarks, bookmark.getOrder());
+                    }
+                    // 아닌 경우, 북마크의 원래 부모 폴더에서 해당 북마크 참조 삭제
+                    else {
+                        var bookmarkOriginalParentFolder = folderRepository.findById(bookmark.getParentFolderId())
+                                .orElseThrow(() -> FolderException.notFound(accountId, bookmark.getParentFolderId()));
+
+                        bookmarkOriginalParentFolder.removeBookmark(bookmark);
+                    }
+
+                    bookmark.order(i + 1);
+                    bookmark.parent(created);
                 }
-                // 아닌 경우, 해당 폴더에서 북마크 참조 삭제
+
+                var childrenBookmarksOnTheTopLevel = childrenBookmarks.stream()
+                        .filter(bookmark -> bookmark.getParentFolderId().equals(Bookmark.TOP_LEVEL))
+                        .toList();
+
+                var order = topLevelFolders.size() + topLevelBookmarks.size() - childrenBookmarksOnTheTopLevel.size();
+                created.order(order);
+                folderRepository.update(topLevelFolders);
+                bookmarkRepository.update(topLevelBookmarks);
+                bookmarkRepository.update(childrenBookmarks);
+            }
+
+            folderRepository.update(created);
+            archiveCounterRepository.update(archiveCounter);
+            return FolderDto.from(created);
+        }
+
+        // 다른 폴더에 생성하는 경우
+        var parentFolder = folderRepository.findFamilyById(accountId, parentFolderId)
+                .orElseThrow(() -> FolderException.notFound(accountId, parentFolderId));
+
+        newFolder.order(parentFolder.getChildrenFolder().size() + parentFolder.getChildrenBookmark().size() + 1);
+        var created = folderRepository.save(newFolder);
+
+        parentFolder.addFolder(created);
+
+        archiveCounter.increase(ArchiveCounter.CountType.FOLDER);
+
+        // 새 폴더 생성과 동시에 북마크를 생성하는 경우(드래그/드랍 시)
+        if (!childrenBookmarks.isEmpty()) {
+            for (int i = 0; i < childrenBookmarks.size(); i++) {
+                var bookmark = childrenBookmarks.get(i);
+
+                // 새 폴더 하위에 생기는 북마크의 원래 부모가 새 폴더 부모와 동일한 경우 - 원래 부모의 북마크 참조 삭제
+                if (bookmark.getParentFolderId().equals(parentFolder.getId())) {
+                    parentFolder.removeBookmark(bookmark);
+                }
+                // 아닌 경우 북마크의 원래 부모를 찾아와서 참조 삭제
                 else {
-                    var bookmarkOriginalParentFolder = folderRepository.findById(bookmark.getParentFolderId())
+                    var bookmarkOriginalParentFolder = folderRepository.findFamilyById(accountId, bookmark.getParentFolderId())
                             .orElseThrow(() -> FolderException.notFound(accountId, bookmark.getParentFolderId()));
 
                     bookmarkOriginalParentFolder.removeBookmark(bookmark);
@@ -77,53 +139,12 @@ public class FolderStore {
                 bookmark.parent(created);
             }
 
-            var childrenBookmarksOnTheTopLevel = newFolderChildrenBookmark.stream()
-                    .filter(bookmark -> bookmark.getParentFolderId().equals(Bookmark.TOP_LEVEL))
-                    .toList();
-
-            var order = topLevelFolders.size() + topLevelBookmarks.size() - childrenBookmarksOnTheTopLevel.size();
-            created.order(order);
-            folderRepository.update(created);
-            folderRepository.update(topLevelFolders);
-            bookmarkRepository.update(topLevelBookmarks);
-            bookmarkRepository.update(newFolderChildrenBookmark);
-            return FolderDto.from(created);
+            bookmarkRepository.update(childrenBookmarks);
         }
 
-        // 다른 폴더에 폴더를 생성하는 경우
-        var parentFolder = folderRepository.findFamilyById(accountId, parentFolderId)
-                .orElseThrow(() -> FolderException.notFound(accountId, parentFolderId));
-
-        var created = folderRepository.save(newFolder);
-        archiveCounter.increase(ArchiveCounter.CountType.FOLDER);
-
-        created.order(parentFolder.getChildrenFolder().size() + parentFolder.getChildrenBookmark().size() + 1);
-
-        for (int i = 0; i < newFolderChildrenBookmark.size(); i++) {
-            var bookmark = newFolderChildrenBookmark.get(i);
-
-            // 새 폴더 하위에 생기는 북마크의 원래 부모가 새 폴더 부모와 동일한 경우 - 원래 부모의 북마크 참조 삭제
-            if (bookmark.getParentFolderId().equals(parentFolder.getId())) {
-                parentFolder.removeBookmark(bookmark);
-            }
-            // 아닌 경우 북마크의 원래 부모를 찾아와서 참조 삭제
-            else {
-                var bookmarkOriginalParentFolder = folderRepository.findFamilyById(accountId, bookmark.getParentFolderId())
-                        .orElseThrow(() -> FolderException.notFound(accountId, bookmark.getParentFolderId()));
-
-                bookmarkOriginalParentFolder.removeBookmark(bookmark);
-            }
-
-            bookmark.order(i + 1);
-            bookmark.parent(created);
-        }
-
-        parentFolder.addFolder(created);
-
-        archiveCounterRepository.save(archiveCounter);
-        bookmarkRepository.update(newFolderChildrenBookmark);
         folderRepository.updateFamily(parentFolder);
         folderRepository.update(created);
+        archiveCounterRepository.update(archiveCounter);
         return FolderDto.from(created);
     }
 

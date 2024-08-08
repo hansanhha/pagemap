@@ -22,6 +22,7 @@ public enum StorageExceptionCode {
     FAILED_AUTO_SAVE_BOOKMARK_TOO_LONG_URI(400, "SW04", "failed web save"),
     FAILED_CREATE_WITH_HTML(400, "SW05", "failed create bookmark"),
     BOOKMARK_NAME_TOO_LONG(400, "SW06", "bookmark name too long"),
+    FAILED_AUTO_SAVE_BOOKMARK_FROM_URI(400, "SW07", "failed save bookmark"),
 
     NOT_FOUND_TRASH(400, "ST01", "not found deleted archive item"),
 

@@ -56,34 +56,42 @@ public class BookmarkStore {
     private final BookmarkRepository bookmarkRepository;
     private final ArchiveCounterRepository archiveCounterRepository;
 
-    public long create(BookmarkCreateRequest request) {
-        var accountId = new Account.AccountId(request.accountId());
-        var parentFolderId = new Folder.FolderId(request.parentFolderId());
-        var bookmark = Bookmark.builder()
-                .accountId(accountId)
-                .name(request.name())
-                .uri(request.uri())
-                .build();
-
-        if (isTopLevel(parentFolderId)) {
-            return creatOnTheTopLevel(accountId, bookmark).getId().value();
-        }
-
-        var created = createOnTheOtherFolder(accountId, parentFolderId, bookmark);
-        return created.getId().value();
-    }
+//    public BookmarkDto create(BookmarkCreateRequest request) {
+//        var accountId = new Account.AccountId(request.accountId());
+//        var parentFolderId = new Folder.FolderId(request.parentFolderId());
+//        var bookmark = Bookmark.builder()
+//                .accountId(accountId)
+//                .
+//                .name(request.name())
+//                .uri(request.uri())
+//                .build();
+//
+//        if (isTopLevel(parentFolderId)) {
+//            return creatOnTheTopLevel(accountId, bookmark).getId().value();
+//        }
+//
+//        var created = createOnTheOtherFolder(accountId, parentFolderId, bookmark);
+//        return created.getId().value();
+//    }
 
     public BookmarkDto createByAutoNaming(CreateBookmarkAutoNamingRequest request) {
         var accountId = new Account.AccountId(request.accountId());
         var parentFolderId = Folder.FolderId.of(request.parentFolderId());
         var uri = request.uri();
+        var name = request.name().trim();
 
         var archiveCounter = archiveCounterRepository.findByAccountId(accountId)
                 .orElseThrow(() -> ArchiveCounterException.notFound(accountId));
 
+        var scheme = uri.getScheme();
+
+        if (scheme == null || scheme.isBlank()) {
+            uri = URI.create("https://" + uri);
+        }
+
         var bookmark = Bookmark.builder()
                 .accountId(accountId)
-                .name(DEFAULT_BOOKMARK_NAME)
+                .name(!name.isBlank() ? name : DEFAULT_BOOKMARK_NAME)
                 .uri(uri)
                 .build();
 
@@ -105,6 +113,7 @@ public class BookmarkStore {
                     .orElseThrow(() -> FolderException.notFound(accountId, parentFolderId));
 
             created = bookmarkRepository.save(bookmark);
+            created.order(parentFolder.getChildrenFolder().size() + parentFolder.getChildrenBookmark().size() + 1);
             parentFolder.addBookmark(created);
             folderRepository.updateFamily(parentFolder);
             bookmarkRepository.update(created);
@@ -141,7 +150,11 @@ public class BookmarkStore {
                 webPageTitle = webPageTitle.substring(0, Bookmark.MAX_NAME_LENGTH);
             }
 
-            created.name(webPageTitle);
+            if (name.equals(DEFAULT_BOOKMARK_NAME) && !webPageTitle.isBlank()) {
+                created.name(webPageTitle);
+            }
+        } catch (IllegalArgumentException e) {
+            throw BookmarkException.failedAutoSaveFromURI(accountId, uri);
         } catch (IOException | InterruptedException e) {
             throw BookmarkException.failedAutoSave(accountId, uri);
         }

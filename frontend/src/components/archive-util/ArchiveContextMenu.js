@@ -107,7 +107,7 @@ const ArchiveContextMenu = ({children, archive, onRename}) => {
             }
             {
                 isClickedCreateFolderModal &&
-                <CreateFolderModal parentFolderId={archive.id}
+                <CreateFolderModal parentFolderId={archiveType === "folders" ? archive.id : archive.parentFolderId}
                                    currentRef={currentRef}
                                    onClose={closeCreateFolderModal}
                 />

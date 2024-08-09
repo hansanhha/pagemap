@@ -38,17 +38,26 @@ public class FolderController {
     private final ArchiveLocation archiveLocation;
     private final ArchiveUse archiveUse;
 
+    @GetMapping
+    public ResponseEntity<List<Map<String, Object>>> getFolders(@AuthenticationPrincipal AuthenticatedAccount account,
+                                                         @RequestParam(value = "ids") List<Long> ids,
+                                                         @RequestParam(value = "type", required = false) String folderChildrenFetchType) {
+        var folders = archiveUse.getFolders(account.getName(), ids, ArchiveUse.ArchiveFetchType.of(folderChildrenFetchType));
+        return ResponseEntity.ok(folders.stream().map(GetFolderResponseBody::of).toList());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Map<String, Object>> getFolder(@AuthenticationPrincipal AuthenticatedAccount account,
-                                                         @PathVariable Long id) {
-        return ResponseEntity.ok(GetMapResponseBody.of(archiveUse.getFolder(account.getName(), id)));
+                                                         @PathVariable Long id,
+                                                         @RequestParam(value = "type", required = false) String folderChildrenFetchType) {
+        return ResponseEntity.ok(GetFolderResponseBody.of(archiveUse.getFolder(account.getName(), id, ArchiveUse.ArchiveFetchType.of(folderChildrenFetchType))));
     }
 
     @PostMapping
     public ResponseEntity<Map<String, Object>> createFolder(@AuthenticationPrincipal AuthenticatedAccount account,
                                                             @Valid @RequestBody CreateFolderRestRequest request) {
-        var createdFolder = folderStore.create(FolderCreateRequest.of(account.getName(), request.getName().trim(), request.getParentFolderId(), request.getBookmarkIds()));
-        return ResponseEntity.ok(CreatedMapResponseBody.of(createdFolder));
+        var createdFolder = folderStore.create(FolderCreateRequest.of(account.getName(), request.getName(), request.getParentFolderId(), request.getBookmarkIds()));
+        return ResponseEntity.ok(CreatedFolderResponseBody.of(createdFolder));
     }
 
     @PatchMapping("/{id}")
@@ -56,7 +65,7 @@ public class FolderController {
                                                          @PathVariable Long id,
                                                          @Valid @RequestBody UpdateFolderNicknameRestRequest request) {
         folderStore.rename(account.getName(), id, request.getName());
-        return ResponseEntity.ok(UpdatedMapResponseBody.of());
+        return ResponseEntity.ok(UpdatedFolderResponseBody.of());
     }
 
     @PatchMapping("/{id}/location")
@@ -64,26 +73,26 @@ public class FolderController {
                                                     @PathVariable Long id,
                                                     @RequestBody @Valid UpdateArchiveLocationRestRequest request) {
         archiveLocation.move(ArchiveType.FOLDER, account.getName(), id, request.getTargetFolderId(), request.getUpdateOrder());
-        return ResponseEntity.ok(UpdatedMapResponseBody.of());
+        return ResponseEntity.ok(UpdatedFolderResponseBody.of());
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, String>> deleteMap(@AuthenticationPrincipal AuthenticatedAccount account,
                                                          @PathVariable Long id) {
         folderStore.delete(account.getName(), id);
-        return ResponseEntity.ok(UpdatedMapResponseBody.of());
+        return ResponseEntity.ok(UpdatedFolderResponseBody.of());
     }
 
     @PostMapping("/{id}/restore")
     public ResponseEntity<Map<String, String>> restoreMap(@AuthenticationPrincipal AuthenticatedAccount account,
                                                          @PathVariable Long id) {
         folderStore.restore(account.getName(), id);
-        return ResponseEntity.ok(UpdatedMapResponseBody.of());
+        return ResponseEntity.ok(UpdatedFolderResponseBody.of());
     }
 
-    public static class GetMapResponseBody {
+    public static class GetFolderResponseBody {
         public static Map<String, Object> of(CurrentFolderResponse archive) {
-            return Map.of(MESSAGE_NAME, SUCCESS, "currentFolders", archive.currentFolder(),
+            return Map.of("currentFolders", archive.currentFolder(),
                     "childrenFolder", archive.childrenFolder(), "childrenBookmark", archive.childrenBookmark());
         }
 
@@ -96,13 +105,13 @@ public class FolderController {
         }
     }
 
-    public static class UpdatedMapResponseBody {
+    public static class UpdatedFolderResponseBody {
         public static Map<String, String> of() {
             return Map.of(MESSAGE_NAME, SUCCESS);
         }
     }
 
-    public static class CreatedMapResponseBody {
+    public static class CreatedFolderResponseBody {
         public static Map<String, Object> of(FolderDto folderDto) {
             return Map.of(MESSAGE_NAME, SUCCESS, "createdFolder", folderDto);
         }

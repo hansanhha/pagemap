@@ -21,9 +21,7 @@ import org.jmolecules.architecture.hexagonal.PrimaryPort;
 import org.springframework.modulith.NamedInterface;
 import org.springframework.stereotype.Service;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @NamedInterface("readOnly")
 @PrimaryPort
@@ -41,32 +39,55 @@ public class ArchiveUse {
                 .ifPresent(Bookmark::visit);
     }
 
-    public CurrentFolderResponse getFolder(String accountIdStr, long mapIdLong) {
+    public CurrentFolderResponse getFolder(String accountIdStr, long folderIdVal, ArchiveFetchType type) {
         var accountId = new Account.AccountId(accountIdStr);
 
-        var folderId = new Folder.FolderId(mapIdLong);
+        var folderId = new Folder.FolderId(folderIdVal);
         var folder = folderRepository.findFamilyById(accountId, folderId)
                 .orElseThrow(() -> FolderException.notFound(accountId, folderId));
 
-        List<Folder> sortedChildrenFolder = folder.getChildrenFolder().stream()
-                .sorted(Comparator.comparing(Folder::getOrder))
-                .toList();
+        List<Folder> sortedChildrenFolder = new LinkedList<>();
+        List<Bookmark> sortedChildrenBookmark = new LinkedList<>();
 
-        List<Bookmark> sortedChildrenBookmark = folder.getChildrenBookmark().stream()
-                .sorted(Comparator.comparing(Bookmark::getOrder))
-                .toList();
+        if (type.equals(ArchiveFetchType.BOTH) || type.equals(ArchiveFetchType.FOLDER)) {
+            sortedChildrenFolder.addAll(
+                    folder.getChildrenFolder()
+                            .stream()
+                            .sorted(Comparator.comparing(Folder::getOrder))
+                            .toList());
+        }
+
+        if (type.equals(ArchiveFetchType.BOTH) || type.equals(ArchiveFetchType.BOOKMARK)) {
+            sortedChildrenBookmark.addAll(
+                    folder.getChildrenBookmark()
+                            .stream()
+                            .sorted(Comparator.comparing(Bookmark::getOrder))
+                            .toList());
+        }
 
         return CurrentFolderResponse.from(folder, sortedChildrenFolder, sortedChildrenBookmark);
     }
 
-    public SpecificArchiveResponse getAllOnTheTopLevel(String accountIdStr) {
+    public List<CurrentFolderResponse> getFolders(String accountIdStr, List<Long> folderIdVals, ArchiveFetchType type) {
+        return folderIdVals.stream()
+                .map(id -> getFolder(accountIdStr, id, type))
+                .toList();
+    }
+
+    public SpecificArchiveResponse getAllOnTheTopLevel(String accountIdStr, ArchiveFetchType type) {
         var accountId = new Account.AccountId(accountIdStr);
 
-        var topFolders = folderRepository.findAllByParentId(accountId, Folder.TOP_LEVEL);
-        var topBookmarks = bookmarkRepository.findAllByParentFolderId(accountId, Bookmark.TOP_LEVEL);
+        List<Folder> sortedTopFolders = new LinkedList<>();
+        List<Bookmark> sortedTopBookmarks = new LinkedList<>();
 
-        var sortedTopFolders = topFolders.stream().sorted(Comparator.comparing(Folder::getOrder)).toList();
-        var sortedTopBookmarks = topBookmarks.stream().sorted(Comparator.comparing(Bookmark::getOrder)).toList();
+        if (type.equals(ArchiveFetchType.BOTH) || type.equals(ArchiveFetchType.FOLDER)) {
+            var topFolders = folderRepository.findAllByParentId(accountId, Folder.TOP_LEVEL);
+            sortedTopFolders.addAll(topFolders.stream().sorted(Comparator.comparing(Folder::getOrder)).toList());
+        }
+        if (type.equals(ArchiveFetchType.BOTH) || type.equals(ArchiveFetchType.BOOKMARK)) {
+            var topBookmarks = bookmarkRepository.findAllByParentFolderId(accountId, Bookmark.TOP_LEVEL);
+            sortedTopBookmarks.addAll(topBookmarks.stream().sorted(Comparator.comparing(Bookmark::getOrder)).toList());
+        }
 
         return SpecificArchiveResponse.from(sortedTopFolders, sortedTopBookmarks);
     }
@@ -90,5 +111,30 @@ public class ArchiveUse {
         return ArchiveCountDto.of(accountId,
                 archiveCounter.getCurrentCount(ArchiveCounter.CountType.FOLDER),
                 archiveCounter.getCurrentCount(ArchiveCounter.CountType.BOOKMARK));
+    }
+
+    public enum ArchiveFetchType {
+        BOTH,
+        FOLDER,
+        BOOKMARK;
+
+        public static ArchiveFetchType of(String type) {
+            if (type == null || type.isBlank()) {
+                return BOTH;
+            }
+
+            type = type.trim();
+            type = type.toLowerCase();
+
+            if (type.equals("bookmark") || type.equals("bookmarks")) {
+                return BOOKMARK;
+            }
+
+            if (type.equals("folder") || type.equals("folders")) {
+                return FOLDER;
+            }
+
+            return BOTH;
+        }
     }
 }

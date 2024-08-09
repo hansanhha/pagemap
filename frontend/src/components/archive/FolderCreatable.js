@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import {bookmarkDataTransferName, draggingBookmarkId} from "./ArchiveDrag";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import folderLogo from "../../assets/images/folder.svg";
 import Logo from "../common/Logo";
 import Name from "./Name";
@@ -26,6 +26,10 @@ const isValid = (e, bookmark) => {
 
 const FolderCreatable = ({bookmark, onDropped, children}) => {
     const [renderingChildren, setRenderingChildren] = useState(children);
+
+    useEffect(() => {
+        setRenderingChildren(children);
+    }, [children]);
 
     const folderCreationEffect = () => {
         setRenderingChildren(

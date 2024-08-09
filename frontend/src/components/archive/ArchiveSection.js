@@ -20,7 +20,14 @@ const ARCHIVE_FETCH_TYPE = {
     FOLDER: "FOLDER",
     BOOKMARK: "BOOKMARK",
     BOTH: "BOTH",
+    FOLDER_EXCLUDE_OWN : "FOLDER_EXCLUDE_OWN",
 };
+
+let excludeFolder = null;
+
+const setExcludeFolder = (folder) => {
+    excludeFolder = folder;
+}
 
 const MainArchiveContext = createContext();
 
@@ -35,7 +42,13 @@ const useArchives = () => {
             setIsRendered(true)
         }, 10);
 
-        fetch(process.env.REACT_APP_SERVER + "/storage?" + new URLSearchParams({type: type}), {
+        let fetchType = type;
+
+        if (type === ARCHIVE_FETCH_TYPE.FOLDER_EXCLUDE_OWN) {
+            fetchType = ARCHIVE_FETCH_TYPE.FOLDER;
+        }
+
+        fetch(process.env.REACT_APP_SERVER + "/storage?" + new URLSearchParams({type: fetchType}), {
             method: "GET",
             headers: {
                 "Content-Type": "application/problem+json",
@@ -49,6 +62,10 @@ const useArchives = () => {
 
                 if (data.folders && data.folders.length > 0) {
                     folders = data.folders.map(folder => new FolderDto(folder));
+
+                    if (type === ARCHIVE_FETCH_TYPE.FOLDER_EXCLUDE_OWN) {
+                        folders = folders.filter(folder => folder.id !== excludeFolder.id);
+                    }
                 }
 
                 if (data.bookmarks && data.bookmarks.length > 0) {
@@ -251,5 +268,5 @@ const fadeOut = keyframes`
     }
 `;
 
-export {DRAGGING_TYPE, useArchiveSectionRefresh, useArchives, ARCHIVE_FETCH_TYPE};
+export {DRAGGING_TYPE, useArchiveSectionRefresh, useArchives, ARCHIVE_FETCH_TYPE, excludeFolder, setExcludeFolder};
 export default ArchiveSection;

@@ -2,7 +2,7 @@ import {StyledButtonGroup, StyledModal, StyledModalContainer} from "./ArchiveCon
 import {useEffect, useState} from "react";
 import useMediaQuery from "../../hooks/useMediaQuery";
 import Button from "../common/Button";
-import {ARCHIVE_FETCH_TYPE, useArchives} from "../archive/ArchiveSection";
+import {ARCHIVE_FETCH_TYPE, setExcludeFolder, useArchives} from "../archive/ArchiveSection";
 import HierarchyArchive from "../archive/HierarchyArchive";
 import styled from "styled-components";
 import Name from "../archive/Name";
@@ -37,11 +37,14 @@ const ArchiveUpdateLocationModal = ({target, currentRef, archiveType, onClose}) 
     }
 
     useEffect(() => {
-        refresh(ARCHIVE_FETCH_TYPE.FOLDER);
+        setExcludeFolder(target);
+        refresh(ARCHIVE_FETCH_TYPE.FOLDER_EXCLUDE_OWN);
+
+        // target 아카이브의 부모 폴더 표시하기 위한 fetch
         const ids = target.hierarchyParentFolderIds.filter(id => id !== 0).join(',');
         if (ids.length > 0) {
             fetch(`${process.env.REACT_APP_SERVER}/storage/folders?`
-                + new URLSearchParams({ids: ids, type:ARCHIVE_FETCH_TYPE.FOLDER}), {
+                + new URLSearchParams({ids: ids, type: ARCHIVE_FETCH_TYPE.FOLDER}), {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/problem+json",
@@ -82,9 +85,9 @@ const ArchiveUpdateLocationModal = ({target, currentRef, archiveType, onClose}) 
                 <Name name={`대상: ${target.name}`}/>
                 <Name name={
                     `원래 위치: 
-                        ${target.hierarchyParentFolderIds.includes(0) && target.hierarchyParentFolderIds.length === 1 
-                        ? "맨 위" 
-                        : targetOriginalParents.map(parent => parent.name).join("/") 
+                        ${target.hierarchyParentFolderIds.includes(0) && target.hierarchyParentFolderIds.length === 1
+                        ? "맨 위"
+                        : targetOriginalParents.map(parent => parent.name).join("/")
                     }`}
                 />
                 {
@@ -97,11 +100,14 @@ const ArchiveUpdateLocationModal = ({target, currentRef, archiveType, onClose}) 
                     <StyledScrollable>
                         {
                             isRendered &&
-                            <HierarchyArchive isDraggable={false}
-                                              folderChildrenFetchType={ARCHIVE_FETCH_TYPE.FOLDER}
-                                              isArchiveMenuActive={false}
-                                              archives={sortedMainArchives}
-                            />
+                            sortedMainArchives.length > 0 ?
+                                <HierarchyArchive isDraggable={false}
+                                                  folderChildrenFetchType={ARCHIVE_FETCH_TYPE.FOLDER_EXCLUDE_OWN}
+                                                  isArchiveMenuActive={false}
+                                                  archives={sortedMainArchives}
+                                />
+                                :
+                                <Name name={"옮길 수 있는 위치가 없습니다"}/>
                         }
                     </StyledScrollable>
                 </StyledScrollableSize>

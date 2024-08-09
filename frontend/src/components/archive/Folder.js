@@ -11,6 +11,7 @@ import BookmarkDto from "../../service/dto/BookmarkDto";
 import ArchiveDrag from "./ArchiveDrag";
 import OrderLine from "./OrderLine";
 import ArchiveContextMenu from "../archive-util/ArchiveContextMenu";
+import {ARCHIVE_FETCH_TYPE, excludeFolder} from "./ArchiveSection";
 
 const Folder = ({folder, childrenFetchType, isDraggable, onArchiveDragging, isArchiveMenuActive, onCreateFolder}) => {
     let {accessToken} = useLogin();
@@ -29,9 +30,15 @@ const Folder = ({folder, childrenFetchType, isDraggable, onArchiveDragging, isAr
             return;
         }
 
+        let fetchType = childrenFetchType;
+
+        if (childrenFetchType === ARCHIVE_FETCH_TYPE.FOLDER_EXCLUDE_OWN) {
+            fetchType = ARCHIVE_FETCH_TYPE.FOLDER;
+        }
+
         if (!isClicked) {
             fetch(process.env.REACT_APP_SERVER + `/storage/folders/${folder.id}?`
-                + new URLSearchParams({type: childrenFetchType}), {
+                + new URLSearchParams({type: fetchType}), {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/problem+json",
@@ -49,6 +56,10 @@ const Folder = ({folder, childrenFetchType, isDraggable, onArchiveDragging, isAr
                             const hierarchyParentIds = childFolder.hierarchyParentFolderIds;
                             hierarchyParentIds.push(...folder.hierarchyParentFolderIds);
                         });
+
+                        if (childrenFetchType === ARCHIVE_FETCH_TYPE.FOLDER_EXCLUDE_OWN) {
+                            childrenFolder = childrenFolder.filter(childFolder => childFolder.id !== excludeFolder.id);
+                        }
                     }
 
                     if (data.childrenBookmark && data.childrenBookmark.length > 0) {

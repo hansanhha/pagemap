@@ -26,11 +26,8 @@ const CreateFolderModal = ({parentFolderId, onClose, currentRef}) => {
     }
 
     const handleKeyPress = (e) => {
-        if (e.isComposing) return;
-        e.preventDefault();
-        e.stopPropagation();
-
         if (e.key === "Enter") {
+            if (e.isComposing) return;
             handleCreateFolder();
             return;
         }
@@ -87,7 +84,7 @@ const CreateFolderModal = ({parentFolderId, onClose, currentRef}) => {
     }
 
     return (
-        <StyledModal ref={currentRef} isMobile={isMobile}>
+        <StyledModal ref={currentRef} isMobile={isMobile} top={"30%"}>
             <h2>
                 폴더 생성
             </h2>

@@ -6,6 +6,9 @@ import FolderDto from "../../service/dto/FolderDto";
 import BookmarkDto from "../../service/dto/BookmarkDto";
 import CreateFolderModal from "./CreateFolderModal";
 import CreateBookmarkModal from "./CreateBookmarkModal";
+import ArchiveUpdateLocationModal from "./ArchiveUpdateLocationModal";
+import {useGlobalScroll} from "../../layout/GlobalScrollLayout";
+import {useArchiveSectionRefresh} from "../archive/ArchiveSection";
 
 const isValidName = (name) => {
     const expression = /^[a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ_\- !()]{1,50}$/;
@@ -28,10 +31,13 @@ const useModal = () => {
     return [isClicked, openModal, closeModal];
 }
 
-const ArchiveContextMenu = ({children, archive, onRename}) => {
+const ArchiveContextMenu = ({children, isActive, onIsRendered, archive, onIsActiveDrag, onRename}) => {
     const [isClickedRenameModal, openRenameModal, closeRenameModal] = useModal();
     const [isClickedCreateFolderModal, openCreateFolderModal, closeCreateFolderModal] = useModal();
     const [isClickedCreateBookmarkModal, openCreateBookmarkModal, closeCreateBookmarkModal] = useModal();
+    const [isClickedLocationModal, openLocationModal, closeLocationModal] = useModal();
+    const {suspendGlobalScroll, resumeGlobalScroll} = useGlobalScroll();
+    const {refresh} = useArchiveSectionRefresh();
 
     const currentRef = useRef(null);
 
@@ -41,12 +47,16 @@ const ArchiveContextMenu = ({children, archive, onRename}) => {
         : BookmarkDto.isBookmark(archive) ? "bookmarks" : "shortcuts";
 
     const handleMenuOpen = (e) => {
-        openMenu(archive.id, e.pageX, e.pageY);
+        if (isActive) {
+            openMenu(archive.id, e.pageX, e.pageY);
+            onIsRendered(true);
+        }
     }
 
     const handleClickOutside = (e) => {
         if (currentRef.current && !currentRef.current.contains(e.target)) {
             closeMenu();
+            onIsRendered(false);
         }
     }
 
@@ -60,20 +70,33 @@ const ArchiveContextMenu = ({children, archive, onRename}) => {
         }
     }, []);
 
+    const focusArchiveMenuModal = () => {
+        closeMenu();
+        onIsRendered(false);
+        onIsActiveDrag(false);
+        suspendGlobalScroll();
+    }
+
+    const unFocusArchiveMenuModal = () => {
+        onIsRendered(false);
+        onIsActiveDrag(true);
+        resumeGlobalScroll();
+        if (isClickedLocationModal) {
+            refresh();
+        }
+    }
+
     return (
         <>
+            <StyledArchiveContextMenuTrigger onContextMenu={handleMenuOpen}>
+                {children}
+            </StyledArchiveContextMenuTrigger>
             {
                 isTriggered &&
                 archive.id === clickedArchiveId &&
-                <StyledArchiveContextModal ref={currentRef} top={position.y} left={position.x}>
+                <StyledArchiveContextMenu ref={currentRef} top={position.y} left={position.x}>
                     <StyledArchiveMenuItem onClick={() => {
-                        closeMenu();
-                        openRenameModal();
-                    }}>
-                        이름 변경
-                    </StyledArchiveMenuItem>
-                    <StyledArchiveMenuItem onClick={() => {
-                        closeMenu();
+                        focusArchiveMenuModal();
                         openCreateFolderModal();
                     }}>
                         폴더 생성
@@ -81,20 +104,49 @@ const ArchiveContextMenu = ({children, archive, onRename}) => {
                     {
                         archiveType !== "bookmarks" && archiveType !== "shortcuts" &&
                         <StyledArchiveMenuItem onClick={() => {
-                            closeMenu();
+                            focusArchiveMenuModal();
                             openCreateBookmarkModal();
                         }}>
                             북마크 생성
                         </StyledArchiveMenuItem>
                     }
+                    <StyledArchiveMenuItem onClick={() => {
+                        focusArchiveMenuModal();
+                        openRenameModal();
+                    }}>
+                        이름 변경
+                    </StyledArchiveMenuItem>
+                    <StyledArchiveMenuItem onClick={() => {
+                        focusArchiveMenuModal();
+                        openLocationModal();
+                    }}>
+                        위치 변경
+                    </StyledArchiveMenuItem>
                     <StyledArchiveMenuItem onClick={closeMenu}>
                         닫기
                     </StyledArchiveMenuItem>
-                </StyledArchiveContextModal>
+                </StyledArchiveContextMenu>
             }
-            <StyledArchiveContextMenuTrigger onContextMenu={handleMenuOpen}>
-                {children}
-            </StyledArchiveContextMenuTrigger>
+            {
+                isClickedCreateFolderModal &&
+                <CreateFolderModal parentFolderId={archiveType === "folders" ? archive.id : archive.parentFolderId}
+                                   currentRef={currentRef}
+                                   onClose={() => {
+                                       unFocusArchiveMenuModal();
+                                       closeCreateFolderModal();
+                                   }}
+                />
+            }
+            {
+                isClickedCreateBookmarkModal &&
+                <CreateBookmarkModal parentFolderId={archive.id}
+                                     currentRef={currentRef}
+                                     onClose={() => {
+                                         unFocusArchiveMenuModal();
+                                         closeCreateBookmarkModal();
+                                     }}
+                />
+            }
             {
                 isClickedRenameModal &&
                 <RenameModal id={archive.id}
@@ -102,21 +154,21 @@ const ArchiveContextMenu = ({children, archive, onRename}) => {
                              archiveType={archiveType}
                              originalName={archive.name}
                              onRename={onRename}
-                             onClose={closeRenameModal}
+                             onClose={() => {
+                                 unFocusArchiveMenuModal();
+                                 closeRenameModal();
+                             }}
                 />
             }
             {
-                isClickedCreateFolderModal &&
-                <CreateFolderModal parentFolderId={archiveType === "folders" ? archive.id : archive.parentFolderId}
-                                   currentRef={currentRef}
-                                   onClose={closeCreateFolderModal}
-                />
-            }
-            {
-                isClickedCreateBookmarkModal &&
-                <CreateBookmarkModal parentFolderId={archive.id}
-                                     currentRef={currentRef}
-                                     onClose={closeCreateBookmarkModal}
+                isClickedLocationModal &&
+                <ArchiveUpdateLocationModal target={archive}
+                                            currentRef={currentRef}
+                                            archiveType={archiveType}
+                                            onClose={() => {
+                                                unFocusArchiveMenuModal();
+                                                closeLocationModal();
+                                            }}
                 />
             }
         </>
@@ -124,9 +176,11 @@ const ArchiveContextMenu = ({children, archive, onRename}) => {
 }
 
 const StyledArchiveContextMenuTrigger = styled.div`
+    width: 100%;
+    height: 100%;
 `;
 
-const StyledArchiveContextModal = styled.div`
+const StyledArchiveContextMenu = styled.div`
     display: flex;
     flex-direction: column;
     gap: 0.65rem;
@@ -140,6 +194,7 @@ const StyledArchiveContextModal = styled.div`
     border: 1px solid #666;
     border-radius: 6px;
     padding: 0.65rem 1rem;
+    z-index: 100;
 `;
 
 const StyledArchiveMenuItem = styled.div`
@@ -156,10 +211,13 @@ const StyledModal = styled.div`
     gap: ${({isMobile}) => isMobile ? "0.5rem" : "1.5rem"};
     width: ${({isMobile}) => isMobile ? "80vw" : "400px"};
     padding: 2rem;
-    top: 30%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     background-color: white;
     border: 1px solid #666;
     border-radius: 6px;
+    z-index: 100;
 `;
 
 const StyledModalContainer = styled.div`

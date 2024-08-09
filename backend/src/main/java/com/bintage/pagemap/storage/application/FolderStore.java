@@ -37,6 +37,10 @@ public class FolderStore {
         var parentFolderId = new Folder.FolderId(request.parentFolderId());
         var name = request.name();
 
+        if (name == null || name.isBlank()) {
+            name = DEFAULT_FOLDER_NAME;
+        }
+
         var topLevelBookmarks = bookmarkRepository.findAllByParentFolderId(accountId, Bookmark.TOP_LEVEL);
         var topLevelFolders = folderRepository.findAllByParentId(accountId, Folder.TOP_LEVEL);
         var archiveCounter = archiveCounterRepository.findByAccountId(accountId)
@@ -54,7 +58,7 @@ public class FolderStore {
         var newFolder = Folder.builder()
                 .parentFolderId(parentFolderId)
                 .accountId(accountId)
-                .name(!name.isBlank() ? name : DEFAULT_FOLDER_NAME)
+                .name(name)
                 .childrenFolder(List.of())
                 .childrenBookmark(childrenBookmarks)
                 .build();

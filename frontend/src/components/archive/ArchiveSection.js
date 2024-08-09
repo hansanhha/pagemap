@@ -14,6 +14,19 @@ const DRAGGING_TYPE = {
     UPDATE_LOCATION_SAME_PARENT: "UPDATE_LOCATION_SAME_LAYER",
     UPDATE_PARENT: "UPDATE_PARENT",
     UPDATE_PARENT_AND_LOCATION: "UPDATE_PARENT_AND_LOCATION",
+};
+
+const ARCHIVE_FETCH_TYPE = {
+    FOLDER: "FOLDER",
+    BOOKMARK: "BOOKMARK",
+    BOTH: "BOTH",
+    FOLDER_EXCLUDE_OWN : "FOLDER_EXCLUDE_OWN",
+};
+
+let excludeFolder = null;
+
+const setExcludeFolder = (folder) => {
+    excludeFolder = folder;
 }
 
 const MainArchiveContext = createContext();
@@ -23,13 +36,19 @@ const useArchives = () => {
     const [isRendered, setIsRendered] = useState(true);
     const [sortedArchives, setSortedArchives] = useState([]);
 
-    const refresh = () => {
+    const refresh = (type) => {
         setIsRendered(false);
         setTimeout(() => {
             setIsRendered(true)
         }, 10);
 
-        fetch(process.env.REACT_APP_SERVER + "/storage", {
+        let fetchType = type;
+
+        if (type === ARCHIVE_FETCH_TYPE.FOLDER_EXCLUDE_OWN) {
+            fetchType = ARCHIVE_FETCH_TYPE.FOLDER;
+        }
+
+        fetch(process.env.REACT_APP_SERVER + "/storage?" + new URLSearchParams({type: fetchType}), {
             method: "GET",
             headers: {
                 "Content-Type": "application/problem+json",
@@ -43,6 +62,10 @@ const useArchives = () => {
 
                 if (data.folders && data.folders.length > 0) {
                     folders = data.folders.map(folder => new FolderDto(folder));
+
+                    if (type === ARCHIVE_FETCH_TYPE.FOLDER_EXCLUDE_OWN) {
+                        folders = folders.filter(folder => folder.id !== excludeFolder.id);
+                    }
                 }
 
                 if (data.bookmarks && data.bookmarks.length > 0) {
@@ -60,10 +83,10 @@ const useArchives = () => {
 const ArchiveSection = () => {
     const location = useLocation();
     let {accessToken} = useLogin();
-    const [isRendered, sortedArchives, refresh] = useArchives();
+    const [isRendered, sortedMainArchives, refresh] = useArchives();
 
     useEffect(() => {
-        refresh();
+        refresh(ARCHIVE_FETCH_TYPE.BOTH);
         subscribeEvent(deletedArchive, refresh);
 
         return () => {
@@ -198,8 +221,11 @@ const ArchiveSection = () => {
                 isRendered &&
                 <>
                     <MainArchiveContext.Provider value={{refresh}}>
-                        <HierarchyArchive archives={sortedArchives}
+                        <HierarchyArchive archives={sortedMainArchives}
+                                          folderChildrenFetchType={ARCHIVE_FETCH_TYPE.BOTH}
+                                          isDraggable={true}
                                           onArchiveDragging={handleArchiveDragging}
+                                          isArchiveMenuActive={true}
                                           onCreateFolder={handleCreateFolder}
                         />
                     </MainArchiveContext.Provider>
@@ -242,5 +268,5 @@ const fadeOut = keyframes`
     }
 `;
 
-export {DRAGGING_TYPE, useArchiveSectionRefresh};
+export {DRAGGING_TYPE, useArchiveSectionRefresh, useArchives, ARCHIVE_FETCH_TYPE, excludeFolder, setExcludeFolder};
 export default ArchiveSection;

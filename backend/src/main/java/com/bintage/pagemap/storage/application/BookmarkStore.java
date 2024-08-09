@@ -362,6 +362,11 @@ public class BookmarkStore {
 
         var bookmarks = DefaultBookmarkProvider.create(accountId, Bookmark.TOP_LEVEL);
 
+        for (int i = 1; i <= bookmarks.size(); i++) {
+            var bookmark = bookmarks.get(i);
+            bookmark.order(i);
+        }
+
         bookmarkRepository.saveAll(bookmarks);
 
         archiveCounter.increase(ArchiveCounter.CountType.BOOKMARK, bookmarks.size());

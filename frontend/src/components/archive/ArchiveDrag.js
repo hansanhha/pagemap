@@ -14,7 +14,7 @@ const bookmarkDataTransferName = "bookmark";
 let dragged = null;
 let draggingBookmarkId = null;
 
-const ArchiveDrag = ({ target, children, onArchiveDragging }) => {
+const ArchiveDrag = ({ target, children, isDraggable, onArchiveDragging }) => {
     const [isDraggingOver, setIsDraggingOver] = useState(false);
     const { globalDragEffectOff } = useContext(GlobalBookmarkDraggingContext);
 
@@ -106,7 +106,7 @@ const ArchiveDrag = ({ target, children, onArchiveDragging }) => {
             onDragLeave={dragLeave}
             onDrop={drop}
             isDraggingOver={isDraggingOver}
-            draggable={true}
+            draggable={isDraggable}
         >
             {children}
         </StyledArchiveDrag>

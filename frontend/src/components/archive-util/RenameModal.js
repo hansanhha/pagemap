@@ -27,6 +27,7 @@ const RenameModal = ({id, archiveType, originalName, onRename, onClose, currentR
 
     const handleKeyPress = (e) => {
         if (e.key === "Enter") {
+            if (e.isComposing) return;
             handleRename();
             return;
         }

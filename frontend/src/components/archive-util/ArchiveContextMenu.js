@@ -8,6 +8,7 @@ import CreateFolderModal from "./CreateFolderModal";
 import CreateBookmarkModal from "./CreateBookmarkModal";
 import ArchiveUpdateLocationModal from "./ArchiveUpdateLocationModal";
 import {useGlobalScroll} from "../../layout/GlobalScrollLayout";
+import {useArchiveSectionRefresh} from "../archive/ArchiveSection";
 
 const isValidName = (name) => {
     const expression = /^[a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ_\- !()]{1,50}$/;
@@ -36,6 +37,7 @@ const ArchiveContextMenu = ({children, isActive, onIsRendered, archive, onIsActi
     const [isClickedCreateBookmarkModal, openCreateBookmarkModal, closeCreateBookmarkModal] = useModal();
     const [isClickedLocationModal, openLocationModal, closeLocationModal] = useModal();
     const {suspendGlobalScroll, resumeGlobalScroll} = useGlobalScroll();
+    const {refresh} = useArchiveSectionRefresh();
 
     const currentRef = useRef(null);
 
@@ -79,10 +81,16 @@ const ArchiveContextMenu = ({children, isActive, onIsRendered, archive, onIsActi
         onIsRendered(false);
         onIsActiveDrag(true);
         resumeGlobalScroll();
+        if (isClickedLocationModal) {
+            refresh();
+        }
     }
 
     return (
         <>
+            <StyledArchiveContextMenuTrigger onContextMenu={handleMenuOpen}>
+                {children}
+            </StyledArchiveContextMenuTrigger>
             {
                 isTriggered &&
                 archive.id === clickedArchiveId &&
@@ -119,9 +127,6 @@ const ArchiveContextMenu = ({children, isActive, onIsRendered, archive, onIsActi
                     </StyledArchiveMenuItem>
                 </StyledArchiveContextMenu>
             }
-            <StyledArchiveContextMenuTrigger onContextMenu={handleMenuOpen}>
-                {children}
-            </StyledArchiveContextMenuTrigger>
             {
                 isClickedCreateFolderModal &&
                 <CreateFolderModal parentFolderId={archiveType === "folders" ? archive.id : archive.parentFolderId}
@@ -171,6 +176,8 @@ const ArchiveContextMenu = ({children, isActive, onIsRendered, archive, onIsActi
 }
 
 const StyledArchiveContextMenuTrigger = styled.div`
+    width: 100%;
+    height: 100%;
 `;
 
 const StyledArchiveContextMenu = styled.div`

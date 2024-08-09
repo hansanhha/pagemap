@@ -12,8 +12,9 @@ import ArchiveDrag from "./ArchiveDrag";
 import OrderLine from "./OrderLine";
 import ArchiveContextMenu from "../archive-util/ArchiveContextMenu";
 import {ARCHIVE_FETCH_TYPE, excludeFolder} from "./ArchiveSection";
+import {isArchiveUpdateLocationModalRendered} from "../archive-util/ArchiveUpdateLocationModal";
 
-const Folder = ({folder, childrenFetchType, isDraggable, onArchiveDragging, isArchiveMenuActive, onCreateFolder}) => {
+const Folder = ({folder, childrenFetchType, isDraggable, onArchiveDragging, isArchiveMenuActive, onCreateFolder, handleClickedFolder}) => {
     let {accessToken} = useLogin();
     const [logo, setLogo] = useState(folderLogo);
     const [name, setName] = useState(folder.name);
@@ -70,6 +71,12 @@ const Folder = ({folder, childrenFetchType, isDraggable, onArchiveDragging, isAr
                         })
                     }
 
+                    // 현재 ArchiveUpdateLocationModal 컴포넌트에서만 사용되고 있음
+                    // 추후 다른 곳에서 사용될 경우 수정 필요
+                    if (isArchiveUpdateLocationModalRendered) {
+                        handleClickedFolder(folder, childrenFolder.length+childrenBookmark.length+1);
+                    }
+
                     setChildrenSortedArchive([...childrenFolder, ...childrenBookmark].sort((a, b) => a.order - b.order));
                     setLogo(folderOpenLogo);
                 })
@@ -108,6 +115,7 @@ const Folder = ({folder, childrenFetchType, isDraggable, onArchiveDragging, isAr
                                             onArchiveDragging={onArchiveDragging}
                                             isArchiveMenuActive={isArchiveMenuActive}
                                             onCreateFolder={onCreateFolder}
+                                            handleClickedFolder={handleClickedFolder}
                                     />
                                 </StyledChildArchive>
                             )

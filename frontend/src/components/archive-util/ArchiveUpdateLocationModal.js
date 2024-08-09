@@ -9,11 +9,14 @@ import Name from "../archive/Name";
 import {useLogin} from "../../hooks/useLogin";
 import FolderDto from "../../service/dto/FolderDto";
 
+let isArchiveUpdateLocationModalRendered = false;
+
 const ArchiveUpdateLocationModal = ({target, currentRef, archiveType, onClose}) => {
     const {isMobile} = useMediaQuery();
     const {accessToken} = useLogin();
     const [isRendered, sortedMainArchives, refresh] = useArchives();
-    const [selectedArchive, setSelectedArchive] = useState("");
+    const [selectedFolder, setSelectedFolder] = useState(null);
+    const [order, setOrder] = useState(0);
     const [targetOriginalParents, setTargetOriginalParents] = useState([]);
 
     const handleClickOutside = (e) => {
@@ -37,6 +40,7 @@ const ArchiveUpdateLocationModal = ({target, currentRef, archiveType, onClose}) 
     }
 
     useEffect(() => {
+        isArchiveUpdateLocationModalRendered = true;
         setExcludeFolder(target);
         refresh(ARCHIVE_FETCH_TYPE.FOLDER_EXCLUDE_OWN);
 
@@ -69,11 +73,38 @@ const ArchiveUpdateLocationModal = ({target, currentRef, archiveType, onClose}) 
             document.removeEventListener("keydown", handleKeyPress);
             document.removeEventListener("mousedown", handleClickOutside);
             refresh();
+            isArchiveUpdateLocationModalRendered = false;
         }
     }, []);
 
-    const handleUpdateLocation = () => {
+    const handleClickedFolder = (folder, order) => {
+        setSelectedFolder(folder);
+        setOrder(order);
+    }
 
+    const handleUpdateLocation = () => {
+        if (selectedFolder && target.parentFolderId !== selectedFolder.id) {
+
+            fetch(process.env.REACT_APP_SERVER + `/storage/${archiveType}/${target.id}/location`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/problem+json",
+                    "Accept": "application/problem+json",
+                    "Authorization": `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify({
+                    targetFolderId: selectedFolder.id,
+                    updateOrder: order,
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    refresh();
+                })
+                .catch(err => console.error("Error fetching update location:", err));
+
+            onClose();
+        }
     }
 
     return (
@@ -83,16 +114,16 @@ const ArchiveUpdateLocationModal = ({target, currentRef, archiveType, onClose}) 
             </h2>
             <StyledSelectedArchiveInfoContainer>
                 <Name name={`대상: ${target.name}`}/>
-                <Name name={
-                    `원래 위치: 
-                        ${target.hierarchyParentFolderIds.includes(0) && target.hierarchyParentFolderIds.length === 1
-                        ? "맨 위"
-                        : targetOriginalParents.map(parent => parent.name).join("/")
-                    }`}
-                />
+                <StyledArchiveInfo>
+                    원래 위치:
+                    {target.hierarchyParentFolderIds.includes(0) && target.hierarchyParentFolderIds.length === 1
+                        ? " 맨 위"
+                        : " " + targetOriginalParents.map(parent => parent.name).join("/")
+                    }
+                </StyledArchiveInfo>
                 {
-                    selectedArchive.name &&
-                    <Name name={`수정 위치: ${selectedArchive.name}`}/>
+                    selectedFolder &&
+                    <Name name={`수정 위치: ${selectedFolder.name}`}/>
                 }
             </StyledSelectedArchiveInfoContainer>
             <StyledModalContainer>
@@ -105,6 +136,7 @@ const ArchiveUpdateLocationModal = ({target, currentRef, archiveType, onClose}) 
                                                   folderChildrenFetchType={ARCHIVE_FETCH_TYPE.FOLDER_EXCLUDE_OWN}
                                                   isArchiveMenuActive={false}
                                                   archives={sortedMainArchives}
+                                                  handleClickedFolder={handleClickedFolder}
                                 />
                                 :
                                 <Name name={"옮길 수 있는 위치가 없습니다"}/>
@@ -145,4 +177,17 @@ const StyledScrollable = styled.div`
     }
 `;
 
+const StyledArchiveInfo = styled.div`
+    text-align: start;
+    white-space: nowrap;
+    overflow-x: auto;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+`;
+
+export {isArchiveUpdateLocationModalRendered};
 export default ArchiveUpdateLocationModal;

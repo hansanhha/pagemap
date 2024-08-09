@@ -74,7 +74,7 @@ const ArchiveUpdateLocationModal = ({target, currentRef, archiveType, onClose}) 
     }
 
     return (
-        <StyledModal ref={currentRef} isMobile={isMobile} top={"20%"}>
+        <StyledModal ref={currentRef} isMobile={isMobile} top={"18%"}>
             <h2>
                 위치 변경
             </h2>

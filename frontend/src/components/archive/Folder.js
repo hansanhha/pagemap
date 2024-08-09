@@ -18,6 +18,7 @@ const Folder = ({folder, childrenFetchType, isDraggable, onArchiveDragging, isAr
     const [name, setName] = useState(folder.name);
     const [isClicked, setIsClicked] = useState(false);
     const [isActiveDrag, setIsActiveDrag] = useState(isDraggable);
+    const [isArchiveMenuRendered, setIsArchiveMenuRendered] = useState(false);
     const [childrenSortedArchive, setChildrenSortedArchive] = useState([]);
 
     const handleClick = () => {
@@ -72,9 +73,10 @@ const Folder = ({folder, childrenFetchType, isDraggable, onArchiveDragging, isAr
             <ArchiveDrag target={folder} isDraggable={isActiveDrag} onArchiveDragging={onArchiveDragging}>
                 <ArchiveContextMenu archive={folder}
                                     isActive={isArchiveMenuActive}
+                                    onIsRendered={setIsArchiveMenuRendered}
                                     onIsActiveDrag={setIsActiveDrag}
                                     onRename={setName}>
-                    <StyledParentFolder onClick={handleClick}>
+                    <StyledParentFolder onClick={handleClick} isArchiveMenuRendered={isArchiveMenuRendered}>
                         <Logo img={logo}/>
                         <Name name={name}/>
                     </StyledParentFolder>
@@ -127,7 +129,8 @@ const StyledParentFolder = styled.div`
     width: 100%;
     gap: 1rem;
     align-items: center;
-    padding: 0.5rem 0;
+    padding: 0.5rem 0.2rem;
+    background-color: ${({isArchiveMenuRendered}) => isArchiveMenuRendered ? "#E9E9E9" : "transparent"};
 
     &:hover {
         background: #E9E9E9;

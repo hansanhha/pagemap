@@ -7,7 +7,7 @@ import BookmarkDto from "../../service/dto/BookmarkDto";
 import CreateFolderModal from "./CreateFolderModal";
 import CreateBookmarkModal from "./CreateBookmarkModal";
 import ArchiveUpdateLocationModal from "./ArchiveUpdateLocationModal";
-import {resumeGlobalScroll, suspendGlobalScroll} from "../../layout/GlobalScrollLayout";
+import {useGlobalScroll} from "../../layout/GlobalScrollLayout";
 
 const isValidName = (name) => {
     const expression = /^[a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ_\- !()]{1,50}$/;
@@ -30,11 +30,12 @@ const useModal = () => {
     return [isClicked, openModal, closeModal];
 }
 
-const ArchiveContextMenu = ({children, isActive, archive, onIsActiveDrag, onRename}) => {
+const ArchiveContextMenu = ({children, isActive, onIsRendered, archive, onIsActiveDrag, onRename}) => {
     const [isClickedRenameModal, openRenameModal, closeRenameModal] = useModal();
     const [isClickedCreateFolderModal, openCreateFolderModal, closeCreateFolderModal] = useModal();
     const [isClickedCreateBookmarkModal, openCreateBookmarkModal, closeCreateBookmarkModal] = useModal();
     const [isClickedLocationModal, openLocationModal, closeLocationModal] = useModal();
+    const {suspendGlobalScroll, resumeGlobalScroll} = useGlobalScroll();
 
     const currentRef = useRef(null);
 
@@ -46,12 +47,14 @@ const ArchiveContextMenu = ({children, isActive, archive, onIsActiveDrag, onRena
     const handleMenuOpen = (e) => {
         if (isActive) {
             openMenu(archive.id, e.pageX, e.pageY);
+            onIsRendered(true);
         }
     }
 
     const handleClickOutside = (e) => {
         if (currentRef.current && !currentRef.current.contains(e.target)) {
             closeMenu();
+            onIsRendered(false);
         }
     }
 
@@ -67,11 +70,13 @@ const ArchiveContextMenu = ({children, isActive, archive, onIsActiveDrag, onRena
 
     const focusArchiveMenuModal = () => {
         closeMenu();
+        onIsRendered(false);
         onIsActiveDrag(false);
         suspendGlobalScroll();
     }
 
     const unFocusArchiveMenuModal = () => {
+        onIsRendered(false);
         onIsActiveDrag(true);
         resumeGlobalScroll();
     }
@@ -81,7 +86,7 @@ const ArchiveContextMenu = ({children, isActive, archive, onIsActiveDrag, onRena
             {
                 isTriggered &&
                 archive.id === clickedArchiveId &&
-                <StyledArchiveContextModal ref={currentRef} top={position.y} left={position.x}>
+                <StyledArchiveContextMenu ref={currentRef} top={position.y} left={position.x}>
                     <StyledArchiveMenuItem onClick={() => {
                         focusArchiveMenuModal();
                         openCreateFolderModal();
@@ -112,11 +117,11 @@ const ArchiveContextMenu = ({children, isActive, archive, onIsActiveDrag, onRena
                     <StyledArchiveMenuItem onClick={closeMenu}>
                         닫기
                     </StyledArchiveMenuItem>
-                </StyledArchiveContextModal>
+                </StyledArchiveContextMenu>
             }
-            <StyledArchiveContextMenu onContextMenu={handleMenuOpen}>
+            <StyledArchiveContextMenuTrigger onContextMenu={handleMenuOpen}>
                 {children}
-            </StyledArchiveContextMenu>
+            </StyledArchiveContextMenuTrigger>
             {
                 isClickedCreateFolderModal &&
                 <CreateFolderModal parentFolderId={archiveType === "folders" ? archive.id : archive.parentFolderId}
@@ -165,10 +170,10 @@ const ArchiveContextMenu = ({children, isActive, archive, onIsActiveDrag, onRena
     )
 }
 
-const StyledArchiveContextMenu = styled.div`
+const StyledArchiveContextMenuTrigger = styled.div`
 `;
 
-const StyledArchiveContextModal = styled.div`
+const StyledArchiveContextMenu = styled.div`
     display: flex;
     flex-direction: column;
     gap: 0.65rem;
@@ -182,6 +187,7 @@ const StyledArchiveContextModal = styled.div`
     border: 1px solid #666;
     border-radius: 6px;
     padding: 0.65rem 1rem;
+    z-index: 100;
 `;
 
 const StyledArchiveMenuItem = styled.div`
@@ -198,7 +204,9 @@ const StyledModal = styled.div`
     gap: ${({isMobile}) => isMobile ? "0.5rem" : "1.5rem"};
     width: ${({isMobile}) => isMobile ? "80vw" : "400px"};
     padding: 2rem;
-    top: ${({top}) => top ? top : "30%"};
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     background-color: white;
     border: 1px solid #666;
     border-radius: 6px;

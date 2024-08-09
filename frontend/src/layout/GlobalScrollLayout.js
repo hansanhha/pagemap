@@ -1,46 +1,60 @@
-import React, {useEffect, useRef} from "react";
+import React, { useContext, useEffect, useMemo, useRef, useState } from "react";
 import Scrollable from "../components/common/Scrollable";
 
-const suspendGlobalScroll = () => {
-    document.body.style.overflow = "hidden";
-}
+const GlobalScrollContext = React.createContext();
 
-const resumeGlobalScroll = () => {
-    document.body.style.overflow = "auto";
-}
-
-const GlobalScrollLayout = ({children}) => {
+const GlobalScrollLayout = ({ children }) => {
     const scrollableRef = useRef(null);
+    const [globalScrollable, setGlobalScrollable] = useState(true);
+
+    const suspendGlobalScroll = () => {
+        setGlobalScrollable(false);
+    }
+
+    const resumeGlobalScroll = () => {
+        setGlobalScrollable(true);
+    }
 
     const handleScroll = (e) => {
-        if (scrollableRef.current) {
+        if (globalScrollable && scrollableRef.current) {
             scrollableRef.current.scrollTop += e.deltaY || e.deltaX || (e.touches && e.touches[0] && e.touches[0].deltaY) || 0;
         }
     }
 
     useEffect(() => {
-        window.addEventListener("wheel", handleScroll);
-        window.addEventListener("touchmove", handleScroll);
-        window.addEventListener("keydown", handleScroll);
+        window.addEventListener("wheel", handleScroll, { passive: false });
+        window.addEventListener("touchmove", handleScroll, { passive: false });
+        window.addEventListener("keydown", handleScroll, { passive: false });
 
         return () => {
             window.removeEventListener("wheel", handleScroll);
             window.removeEventListener("touchmove", handleScroll);
             window.removeEventListener("keydown", handleScroll);
         };
-    }, []);
+    }, [globalScrollable]);
 
     const updatedChildren = React.Children.map(children, (child) => {
         if (child.type === Scrollable) {
-            return React.cloneElement(child, {ref: scrollableRef});
+            return React.cloneElement(child, { ref: scrollableRef });
         }
         return child;
     });
 
+    const value = useMemo(() => ({
+        suspendGlobalScroll,
+        resumeGlobalScroll
+    }), []);
+
     return (
-        updatedChildren
+        <GlobalScrollContext.Provider value={value}>
+            {updatedChildren}
+        </GlobalScrollContext.Provider>
     );
 }
 
-export {suspendGlobalScroll, resumeGlobalScroll};
+const useGlobalScroll = () => {
+    return useContext(GlobalScrollContext);
+}
+
+export { useGlobalScroll };
 export default GlobalScrollLayout;

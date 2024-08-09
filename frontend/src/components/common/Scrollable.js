@@ -2,6 +2,7 @@ import styled from "styled-components";
 import React from "react";
 
 const Scrollable = React.forwardRef((props, ref) => (
+
     <StyledScrollable ref={ref}>
         {props.children}
     </StyledScrollable>
@@ -9,8 +10,8 @@ const Scrollable = React.forwardRef((props, ref) => (
 
 const StyledScrollable = styled.div`
     height: 100%;
-    overflow-y: auto;
-    -ms-overflow-y: auto;
+    overflow-y: hidden;
+    -ms-overflow-y: hidden;
     -ms-overflow-style: none;
     scrollbar-width: none;
 

@@ -78,7 +78,11 @@ public class BookmarkStore {
         var accountId = new Account.AccountId(request.accountId());
         var parentFolderId = Folder.FolderId.of(request.parentFolderId());
         var uri = request.uri();
-        var name = request.name().trim();
+        var name = DEFAULT_BOOKMARK_NAME;
+
+        if (request.name() != null && !request.name().isBlank()) {
+            name = request.name();
+        }
 
         var archiveCounter = archiveCounterRepository.findByAccountId(accountId)
                 .orElseThrow(() -> ArchiveCounterException.notFound(accountId));

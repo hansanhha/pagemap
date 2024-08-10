@@ -367,7 +367,7 @@ public class BookmarkStore {
         var bookmarks = DefaultBookmarkProvider.create(accountId, Bookmark.TOP_LEVEL);
 
         for (int i = 1; i <= bookmarks.size(); i++) {
-            var bookmark = bookmarks.get(i);
+            var bookmark = bookmarks.get(i-1);
             bookmark.order(i);
         }
 

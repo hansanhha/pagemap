@@ -21,8 +21,7 @@ const OrderLine = ({ target, onArchiveDragging }) => {
     const dragEnter = (e) => {
         e.stopPropagation();
         e.preventDefault();
-        if (dragged && FolderDto.isFolder(dragged)
-            && (dragged.isDescendant(target) || dragged.isHierarchyParent(target))) {
+        if (dragged && FolderDto.isFolder(dragged) && dragged.isHierarchyParent(target)) {
             return;
         }
 
@@ -38,8 +37,7 @@ const OrderLine = ({ target, onArchiveDragging }) => {
     const drop = (e) => {
         e.stopPropagation();
         e.preventDefault();
-        if (dragged && FolderDto.isFolder(dragged)
-            && (dragged.isDescendant(target) || dragged.isHierarchyParent(target))) {
+        if (dragged && FolderDto.isFolder(dragged) && dragged.isHierarchyParent(target)) {
             return;
         }
 

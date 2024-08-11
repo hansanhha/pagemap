@@ -27,12 +27,12 @@ public class FolderEntity {
     private Long parentFolderId;
 
     @ElementCollection
-    @CollectionTable(name = "children_folder", joinColumns = @JoinColumn(name = "folder_id"))
+    @CollectionTable(name = "children_folder", joinColumns = @JoinColumn(name = "parent_folder_id"))
     @Column(name = "child_folder")
     private Set<Long> childrenFolder;
 
     @ElementCollection
-    @CollectionTable(name = "children_bookmark", joinColumns = @JoinColumn(name = "bookmark_id"))
+    @CollectionTable(name = "children_bookmark", joinColumns = @JoinColumn(name = "parent_bookmark_id"))
     @Column(name = "child_bookmark")
     private Set<Long> childrenBookmark;
 

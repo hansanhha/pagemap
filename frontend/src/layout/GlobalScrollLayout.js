@@ -22,9 +22,9 @@ const GlobalScrollLayout = ({ children }) => {
     }
 
     useEffect(() => {
-        window.addEventListener("wheel", handleScroll, { passive: false });
-        window.addEventListener("touchmove", handleScroll, { passive: false });
-        window.addEventListener("keydown", handleScroll, { passive: false });
+        window.addEventListener("wheel", handleScroll, { passive: true });
+        window.addEventListener("touchmove", handleScroll, { passive: true });
+        window.addEventListener("keydown", handleScroll, { passive: true });
 
         return () => {
             window.removeEventListener("wheel", handleScroll);

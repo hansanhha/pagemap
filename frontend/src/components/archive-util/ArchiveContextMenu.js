@@ -9,6 +9,7 @@ import CreateBookmarkModal from "./CreateBookmarkModal";
 import ArchiveUpdateLocationModal from "./ArchiveUpdateLocationModal";
 import {useGlobalScroll} from "../../layout/GlobalScrollLayout";
 import {useArchiveSectionRefresh} from "../archive/ArchiveSection";
+import {useLogin} from "../../hooks/useLogin";
 
 const isValidName = (name) => {
     const expression = /^[a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ_\- !()]{1,50}$/;
@@ -32,6 +33,7 @@ const useModal = () => {
 }
 
 const ArchiveContextMenu = ({children, isActive, onIsRendered, archive, onIsActiveDrag, onRename}) => {
+    const {accessToken} = useLogin();
     const [isClickedRenameModal, openRenameModal, closeRenameModal] = useModal();
     const [isClickedCreateFolderModal, openCreateFolderModal, closeCreateFolderModal] = useModal();
     const [isClickedCreateBookmarkModal, openCreateBookmarkModal, closeCreateBookmarkModal] = useModal();
@@ -86,6 +88,22 @@ const ArchiveContextMenu = ({children, isActive, onIsRendered, archive, onIsActi
         }
     }
 
+    const deleteArchive = () => {
+        fetch(process.env.REACT_APP_SERVER + "/storage/" + archiveType + "/" + archive.id, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/problem+json",
+                "Accept": "application/problem+json",
+                "Authorization": `Bearer ${accessToken}`
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                refresh();
+            })
+            .catch(err => console.error("Error fetching delete archive:", err));
+    }
+
     return (
         <>
             <StyledArchiveContextMenuTrigger onContextMenu={handleMenuOpen}>
@@ -122,8 +140,10 @@ const ArchiveContextMenu = ({children, isActive, onIsRendered, archive, onIsActi
                     }}>
                         위치 변경
                     </StyledArchiveMenuItem>
-                    <StyledArchiveMenuItem onClick={closeMenu}>
-                        닫기
+                    <StyledArchiveMenuItem onClick={() => {
+                        deleteArchive();
+                    }}>
+                        휴지통으로
                     </StyledArchiveMenuItem>
                 </StyledArchiveContextMenu>
             }

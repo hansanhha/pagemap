@@ -12,12 +12,11 @@ import CommonInput from "../common/CommonInput";
 import Button from "../common/Button";
 import {useArchiveSectionRefresh} from "../archive/ArchiveSection";
 
-const CreateFolderModal = ({parentFolderId, onClose, currentRef}) => {
+const CreateFolderModal = ({parentFolderId, onClose, onRefresh, currentRef}) => {
     const [error, setError] = useState(false);
     const [folderName, setFolderName] = useState("");
     const {isMobile} = useMediaQuery();
     const {accessToken} = useLogin();
-    const {refresh} = useArchiveSectionRefresh();
 
     const handleClickOutside = (e) => {
         if (currentRef.current && !currentRef.current.contains(e.target)) {
@@ -78,7 +77,7 @@ const CreateFolderModal = ({parentFolderId, onClose, currentRef}) => {
             .then(res => res.json())
             .then(data => {
                 onClose();
-                refresh();
+                onRefresh();
             })
             .catch(err => console.error("Error fetching create folder by CreateFolderModal:", err));
     }

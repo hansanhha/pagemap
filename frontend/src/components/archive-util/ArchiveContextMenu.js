@@ -10,6 +10,7 @@ import ArchiveUpdateLocationModal from "./ArchiveUpdateLocationModal";
 import {useGlobalScroll} from "../../layout/GlobalScrollLayout";
 import {useArchiveSectionRefresh} from "../archive/ArchiveSection";
 import {useLogin} from "../../hooks/useLogin";
+import useToggle from "../../hooks/useToggle";
 
 const isValidName = (name) => {
     const expression = /^[a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ_\- !()]{1,50}$/;
@@ -18,26 +19,12 @@ const isValidName = (name) => {
     return regex.test(name);
 }
 
-const useModal = () => {
-    const [isClicked, setIsClicked] = useState(false);
-
-    const openModal = () => {
-        setIsClicked(true);
-    }
-
-    const closeModal = () => {
-        setIsClicked(false);
-    }
-
-    return [isClicked, openModal, closeModal];
-}
-
 const ArchiveContextMenu = ({children, isActive, onIsRendered, archive, onIsActiveDrag, onRename}) => {
     const {accessToken} = useLogin();
-    const [isClickedRenameModal, openRenameModal, closeRenameModal] = useModal();
-    const [isClickedCreateFolderModal, openCreateFolderModal, closeCreateFolderModal] = useModal();
-    const [isClickedCreateBookmarkModal, openCreateBookmarkModal, closeCreateBookmarkModal] = useModal();
-    const [isClickedLocationModal, openLocationModal, closeLocationModal] = useModal();
+    const [isClickedRenameModal, openRenameModal, closeRenameModal] = useToggle();
+    const [isClickedCreateFolderModal , openCreateFolderModal, closeCreateFolderModal] = useToggle();
+    const [isClickedCreateBookmarkModal, openCreateBookmarkModal, closeCreateBookmarkModal] = useToggle();
+    const [isClickedLocationModal, openLocationModal, closeLocationModal] = useToggle();
     const {suspendGlobalScroll, resumeGlobalScroll} = useGlobalScroll();
     const {refresh} = useArchiveSectionRefresh();
 
@@ -50,6 +37,7 @@ const ArchiveContextMenu = ({children, isActive, onIsRendered, archive, onIsActi
 
     const handleMenuOpen = (e) => {
         if (isActive) {
+            e.stopPropagation();
             openMenu(archive.id, e.pageX, e.pageY);
             onIsRendered(true);
         }
@@ -155,6 +143,7 @@ const ArchiveContextMenu = ({children, isActive, onIsRendered, archive, onIsActi
                                        unFocusArchiveMenuModal();
                                        closeCreateFolderModal();
                                    }}
+                                   onRefresh={refresh}
                 />
             }
             {
@@ -165,6 +154,7 @@ const ArchiveContextMenu = ({children, isActive, onIsRendered, archive, onIsActi
                                          unFocusArchiveMenuModal();
                                          closeCreateBookmarkModal();
                                      }}
+                                     onRefresh={refresh}
                 />
             }
             {
@@ -256,5 +246,13 @@ const StyledButtonGroup = styled.div`
     gap: 0.5rem;
 `;
 
-export {StyledModal, StyledModalContainer, StyledErrorMessage, StyledButtonGroup, isValidName};
+export {
+    StyledArchiveContextMenuTrigger,
+    StyledArchiveContextMenu,
+    StyledArchiveMenuItem,
+    StyledModal, StyledModalContainer,
+    StyledErrorMessage,
+    StyledButtonGroup,
+    isValidName
+};
 export default ArchiveContextMenu;

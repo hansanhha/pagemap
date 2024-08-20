@@ -19,14 +19,13 @@ const isValidURL = (url) => {
     return regex.test(url);
 }
 
-const CreateBookmarkModal = ({parentFolderId, onClose, currentRef}) => {
+const CreateBookmarkModal = ({parentFolderId, onClose, onRefresh, currentRef}) => {
     const [nameError, setNameError] = useState(false);
     const [urlError, setUrlError] = useState(false);
     const [bookmarkName, setBookmarkName] = useState("");
     const [bookmarkURL, setBookmarkURL] = useState("");
     const {isMobile} = useMediaQuery();
     const {accessToken} = useLogin();
-    const {refresh} = useArchiveSectionRefresh();
 
     const handleClickOutside = (e) => {
         if (currentRef.current && !currentRef.current.contains(e.target)) {
@@ -98,7 +97,7 @@ const CreateBookmarkModal = ({parentFolderId, onClose, currentRef}) => {
             .then(res => res.json())
             .then(data => {
                 onClose();
-                refresh();
+                onRefresh();
             })
             .catch(err => console.error("Error creating bookmark by createBookmarkModal:", err));
     }

@@ -8,6 +8,7 @@ import ShortcutDto from "../../service/dto/ShortcutDto";
 import Trash, {deletedArchive} from "../trash/Trash";
 import {subscribeEvent, unsubscribeEvent} from "../util/EventHandler";
 import {useLocation} from "react-router-dom";
+import GlobalArchiveContextMenu from "../archive-util/GlobalArchiveContextMenu";
 
 const DRAGGING_TYPE = {
     CREATE_BOOKMARK_BY_DRAGGING: "CREATE_BOOKMARK_BY_DRAGGING",
@@ -20,7 +21,7 @@ const ARCHIVE_FETCH_TYPE = {
     FOLDER: "FOLDER",
     BOOKMARK: "BOOKMARK",
     BOTH: "BOTH",
-    FOLDER_EXCLUDE_OWN : "FOLDER_EXCLUDE_OWN",
+    FOLDER_EXCLUDE_OWN: "FOLDER_EXCLUDE_OWN",
 };
 
 let excludeFolder = null;
